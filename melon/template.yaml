@@ -8,11 +8,59 @@ Globals:
       - !Ref CommonLayer
 
 Resources:
+  # API Gateway HTTP APIの作成
+  FakeThesisHttpApiGateway:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: "FakeThesisHttpApiGateway"  # APIの名前
+      ProtocolType: "HTTP"
+    Tags:
+      - Key: "project"
+        Value: "melon"
+
+  #ApiGateway用 IAM Roleの作成
+  ApiGatewayInvokeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "apigateway.amazonaws.com"  # API Gatewayがこのロールを引き受ける
+            Action: "sts:AssumeRole"
+    Tags:
+      - Key: "project"
+        Value: "melon"
+
+  # API Gatewayのルート（エンドポイント）の作成
+  ApiGatewayRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref FakeThesisHttpApiGateway  # 作成したAPI GatewayのIDを参照
+      RouteKey: "GET /example"  # HTTPメソッドとエンドポイント
+      Target: !Sub "integrations/${ApiGatewayStepFunctionsIntegration}"  # Stepfunctions統合ターゲットを指定
+    Tags:
+      - Key: "project"
+        Value: "melon"
+
+  # API GatewayとStep Functionsを統合するための統合リソース
+  ApiGatewayStepFunctionsIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref 
+      IntegrationType: "AWS_PROXY"  # LambdaまたはStep Functionsを直接呼び出す統合タイプ
+      # IntegrationUri: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${MyStepFunctionsStateMachine}"  # Step FunctionsのARNを指定
+      PayloadFormatVersion: "2.0"
+    Tags:
+      - Key: "project"
+        Value: "melon"
+
   # 共通Lambda Layer
   CommonLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: melon-common-layer
+      LayerName: fake_thesis_common_layer
       Description: Common utilities and validators and etc
       ContentUri: layers/common/
       CompatibleRuntimes:
@@ -39,6 +87,7 @@ Resources:
        - arn:aws:lambda:ap-northeast-1:336392948345:layer:AWSSDKPandas-Python312:13 #AWS公式 Pandas
       Environment:
         Variables:
+          COMPREHEND_CUSTOM_MODEL_ENDPOINT_ARN: value
     Tags:
       - Key: "project"
         Value: "melon"
@@ -47,7 +96,7 @@ Resources:
   LambdaExecutionRole: 
     Type: AWS::IAM::Role
     Properties:
-      RoleName: melon_lambda_role  # 明示的にロール名を指定
+      RoleName: fake_thesis_lambda_role  # 明示的にロール名を指定
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -70,22 +119,11 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                  - s3:PutObject
-                  - s3:DeleteObject
-                Resource:
-                  - "arn:aws:s3:::jeldam-raw/*"
-                  - "arn:aws:s3:::jeldam-format/*"
-
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
                   - s3:ListBucket
                   - s3:PutObject
                   - s3:DeleteObject
                 Resource:
-                  - "arn:aws:s3:::jeldam-origin/*"
-                  - "arn:aws:s3:::jeldam-public"
-                  - "arn:aws:s3:::jeldam-public/*"
+                  - "arn:aws:s3:::fake-thesis-bucket/*"
 
               - Effect: Allow
                 Action:
@@ -98,8 +136,10 @@ Resources:
                   - dynamodb:UpdateItem
                   - dynamodb:DeleteItem
                 Resource:
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/datastore_hyg6dt2jeube_app_table"
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/datastore_hyg6dt2jeube_get_raw_data_error_logs_table"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table/*"
+                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table/*"
 
               - Effect: Allow
                 Action:
@@ -108,3 +148,83 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource: "arn:aws:sqs:*:*:*"
+    Tags:
+      - Key: "project"
+        Value: "melon"
+        
+  # 論文フォーマットマスターテーブル
+  MasterThesisCategoryFormatTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: master_thesis_category_format_table
+      AttributeDefinitions:
+        - AttributeName: category_type_en
+          AttributeType: S
+        - AttributeName: category_title_number
+          AttributeType: S
+        - AttributeName: category_type_jp
+          AttributeType: S
+      KeySchema: 
+        - AttributeName: category_type_en
+          KeyType: HASH
+        - AttributeName: category_title_number
+          KeyType: RANGE
+      GlobalSecondaryIndexes: 
+        - 
+          IndexName: "category_title_jp_index_gsi"
+          KeySchema: 
+            - 
+              AttributeName: "category_type_jp"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      OnDemandThroughput: 
+         MaxReadRequestUnits: 1000
+         MaxWriteRequestUnits: 1000
+      DeletionProtectionEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+    DeletionPolicy: Retain
+    Tags:
+      - Key: "project"
+        Value: "melon"
+
+  
+  # ワークフロー進捗管理テーブル
+  WorkflowProgressManagementTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: workfliw_progress_management_table
+      AttributeDefinitions:
+        - AttributeName: workflow_id
+          AttributeType: S
+        - AttributeName: task_id
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema: 
+        - AttributeName: workflow_id
+          KeyType: HASH
+        - AttributeName: task_id
+          KeyType: RANGE
+      GlobalSecondaryIndexes: 
+        - 
+          IndexName: "status_index_gsi"
+          KeySchema: 
+            - 
+              AttributeName: "status"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      OnDemandThroughput: 
+         MaxReadRequestUnits: 1000
+         MaxWriteRequestUnits: 1000
+      DeletionProtectionEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+    DeletionPolicy: Retain
+    Tags:
+      - Key: "project"
+        Value: "melon"
