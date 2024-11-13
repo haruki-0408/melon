@@ -1,0 +1,39 @@
+{
+  "title": "野菜を使った永久機関技術の開発",
+  "format": {
+    "category_type_jp": "新技術開発",
+    "category_type_en": "development",
+    "sections": [
+      {
+        "sub_sections": [
+          { "title_name": "技術の背景と目的" },
+          { "title_name": "既存技術との関係や差別化ポイント" }
+        ],
+        "title_name": "はじめに"
+      },
+      {
+        "sub_sections": [
+          { "title_name": "新技術と発明の詳細説明" },
+          { "title_name": "設計図・プロトタイプ・アルゴリズム" },
+          { "title_name": "可能性の示唆" }
+        ],
+        "title_name": "提案理論・手法"
+      },
+      {
+        "sub_sections": [
+          { "title_name": "新技術の実験結果" },
+          { "title_name": "既存技術との比較" },
+          { "title_name": "課題や改善点" }
+        ],
+        "title_name": "結果と考察"
+      },
+      {
+        "sub_sections": [
+          { "title_name": "技術の将来性と今後の研究課題" },
+          { "title_name": "技術的・商業的な展開可能性" }
+        ],
+        "title_name": "結論"
+      }
+    ]
+  }
+}

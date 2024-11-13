@@ -29,7 +29,6 @@ def generate_s3_genre_id_prefix(datastore_id, file_type, genre_id, year, month, 
 
 # AWS Lambda PowertoolsのLoggerを初期化して返却"
 def get_logger(service_name="default_service"):
-    
     return Logger(service=service_name)
 
 # DynamoDBからアイテムを取得
@@ -126,9 +125,3 @@ def check_record_exists_usequery(table_name, pk_name, pk_value, region='ap-north
 def generate_execution_url(execution_arn: str) -> str:
     region = "ap-northeast-1"
     return f"https://{region}.console.aws.amazon.com/states/home?region={region}#/executions/details/{execution_arn}"
-
-#
-def extract_mng_number_from_item_url(url):
-    pattern = r'https://item\.rakuten\.co\.jp/[^/]+/([^/]+)/.*'
-    match = re.search(pattern, url)
-    return match.group(1) if match else None

@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 Globals:
@@ -12,13 +12,10 @@ Resources:
   FakeThesisHttpApiGateway:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: "FakeThesisHttpApiGateway"  # APIの名前
+      Name: "FakeThesisHttpApiGateway" # APIの名前
       ProtocolType: "HTTP"
-    Tags:
-      - Key: "project"
-        Value: "melon"
 
-  #ApiGateway用 IAM Roleの作成
+  # ApiGateway用 IAM Roleの作成
   ApiGatewayInvokeRole:
     Type: AWS::IAM::Role
     Properties:
@@ -27,34 +24,25 @@ Resources:
         Statement:
           - Effect: "Allow"
             Principal:
-              Service: "apigateway.amazonaws.com"  # API Gatewayがこのロールを引き受ける
+              Service: "apigateway.amazonaws.com" # API Gatewayがこのロールを引き受ける
             Action: "sts:AssumeRole"
-    Tags:
-      - Key: "project"
-        Value: "melon"
 
   # API Gatewayのルート（エンドポイント）の作成
   ApiGatewayRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref FakeThesisHttpApiGateway  # 作成したAPI GatewayのIDを参照
-      RouteKey: "GET /example"  # HTTPメソッドとエンドポイント
-      Target: !Sub "integrations/${ApiGatewayStepFunctionsIntegration}"  # Stepfunctions統合ターゲットを指定
-    Tags:
-      - Key: "project"
-        Value: "melon"
+      ApiId: !Ref FakeThesisHttpApiGateway # 作成したAPI GatewayのIDを参照
+      RouteKey: "GET /example" # HTTPメソッドとエンドポイント
+      Target: !Sub "integrations/${ApiGatewayStepFunctionsIntegration}" # Stepfunctions統合ターゲットを指定
 
   # API GatewayとStep Functionsを統合するための統合リソース
   ApiGatewayStepFunctionsIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref 
-      IntegrationType: "AWS_PROXY"  # LambdaまたはStep Functionsを直接呼び出す統合タイプ
+      ApiId: !Ref
+      IntegrationType: "AWS_PROXY" # LambdaまたはStep Functionsを直接呼び出す統合タイプ
       # IntegrationUri: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${MyStepFunctionsStateMachine}"  # Step FunctionsのARNを指定
       PayloadFormatVersion: "2.0"
-    Tags:
-      - Key: "project"
-        Value: "melon"
 
   # 共通Lambda Layer
   CommonLayer:
@@ -66,39 +54,71 @@ Resources:
       CompatibleRuntimes:
         - python3.12
       RetentionPolicy: Retain
-    Tags:
-      - Key: "project"
-        Value: "melon"
-      
-  # 偽論文タイトルからカテゴライズする関数
-  FakeThesisTitleClassifier:
+
+  # 論文フォーマット取得関数
+  GetFakeThesisTitleCategoryFormat:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: fake_thesis_title_classifier
-      CodeUri: functions/fake_thesis_title_classifier/
+      FunctionName: get_fake_thesis_title_category_format
+      CodeUri: functions/get_fake_thesis_title_category_format/
       Handler: app.lambda_handler
-      Description: "Categorizing fake thesis using Amazon Translate and Comprehend" #関数の説明
-      MemorySize: 256  # メモリサイズ (MB)
-      Timeout: 900  # タイムアウト(秒)
-      Role: !GetAtt LambdaExecutionRole.Arn  # IAMロールの指定
+      Description: "" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
       Layers:
-       - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
-       - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
-       - arn:aws:lambda:ap-northeast-1:336392948345:layer:AWSSDKPandas-Python312:13 #AWS公式 Pandas
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+        - arn:aws:lambda:ap-northeast-1:336392948345:layer:AWSSDKPandas-Python312:13 #AWS公式 Pandas
       Environment:
         Variables:
-          COMPREHEND_CUSTOM_MODEL_ENDPOINT_ARN: value
-    Tags:
-      - Key: "project"
-        Value: "melon"
+          DYNAMO_DB_TABLE: value
   
+  # フォーマットからプロンプトを生成する関数
+  GeneratePromptParameters:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: generate_prompt_parameters
+      CodeUri: functions/generate_prompt_parameters/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      Environment:
+        Variables:
+          DYNAMO_DB_TABLE: value
+  
+  # PDFに変換する関数
+  ConvertToPdf:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: convert_to_pdf
+      CodeUri: functions/convert_to_pdf/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-Pillow:4 #Klayer Pillow
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p311-reportlab:6 #Klayer reportlab
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      Environment:
+        Variables:
+          S3_BUCKET: value
+
+
   #Lambdaで使用するIAMロールの作成
-  LambdaExecutionRole: 
+  LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: fake_thesis_lambda_role  # 明示的にロール名を指定
+      RoleName: fake_thesis_lambda_role # 明示的にロール名を指定
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -107,7 +127,7 @@ Resources:
       Policies:
         - PolicyName: LambdaExecutionPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -123,7 +143,8 @@ Resources:
                   - s3:PutObject
                   - s3:DeleteObject
                 Resource:
-                  - "arn:aws:s3:::fake-thesis-bucket/*"
+                  - !Sub arn:aws:s3:::${FakeThesisBucket}  
+                  - !Sub arn:aws:s3:::${FakeThesisBucket}/*  
 
               - Effect: Allow
                 Action:
@@ -136,10 +157,12 @@ Resources:
                   - dynamodb:UpdateItem
                   - dynamodb:DeleteItem
                 Resource:
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table"
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table"
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table/*"
-                  - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table/*"
+                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table"
+                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table"
+                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table/*"
+                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table/*"
+                  - !GetAtt MasterFakeThesisCategoryFormatsTable.Arn
+                  - !GetAtt WorkflowProgressManagementTable.Arn
 
               - Effect: Allow
                 Action:
@@ -148,54 +171,48 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource: "arn:aws:sqs:*:*:*"
-    Tags:
-      - Key: "project"
-        Value: "melon"
-        
+
   # 論文フォーマットマスターテーブル
-  MasterThesisCategoryFormatTable:
+  MasterFakeThesisCategoryFormatsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: master_thesis_category_format_table
+      TableName: master_fake_thesis_category_formats_table
       AttributeDefinitions:
         - AttributeName: category_type_en
           AttributeType: S
-        - AttributeName: category_title_number
-          AttributeType: S
         - AttributeName: category_type_jp
           AttributeType: S
-      KeySchema: 
+      KeySchema:
         - AttributeName: category_type_en
           KeyType: HASH
-        - AttributeName: category_title_number
-          KeyType: RANGE
-      GlobalSecondaryIndexes: 
-        - 
-          IndexName: "category_title_jp_index_gsi"
-          KeySchema: 
-            - 
-              AttributeName: "category_type_jp"
+      GlobalSecondaryIndexes:
+        - IndexName: "category_title_jp_index_gsi"
+          KeySchema:
+            - AttributeName: "category_type_jp"
               KeyType: "HASH"
           Projection:
             ProjectionType: ALL
-      BillingMode: PAY_PER_REQUEST
-      OnDemandThroughput: 
-         MaxReadRequestUnits: 1000
-         MaxWriteRequestUnits: 1000
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      BillingMode: PROVISIONED
+      # BillingMode: PAY_PER_REQUEST
+      # OnDemandThroughput:
+      #    MaxReadRequestUnits: 1000
+      #    MaxWriteRequestUnits: 1000
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
       DeletionProtectionEnabled: true
       SSESpecification:
         SSEEnabled: true
     DeletionPolicy: Retain
-    Tags:
-      - Key: "project"
-        Value: "melon"
 
-  
   # ワークフロー進捗管理テーブル
   WorkflowProgressManagementTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: workfliw_progress_management_table
+      TableName: workflow_progress_management_table
       AttributeDefinitions:
         - AttributeName: workflow_id
           AttributeType: S
@@ -203,28 +220,45 @@ Resources:
           AttributeType: S
         - AttributeName: status
           AttributeType: S
-      KeySchema: 
+      KeySchema:
         - AttributeName: workflow_id
           KeyType: HASH
         - AttributeName: task_id
           KeyType: RANGE
-      GlobalSecondaryIndexes: 
-        - 
-          IndexName: "status_index_gsi"
-          KeySchema: 
-            - 
-              AttributeName: "status"
+      GlobalSecondaryIndexes:
+        - IndexName: "status_index_gsi"
+          KeySchema:
+            - AttributeName: "status"
               KeyType: "HASH"
           Projection:
             ProjectionType: ALL
-      BillingMode: PAY_PER_REQUEST
-      OnDemandThroughput: 
-         MaxReadRequestUnits: 1000
-         MaxWriteRequestUnits: 1000
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      BillingMode: PROVISIONED
+      # BillingMode: PAY_PER_REQUEST
+      # OnDemandThroughput:
+      #   MaxReadRequestUnits: 1000
+      #   MaxWriteRequestUnits: 1000
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
       DeletionProtectionEnabled: true
       SSESpecification:
         SSEEnabled: true
     DeletionPolicy: Retain
-    Tags:
-      - Key: "project"
-        Value: "melon"
+
+  # S3 バケット
+  FakeThesisBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "fake-thesis-bucket"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: "Suspended" # バージョニングなし設定
+    DeletionPolicy: Retain # バケットを削除せず保持
+    UpdateReplacePolicy: Retain
