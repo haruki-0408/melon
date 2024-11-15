@@ -1,0 +1,109 @@
+{
+  "tables": [
+    {
+      "table_type": "basic",
+      "title": "Vegetable Energy Output",
+      "columns": ["Vegetable", "Energy Output (J)"],
+      "rows": [
+        ["Carrot", 250],
+        ["Spinach", 220],
+        ["Potato", 300],
+        ["Tomato", 180],
+        ["Broccoli", 280]
+      ],
+      "style": {
+        "font_size": 12,
+        "header_bg_color": "#dddddd",
+        "header_font_color": "#333333",
+        "cell_bg_color": "#ffffff",
+        "cell_font_color": "#000000",
+        "border_color": "#666666",
+        "border_width": 1,
+        "col_widths": [0.3, 0.7]
+      }
+    },
+    {
+      "table_type": "summary",
+      "title": "Summary of Vegetable Energy Outputs (in Joules)",
+      "statistics": {
+        "Carrot_Energy": {"mean": 250, "median": 250, "std": 20, "min": 210, "max": 290},
+        "Spinach_Energy": {"mean": 220, "median": 220, "std": 15, "min": 200, "max": 240},
+        "Potato_Energy": {"mean": 300, "median": 300, "std": 30, "min": 250, "max": 350}
+      },
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "#222222",
+        "header_font_color": "#ffffff",
+        "cell_bg_color": "#f7f7f7",
+        "cell_font_color": "#111111",
+        "border_color": "#000000",
+        "border_width": 0.5,
+        "col_widths": [0.2, 0.2, 0.2, 0.2, 0.2]
+      }
+    },
+    {
+      "table_type": "regression",
+      "title": "Regression Analysis of Energy Production",
+      "regression_results": {
+        "dependent_variable": "EnergyOutput",
+        "r_squared": 0.72,
+        "adj_r_squared": 0.70,
+        "f_statistic": 12.5,
+        "coefficients": [
+          {"variable": "Intercept", "coefficient": 50.0, "std_error": 5.0, "t_value": 10.0, "p_value": 0.001},
+          {"variable": "Carrot_Intake", "coefficient": 2.5, "std_error": 0.5, "t_value": 5.0, "p_value": 0.01},
+          {"variable": "Spinach_Intake", "coefficient": 3.0, "std_error": 0.8, "t_value": 3.75, "p_value": 0.02}
+        ]
+      },
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "#abcdef",
+        "header_font_color": "#000000",
+        "cell_bg_color": "#ffffff",
+        "cell_font_color": "#0000ff",
+        "border_color": "#000000",
+        "border_width": 1,
+        "col_widths": [0.2, 0.2, 0.2, 0.2, 0.2]
+      }
+    },
+    {
+      "table_type": "correlation",
+      "title": "Correlation Matrix of Vegetable Energy Factors",
+      "variables": ["CarrotMass", "SpinachMass", "PotatoMass"],
+      "correlation_matrix": [
+        [1.0, 0.65, 0.30],
+        [0.65, 1.0, 0.20],
+        [0.30, 0.20, 1.0]
+      ],
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "#ccffcc",
+        "header_font_color": "#333333",
+        "cell_bg_color": "#ffffff",
+        "cell_font_color": "#333333",
+        "border_color": "#333333",
+        "border_width": 0.5,
+        "col_widths": [0.33, 0.33, 0.34]
+      }
+    },
+    {
+      "table_type": "comparison",
+      "title": "Comparison of Energy Outputs by Vegetable Type",
+      "comparison_data": {
+        "Carrots": {"mean": 250, "std": 20, "min": 210, "max": 290},
+        "Spinach": {"mean": 220, "std": 15, "min": 200, "max": 240},
+        "Potatoes": {"mean": 300, "std": 30, "min": 250, "max": 350}
+      },
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "#fff0f0",
+        "header_font_color": "#990000",
+        "cell_bg_color": "#ffffff",
+        "cell_font_color": "#000000",
+        "border_color": "#990000",
+        "border_width": 2,
+        "col_widths": [0.25, 0.25, 0.25, 0.25]
+      }
+    }
+  ]
+}

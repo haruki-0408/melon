@@ -91,6 +91,42 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE: value
+
+  # グラフデータの作成
+  GenerateFakeGraph:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: generate_fake_graph
+      CodeUri: functions/generate_fake_graph/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 1024 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 #Klayers numpy
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      Environment:
+        Variables:
+          S3_BUCKET: value
+  
+  # 表データの作成
+  GenerateFakeTable:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: generate_fake_table
+      CodeUri: functions/generate_fake_table/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 1024 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 #Klayers numpy
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      Environment:
+        Variables:
+          S3_BUCKET: value
   
   # PDFに変換する関数
   ConvertToPdf:
@@ -101,6 +137,25 @@ Resources:
       Handler: app.lambda_handler
       Description: "" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-Pillow:4 #Klayer Pillow
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p311-reportlab:6 #Klayer reportlab
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      Environment:
+        Variables:
+          S3_BUCKET: value
+    
+  # 論文データの整形
+  Test:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: test
+      CodeUri: functions/test/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 1024 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
       Layers:

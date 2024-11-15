@@ -1,0 +1,278 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Composite Table Data Schema with Styles",
+  "type": "object",
+  "properties": {
+    "tables": {
+      "type": "array",
+      "description": "生成する表の設定を保持する配列。",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "table_type": {
+                "type": "string",
+                "enum": ["basic"],
+                "description": "表の種類。ここでは 'basic'（基本的なデータテーブル）を指定します。"
+              },
+              "title": {
+                "type": "string",
+                "description": "テーブルのタイトル。"
+              },
+              "columns": {
+                "type": "array",
+                "description": "テーブルの列見出しの配列。",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "rows": {
+                "type": "array",
+                "description": "テーブルの各行のデータを含む配列の配列。",
+                "items": {
+                  "type": "array",
+                  "items": {}
+                }
+              },
+              "style": {
+                "type": "object",
+                "description": "表の表示スタイルを定義するオブジェクト。",
+                "properties": {
+                  "font_size": { "type": "number", "description": "テーブル内のテキストのフォントサイズ。" },
+                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
+                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
+                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
+                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
+                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
+                  "col_widths": {
+                    "type": "array",
+                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
+                    "description": "各列の幅を指定する配列。"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": ["table_type", "title", "columns", "rows"],
+            "description": "基本的なデータテーブルを定義するオブジェクト。"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "table_type": {
+                "type": "string",
+                "enum": ["summary"],
+                "description": "表の種類。ここでは 'summary'（統計量のまとめ表）を指定します。"
+              },
+              "title": {
+                "type": "string",
+                "description": "テーブルのタイトル。"
+              },
+              "statistics": {
+                "type": "object",
+                "description": "各変数に対する統計量をまとめたオブジェクト。",
+                "patternProperties": {
+                  "^.*$": {
+                    "type": "object",
+                    "properties": {
+                      "mean": { "type": "number" },
+                      "median": { "type": "number" },
+                      "std": { "type": "number" },
+                      "min": { "type": "number" },
+                      "max": { "type": "number" }
+                    },
+                    "required": ["mean", "median", "std", "min", "max"]
+                  }
+                }
+              },
+              "style": {
+                "type": "object",
+                "description": "表の表示スタイルを定義するオブジェクト。",
+                "properties": {
+                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
+                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
+                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
+                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
+                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
+                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
+                  "col_widths": {
+                    "type": "array",
+                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
+                    "description": "各列の幅を指定する配列。"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": ["table_type", "title", "statistics"],
+            "description": "統計量のまとめ表を定義するオブジェクト。"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "table_type": {
+                "type": "string",
+                "enum": ["regression"],
+                "description": "表の種類。ここでは 'regression'（回帰分析の結果表）を指定します。"
+              },
+              "title": {
+                "type": "string",
+                "description": "テーブルのタイトル。"
+              },
+              "regression_results": {
+                "type": "object",
+                "description": "回帰分析の結果をまとめたオブジェクト。",
+                "properties": {
+                  "dependent_variable": { "type": "string", "description": "従属変数の名前。" },
+                  "r_squared": { "type": "number", "description": "決定係数。" },
+                  "adj_r_squared": { "type": "number", "description": "自由度調整済み決定係数。" },
+                  "f_statistic": { "type": "number", "description": "F統計量。" },
+                  "coefficients": {
+                    "type": "array",
+                    "description": "回帰係数のリスト。",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "variable": { "type": "string" },
+                        "coefficient": { "type": "number" },
+                        "std_error": { "type": "number" },
+                        "t_value": { "type": "number" },
+                        "p_value": { "type": "number" }
+                      },
+                      "required": ["variable", "coefficient", "std_error", "t_value", "p_value"]
+                    }
+                  }
+                },
+                "required": ["dependent_variable", "r_squared", "adj_r_squared", "f_statistic", "coefficients"]
+              },
+              "style": {
+                "type": "object",
+                "description": "表の表示スタイルを定義するオブジェクト。",
+                "properties": {
+                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
+                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
+                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
+                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
+                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
+                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
+                  "col_widths": {
+                    "type": "array",
+                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
+                    "description": "各列の幅を指定する配列。"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": ["table_type", "title", "regression_results"],
+            "description": "回帰分析結果の表を定義するオブジェクト。"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "table_type": {
+                "type": "string",
+                "enum": ["correlation"],
+                "description": "表の種類。ここでは 'correlation'（相関行列表）を指定します。"
+              },
+              "title": {
+                "type": "string",
+                "description": "テーブルのタイトル。"
+              },
+              "variables": {
+                "type": "array",
+                "description": "相関行列に含まれる変数のリスト。",
+                "items": { "type": "string" }
+              },
+              "correlation_matrix": {
+                "type": "array",
+                "description": "相関行列を表す2次元の配列。",
+                "items": {
+                  "type": "array",
+                  "items": { "type": "number" }
+                }
+              },
+              "style": {
+                "type": "object",
+                "description": "表の表示スタイルを定義するオブジェクト。",
+                "properties": {
+                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
+                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
+                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
+                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
+                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
+                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
+                  "col_widths": {
+                    "type": "array",
+                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
+                    "description": "各列の幅を指定する配列。"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": ["table_type", "title", "variables", "correlation_matrix"],
+            "description": "相関行列表を定義するオブジェクト。"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "table_type": {
+                "type": "string",
+                "enum": ["comparison"],
+                "description": "表の種類。ここでは 'comparison'（データ比較表）を指定します。"
+              },
+              "title": {
+                "type": "string",
+                "description": "テーブルのタイトル。"
+              },
+              "comparison_data": {
+                "type": "object",
+                "description": "各カテゴリの比較データをまとめたオブジェクト。",
+                "patternProperties": {
+                  "^.*$": {
+                    "type": "object",
+                    "properties": {
+                      "mean": { "type": "number" },
+                      "std": { "type": "number" },
+                      "min": { "type": "number" },
+                      "max": { "type": "number" }
+                    },
+                    "required": ["mean", "std", "min", "max"]
+                  }
+                }
+              },
+              "style": {
+                "type": "object",
+                "description": "表の表示スタイルを定義するオブジェクト。",
+                "properties": {
+                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
+                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
+                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
+                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
+                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
+                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
+                  "col_widths": {
+                    "type": "array",
+                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
+                    "description": "各列の幅を指定する配列。"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": ["table_type", "title", "comparison_data"],
+            "description": "データ比較表を定義するオブジェクト。"
+          }
+        ]
+      }
+    }
+  },
+  "required": ["tables"]
+}
