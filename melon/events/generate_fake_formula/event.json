@@ -1,0 +1,219 @@
+{
+    "formulas": [
+      {
+        "latex_code": "E = mc^2",
+        "description": "アインシュタインの特殊相対性理論における質量とエネルギーの等価性を示す有名な式。",
+        "parameters": [
+          {
+            "symbol": "E",
+            "description": "エネルギー（ジュール）"
+          },
+          {
+            "symbol": "m",
+            "description": "質量（キログラム）"
+          },
+          {
+            "symbol": "c",
+            "description": "光の速度（約299,792,458 m/s）"
+          }
+        ]
+      },
+      {
+        "latex_code": "ax^2 + bx + c = 0",
+        "description": "二次方程式の一般形。",
+        "parameters": [
+          {
+            "symbol": "a",
+            "description": "二次の係数"
+          },
+          {
+            "symbol": "b",
+            "description": "一次の係数"
+          },
+          {
+            "symbol": "c",
+            "description": "定数項"
+          },
+          {
+            "symbol": "x",
+            "description": "未知数"
+          }
+        ]
+      },
+      {
+        "latex_code": "\\frac{d}{dx} \\sin x = \\cos x",
+        "description": "正弦関数の導関数は余弦関数であることを示す式。",
+        "parameters": [
+          {
+            "symbol": "x",
+            "description": "独立変数（ラジアン）"
+          }
+        ]
+      },
+      {
+        "latex_code": "\\int_{0}^{\\infty} e^{-x} dx = 1",
+        "description": "指数関数の無限区間での定積分の結果。",
+        "parameters": [
+          {
+            "symbol": "x",
+            "description": "積分変数"
+          }
+        ]
+      },
+      {
+        "latex_code": "F = G \\frac{m_1 m_2}{r^2}",
+        "description": "ニュートンの万有引力の法則を表す式。",
+        "parameters": [
+          {
+            "symbol": "F",
+            "description": "引力（ニュートン）"
+          },
+          {
+            "symbol": "G",
+            "description": "万有引力定数（約6.67430×10^-11 N·(m/kg)^2）"
+          },
+          {
+            "symbol": "m_1",
+            "description": "物体1の質量（キログラム）"
+          },
+          {
+            "symbol": "m_2",
+            "description": "物体2の質量（キログラム）"
+          },
+          {
+            "symbol": "r",
+            "description": "2つの物体間の距離（メートル）"
+          }
+        ]
+      },
+      {
+        "latex_code": "\\nabla \\cdot \\mathbf{E} = \\frac{\\rho}{\\varepsilon_0}",
+        "description": "ガウスの法則（マクスウェルの方程式の一つ）を示す式。",
+        "parameters": [
+          {
+            "symbol": "\\nabla \\cdot \\mathbf{E}",
+            "description": "電場の発散"
+          },
+          {
+            "symbol": "\\rho",
+            "description": "電荷密度（クーロン毎立方メートル）"
+          },
+          {
+            "symbol": "\\varepsilon_0",
+            "description": "真空の誘電率（約8.854187817×10^-12 F/m）"
+          }
+        ]
+      },
+      {
+        "latex_code": "\\frac{\\partial u}{\\partial t} = D \\nabla^2 u",
+        "description": "熱伝導方程式（拡散方程式）を表す偏微分方程式。",
+        "parameters": [
+          {
+            "symbol": "u",
+            "description": "温度または濃度などの拡散する量"
+          },
+          {
+            "symbol": "t",
+            "description": "時間"
+          },
+          {
+            "symbol": "D",
+            "description": "拡散係数"
+          },
+          {
+            "symbol": "\\nabla^2",
+            "description": "ラプラシアン演算子"
+          }
+        ]
+      },
+      {
+        "latex_code": "\\Psi(x, t) = \\frac{1}{\\sqrt{2\\pi}} \\int_{-\\infty}^{\\infty} \\phi(k) e^{i(kx - \\omega t)} dk",
+        "description": "波動関数のフーリエ変換による表現。",
+        "parameters": [
+          {
+            "symbol": "\\Psi(x, t)",
+            "description": "位置と時間の関数である波動関数"
+          },
+          {
+            "symbol": "\\phi(k)",
+            "description": "波数空間での波動関数"
+          },
+          {
+            "symbol": "k",
+            "description": "波数"
+          },
+          {
+            "symbol": "x",
+            "description": "位置"
+          },
+          {
+            "symbol": "t",
+            "description": "時間"
+          },
+          {
+            "symbol": "\\omega",
+            "description": "角周波数"
+          },
+          {
+            "symbol": "i",
+            "description": "虚数単位"
+          }
+        ]
+      },
+      {
+        "latex_code": "e^{i\\pi} + 1 = 0",
+        "description": "オイラーの等式。数学の基本的な定数と演算子を結びつける美しい等式。",
+        "parameters": [
+          {
+            "symbol": "e",
+            "description": "ネイピア数（自然対数の底）"
+          },
+          {
+            "symbol": "i",
+            "description": "虚数単位"
+          },
+          {
+            "symbol": "\\pi",
+            "description": "円周率"
+          }
+        ]
+      },
+      {
+        "latex_code": "\\det(\\mathbf{A} - \\lambda \\mathbf{I}) = 0",
+        "description": "行列 \\( \\mathbf{A} \\) の固有値を求めるための固有方程式。",
+        "parameters": [
+          {
+            "symbol": "\\det",
+            "description": "行列式（デターミナント）"
+          },
+          {
+            "symbol": "\\mathbf{A}",
+            "description": "正方行列"
+          },
+          {
+            "symbol": "\\lambda",
+            "description": "固有値"
+          },
+          {
+            "symbol": "\\mathbf{I}",
+            "description": "単位行列"
+          }
+        ]
+      },
+      {
+        "latex_code": "\\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}",
+        "description": "バーゼル問題の解。自然数の二乗の逆数の無限和。",
+        "parameters": [
+          {
+            "symbol": "n",
+            "description": "自然数（1, 2, 3, ...）"
+          },
+          {
+            "symbol": "\\pi",
+            "description": "円周率"
+          }
+        ]
+      }
+    ]
+  }
+  

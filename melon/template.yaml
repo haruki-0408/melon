@@ -127,6 +127,24 @@ Resources:
       Environment:
         Variables:
           S3_BUCKET: value
+
+  # 数式データの作成
+  GenerateFakeFormula:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: generate_fake_formula
+      CodeUri: functions/generate_fake_formula/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 512 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 #Klayers numpy
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      Environment:
+        Variables:
+          S3_BUCKET: value
   
   # PDFに変換する関数
   ConvertToPdf:
