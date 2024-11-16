@@ -3,7 +3,7 @@ import os
 import boto3
 from aws_lambda_powertools.utilities.validation import validator
 from aws_lambda_powertools.utilities.validation import SchemaValidationError
-from utilities import get_dynamo_item, get_logger
+from utilities import get_dynamo_item, get_logger, upload_to_s3
 import event_schemas as event_schemas
 
 # スキーマファイルのパスを設定
@@ -72,11 +72,7 @@ def lambda_handler(event, context):
             #     })
             # )
         
-        f = open('prompts.json', 'w')
-
-        f.write(prompts)
-
-        f.close()
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="prompts.json",data=json.dumps(prompts, ensure_ascii=False))
 
         return {
             'statusCode': 200,
@@ -107,10 +103,12 @@ def generate_prompt(title, section_object, formulas_schema, graphs_schema, table
 - 各サブセクションそれぞれに必ず以下のプロパティを追加してください。: "text", "graphs", "tables", "formulas"。
 - "text" は偽論文のタイトルとサブセクションの"title_name"を考慮した学術論文風の文章にしてください。文字数は長めに設定し、改行コードや段落を適切に含めてください。嘘の論文ですが、読者が納得するような説得力のある内容にしてください。
 - 各サブセクションにグラフ、表、数式が必要な場合、"text" 内に挿入位置を示す識別子を含めてください（例: [INSERT_FORMULA_1]とするとFORMULA_1というidを持つ数式データの挿入という意味）。
-- 必ずしもグラフ、表、数式を含める必要はありません。サブセクションの内容に応じて適切に選択してください。挿入する場合は、"graphs"、"tables"、"formulas"それぞれに実際使用するデータの値を以下のjsonスキーマを厳格に満たすように設定し、各idを"text"内の識別子とリンクさせてください。必要ない場合でも、空の配列としてこれらのキーを含めてください。
+- 必ずしもグラフ、表、数式を含める必要はありません。サブセクションの内容に応じて適切に選択してください。挿入する場合必ず挿入を指示した"text"と同じサブセクション内の"graphs"、"tables"、"formulas"それぞれに実際使用するデータの値を以下のjsonスキーマを厳格に満たすように設定し、各idを"text"内の識別子とリンクさせてください。必要ない場合でも、空の配列としてこれらのキーを含めてください。
+- 例えば1つ目のサブセクションの"text"で"[INSERT_FORMULA_1]"としたならばそのサブセクション内のformulasプロパティにデータを設定してください。
 - グラフ、表、数式を含める場合は"text"にてそのデータを言及するような内容を必ず含めてください。
-- レスポンスは JSON パース可能な文字列で、セクション1オブジェクトとして出力してください。
 - 嘘論文をそれっぽく見せるというコンセプトなので全体的に信憑性が高い学術論文のように作成してください。
+- レスポンスは JSON パース可能な文字列のみで、セクション1オブジェクトとして出力してください。
+- 返却されたレスポンスの内容をそのままjsonにパースするので絶対に前後に不要な「```json」 などの文章を入れてレスポンスすることは許可しません。回答の出力は必ずjsonデータのみであることに注意してください。
 
 ### section object
 {section_object}

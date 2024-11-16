@@ -82,7 +82,7 @@ Resources:
       CodeUri: functions/generate_prompt_parameters/
       Handler: app.lambda_handler
       Description: "" #関数の説明
-      MemorySize: 256 # メモリサイズ (MB)
+      MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
       Layers:
@@ -91,6 +91,27 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_TABLE: value
+
+  # 生成AI APIリクエスト関数
+  RequestGenerativeAiModelApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: request_generative_ai_model_api
+      CodeUri: functions/request_generative_ai_model_api/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 512 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      Environment:
+        Variables:
+          ANTHROPIC_API_URL: value
+          ANTHROPIC_API_KEY: value
+          ANTHROPIC_API_MODEL: value
+
 
   # グラフデータの作成
   GenerateFakeGraph:
