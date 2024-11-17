@@ -9,7 +9,15 @@ INPUT = {
                     "type": "string",
                     "enum": [
                         "development",
-                        "issue"
+                        "issue",
+                        "verification",
+                        "case_study",
+                        "theory",
+                        "historical_analysis",
+                        "prediction",
+                        "comparison",
+                        "survay",
+                        "criticism"
                     ],
                     "description": "カテゴリータイプ（英語）"
                 },
@@ -17,13 +25,17 @@ INPUT = {
                     "type": "string",
                     "enum": [
                         "新技術開発",
-                        "問題提起"
+                        "問題提起",
+                        "検証",
+                        "ケーススタディ",
+                        "理論提案",
+                        "歴史的解析",
+                        "予測",
+                        "対比・比較",
+                        "調査・アンケート",
+                        "反論・批判"
                     ],
                     "description": "カテゴリータイプ（日本語）",
-                    # "const": {
-                    #     "development": "新技術開発",
-                    #     "issue": "問題提起"
-                    # }
                 },
                 "sections": {
                     "type": "array",
