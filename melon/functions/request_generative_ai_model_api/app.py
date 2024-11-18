@@ -7,6 +7,8 @@ import anthropic
 from anthropic.types.beta.message_create_params import MessageCreateParamsNonStreaming
 from anthropic.types.beta.messages.batch_create_params import Request
 
+from utilities import upload_to_s3
+
 # envパラメータ
 API_URL = os.environ["ANTHROPIC_API_URL"]
 # API_KEY = os.environ["ANTHROPIC_API_KEY"]
@@ -16,79 +18,120 @@ client = anthropic.Anthropic(api_key = os.environ["ANTHROPIC_API_KEY"])
 
 def lambda_handler(event, context):
     # eventパラメータ
-    prompts = event.get("prompts")  
-
-    # AnthropicAPI バッジリクエストを送信するための配列
-    requests = []
+    system_prompt = event.get("system_prompt")  
+    section_formats = event.get("section_formats")
 
     # 各プロンプトについて生成AI APIを呼び出し
-    for prompt_info in prompts:
-        section_title = prompt_info["section_title"]
+
+    # 会話のやり取りを保持する配列
+    responses = []
+    messages = []
+    for section_format in section_formats:
+        section_title = section_format["title_name"]
         print(section_title)
-        prompt = prompt_info["prompt"]
+        print(section_format)
+        
+        # 各セクションのプロンプトを追加
+        messages.append(
+            {
+                "role" : "user",
+                "content" : [
+                    {
+                        "type" : "text",
+                        "text" : json.dumps(section_format,ensure_ascii=False)
+                    }
+                ]
+            }
+        )
+
+         # 最近2件のユーザーメッセージのみキャッシュコントロールを有効化する
+        result = []
+        user_turns_processed = 0
+        for message in reversed(messages):
+            if message["role"] == "user" and user_turns_processed < 2:
+                result.append({
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": message["content"][0]["text"],
+                            "cache_control": {"type": "ephemeral"}
+                        }
+                    ]
+                })
+                user_turns_processed += 1
+            else:
+                result.append(message)
+
+        # 順番を下に戻す
+        messages_to_send = list(reversed(result))
 
         # 生成AI API呼び出し（前の返答も含める）
-        request = genearte_anthropic_message_batch_request(prompt)
+        assistant_response = call_anthropic_api_message_request(system_prompt=system_prompt, messages=messages_to_send)
 
-        requests.append(request)
+        responses.append(json.loads(assistant_response))
+
+        messages.append({
+            "role" : "assistant",
+            "content" : assistant_response
+        })
+        
     
     # バッジリクエスト送信
-    message_batch_id = create_anthropic_message_batch_request(requests=requests)
+    # message_batch_id = create_anthropic_message_batch_request(requests=requests)
     
-    # 成功するまでポーリング
-    retrieve_anthropic_message_batch_request(message_batch_id=message_batch_id)
+    # # 成功するまでポーリング
+    # retrieve_anthropic_message_batch_request(message_batch_id=message_batch_id)
 
-    # 結果取得
-    results = get_result_anthropic_message_batch_request(results)
+    # # 結果取得
+    # results = get_result_anthropic_message_batch_request(results)
 
     # すべてのバッジリクエストをキャンセル
     # cancel_anthropic_message_batch_request()
 
     # 最終的なレスポンス
+    responses_graphs = []
+    responses_tables = []
+    responses_formulas = []
+
+    for section in responses:
+        for sub_section in section['sub_sections']:
+            responses_graphs.extend(sub_section['graphs'])
+            responses_tables.extend(sub_section['tables'])
+            responses_formulas.extend(sub_section['formulas'])
+    
+
+    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses.json",data=json.dumps(responses, ensure_ascii=False))
+    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_graphs.json",data=json.dumps(responses_graphs, ensure_ascii=False))
+    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_tables.json",data=json.dumps(responses_tables, ensure_ascii=False))
+    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_formulas.json",data=json.dumps(responses_formulas, ensure_ascii=False))
+
     return {
         'statusCode': 200,
-        'body': 'cancel 成功'
+        'body': 'success'
     }
 
 # Anthropic APIを呼び出す関数
-# def call_anthropic_api(prompt_text, previous_response=None):
-#     headers = {
-#         "x-api-key": API_KEY,
-#         "anthropic-version": "2023-06-01",
-#         "anthropic-beta": "message-batches-2024-09-24",
-#         "Content-Type": "application/json"
-#     }
+def call_anthropic_api_message_request(system_prompt, messages):
+    response = client.beta.prompt_caching.messages.create(
+        model="claude-3-5-haiku-20241022",
+        max_tokens=4096,
+        system=[
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"}
+            }
+        ],
+        messages=messages
+    )
 
-#     # 直前の返答を含めてプロンプトを構成
-#     # input_prompt = prompt
-#     # if previous_response:
-#     #     input_prompt = f"{previous_response}\n\n{prompt}"
+    print(response.usage)
 
-#     body = {
-#         "model": API_MODEL,
-#         "max_tokens": 4096,
-#         "system" : "",
-#         "temperature": 0.4,
-#         "messages" : [
-#             {
-#                 "role" : "user",
-#                 "content" : prompt_text
-#             }
-#         ]
-#     }
-
-#     # APIリクエストを送信し、エラーがあれば例外を発生
-#     response = requests.post(API_URL, headers=headers, json=body, timeout=360)
-#     response.raise_for_status()  # ステータスコードが200以外の場合、例外を発生させる
+    assistant_response = response.content[0].text
     
-#     # 正常なレスポンスを返す
-#     # print(response.json)
-#     response_json = response.json()
-    
-#     text = response_json['content'][0]['text']
-
-#     text_parsed = json.loads(text)
-#     return text_parsed
+    # text_parsed = json.loads(text)
+    return assistant_response
     
 
 # メッセージバッチリクエスト生成関数
@@ -102,7 +145,7 @@ def genearte_anthropic_message_batch_request(prompt):
             model = API_MODEL,
             max_tokens = 4096,
             system = "",
-            temperature = 0.4,
+            temperature = 0.1,
             messages = [
                 {
                     "role" : "user",

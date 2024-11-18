@@ -6,6 +6,7 @@ import boto3
 import base64
 import numpy as np
 import json
+import sympy as sp
 from matplotlib.patches import Ellipse
 
 # S3のアップロード先情報
@@ -77,7 +78,9 @@ def create_graph_image(graph_data):
 
     # charts配列から個々のグラフを描画
     for chart in graph_data['charts']:
+        
         chart_type = chart['chart_type']
+        print(chart_type)
         if chart_type == 'line':
             plot_line_chart(ax, chart)
         elif chart_type == 'area':
@@ -261,12 +264,22 @@ def plot_curve_chart(ax, chart):
 
     # x_rangeには [start, end, num_points] が含まれていると想定
     x_values = np.linspace(x_range[0], x_range[1], int(x_range[2]))
-    # equation_strを安全に評価（eval）するための準備
-    # ここでは、npを安全に使うために__builtins__は空の辞書にします
-    equation = compile(equation_str, "<string>", "eval")
-    y_values = [eval(equation, {"__builtins__": None, "np": np, "x": x}) for x in x_values]
+    
+    # # equation_strを安全に評価（eval）するための準備
+    # equation = compile(equation_str, "<string>", "eval")
+    # print('y_values before')
+    # y_values = [eval(equation, {"__builtins__": None, "np": np, "x": x}) for x in x_values]
+    # print('y_values after')
+    # ax.plot(x_values, y_values, label=label, color=color, linestyle=linestyle)
 
+    # sympyを使用して安全に数式を評価
+    x = sp.symbols('x')
+    equation = sp.sympify(equation_str)  # 数式を安全に解析
+    y_values = [float(equation.subs(x, val)) for val in x_values]  # 各x値に対するy値を計算
+
+    # グラフをプロット
     ax.plot(x_values, y_values, label=label, color=color, linestyle=linestyle)
+
 
 def plot_heatmap(ax, chart):
     """

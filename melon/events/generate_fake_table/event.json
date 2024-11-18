@@ -1,108 +1,152 @@
 {
   "tables": [
     {
+      "id": "TABLE_PREVIOUS_STUDIES",
       "table_type": "basic",
-      "title": "Vegetable Energy Output",
-      "columns": ["Vegetable", "Energy Output (J)"],
+      "title": "動物の技術適応能力に関する先行研究概要",
+      "columns": ["研究者", "動物種", "技術", "適応レベル"],
       "rows": [
-        ["Carrot", 250],
-        ["Spinach", 220],
-        ["Potato", 300],
-        ["Tomato", 180],
-        ["Broccoli", 280]
+        ["Smith et al.", "チンパンジー", "タッチスクリーン", "高"],
+        ["Johnson & Lee", "イルカ", "音声認識", "中"],
+        ["Garcia et al.", "カラス", "デジタルパズル", "高"],
+        ["Our Study", "伝書鳩", "地図アプリ", "未知"]
       ],
       "style": {
-        "font_size": 12,
-        "header_bg_color": "#dddddd",
-        "header_font_color": "#333333",
-        "cell_bg_color": "#ffffff",
-        "cell_font_color": "#000000",
-        "border_color": "#666666",
-        "border_width": 1,
-        "col_widths": [0.3, 0.7]
+        "header_bg_color": "lightblue",
+        "cell_bg_color": "white",
+        "border_color": "gray",
+        "border_width": 1
       }
     },
     {
-      "table_type": "summary",
-      "title": "Summary of Vegetable Energy Outputs (in Joules)",
-      "statistics": {
-        "Carrot_Energy": {"mean": 250, "median": 250, "std": 20, "min": 210, "max": 290},
-        "Spinach_Energy": {"mean": 220, "median": 220, "std": 15, "min": 200, "max": 240},
-        "Potato_Energy": {"mean": 300, "median": 300, "std": 30, "min": 250, "max": 350}
-      },
-      "style": {
-        "font_size": 10,
-        "header_bg_color": "#222222",
-        "header_font_color": "#ffffff",
-        "cell_bg_color": "#f7f7f7",
-        "cell_font_color": "#111111",
-        "border_color": "#000000",
-        "border_width": 0.5,
-        "col_widths": [0.2, 0.2, 0.2, 0.2, 0.2]
-      }
-    },
-    {
-      "table_type": "regression",
-      "title": "Regression Analysis of Energy Production",
-      "regression_results": {
-        "dependent_variable": "EnergyOutput",
-        "r_squared": 0.72,
-        "adj_r_squared": 0.70,
-        "f_statistic": 12.5,
-        "coefficients": [
-          {"variable": "Intercept", "coefficient": 50.0, "std_error": 5.0, "t_value": 10.0, "p_value": 0.001},
-          {"variable": "Carrot_Intake", "coefficient": 2.5, "std_error": 0.5, "t_value": 5.0, "p_value": 0.01},
-          {"variable": "Spinach_Intake", "coefficient": 3.0, "std_error": 0.8, "t_value": 3.75, "p_value": 0.02}
-        ]
-      },
-      "style": {
-        "font_size": 10,
-        "header_bg_color": "#abcdef",
-        "header_font_color": "#000000",
-        "cell_bg_color": "#ffffff",
-        "cell_font_color": "#0000ff",
-        "border_color": "#000000",
-        "border_width": 1,
-        "col_widths": [0.2, 0.2, 0.2, 0.2, 0.2]
-      }
-    },
-    {
-      "table_type": "correlation",
-      "title": "Correlation Matrix of Vegetable Energy Factors",
-      "variables": ["CarrotMass", "SpinachMass", "PotatoMass"],
-      "correlation_matrix": [
-        [1.0, 0.65, 0.30],
-        [0.65, 1.0, 0.20],
-        [0.30, 0.20, 1.0]
+      "id": "TABLE_SOFTWARE_DETAILS",
+      "table_type": "basic",
+      "title": "実験用地図アプリケーションの技術仕様",
+      "columns": ["項目", "詳細", "特殊機能"],
+      "rows": [
+        ["アプリ名", "PigeonNavi", "鳩最適化インターフェース"],
+        ["画面解像度", "1024x768", "高コントラスト"],
+        ["タッチ感度", "拡大タッチエリア", "誤操作防止"],
+        ["データ追跡", "リアルタイム", "行動パターン記録"]
       ],
       "style": {
-        "font_size": 10,
-        "header_bg_color": "#ccffcc",
-        "header_font_color": "#333333",
-        "cell_bg_color": "#ffffff",
-        "cell_font_color": "#333333",
-        "border_color": "#333333",
-        "border_width": 0.5,
-        "col_widths": [0.33, 0.33, 0.34]
+        "header_bg_color": "lightyellow",
+        "cell_bg_color": "white",
+        "border_color": "black",
+        "border_width": 1
       }
     },
     {
+      "id": "TABLE_INDIVIDUAL_PERFORMANCE",
+      "table_type": "basic",
+      "title": "各鳩の地図アプリ操作パフォーマンス",
+      "columns": ["鳩ID", "学習速度", "操作正確性(%)", "特記事項"],
+      "rows": [
+        ["PG-01", "非常に高速", 95, "最優秀学習者"],
+        ["PG-03", "中速", 85, "安定した performance"],
+        ["PG-07", "低速", 65, "慎重な学習アプローチ"],
+        ["PG-11", "高速", 90, "創造的な操作傾向"]
+      ],
+      "style": {
+        "header_bg_color": "lightgreen",
+        "cell_bg_color": "white",
+        "border_color": "gray",
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_COGNITIVE_FLEXIBILITY",
       "table_type": "comparison",
-      "title": "Comparison of Energy Outputs by Vegetable Type",
+      "title": "鳩の認知的柔軟性評価",
       "comparison_data": {
-        "Carrots": {"mean": 250, "std": 20, "min": 210, "max": 290},
-        "Spinach": {"mean": 220, "std": 15, "min": 200, "max": 240},
-        "Potatoes": {"mean": 300, "std": 30, "min": 250, "max": 350}
+        "単純タスク": { "mean": 85.5, "std": 5.2, "min": 78, "max": 92 },
+        "中程度の複雑さ": { "mean": 75.3, "std": 6.1, "min": 65, "max": 85 },
+        "高度に複雑": { "mean": 62.7, "std": 7.5, "min": 50, "max": 75 }
       },
       "style": {
-        "font_size": 10,
-        "header_bg_color": "#fff0f0",
-        "header_font_color": "#990000",
-        "cell_bg_color": "#ffffff",
-        "cell_font_color": "#000000",
-        "border_color": "#990000",
-        "border_width": 2,
-        "col_widths": [0.25, 0.25, 0.25, 0.25]
+        "header_bg_color": "lightblue",
+        "cell_bg_color": "white",
+        "border_color": "navy",
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_HYPOTHESIS_COMPARISON",
+      "table_type": "basic",
+      "title": "初期仮説と実験結果の比較",
+      "columns": ["仮説", "予測", "実際の結果", "一致度"],
+      "rows": [
+        ["タッチスクリーン操作", "部分的な理解", "完全な操作", "100%"],
+        ["地図アプリ操作", "基本的インターフェース", "高度な機能理解", "90%"],
+        ["ナビゲーション効率", "効率の向上", "大幅な効率改善", "95%"]
+      ],
+      "style": {
+        "header_bg_color": "lightgreen",
+        "cell_bg_color": "white",
+        "border_color": "green",
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_INDIVIDUAL_VARIATIONS",
+      "table_type": "summary",
+      "title": "鳩の個体差に関する統計的サマリー",
+      "statistics": {
+        "学習速度": {
+          "mean": 72.5,
+          "median": 75.0,
+          "std": 15.3,
+          "min": 45.0,
+          "max": 95.0
+        },
+        "操作正確性": {
+          "mean": 80.2,
+          "median": 82.0,
+          "std": 12.7,
+          "min": 55.0,
+          "max": 98.0
+        }
+      },
+      "style": {
+        "header_bg_color": "lightyellow",
+        "cell_bg_color": "white",
+        "border_color": "brown",
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_HYPOTHESIS_SUMMARY",
+      "table_type": "basic",
+      "title": "仮説検証結果の総括",
+      "columns": ["仮説", "検証結果", "信頼性", "コメント"],
+      "rows": [
+        ["タッチスクリーン理解", "完全立証", "95%", "予想を上回る学習能力"],
+        ["地図アプリ操作", "完全立証", "92%", "高度な機能理解"],
+        ["ナビゲーション効率", "完全立証", "90%", "顕著な性能向上"]
+      ],
+      "style": {
+        "header_bg_color": "lightgreen",
+        "cell_bg_color": "white",
+        "border_color": "green",
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_FUTURE_RESEARCH",
+      "table_type": "basic",
+      "title": "今後の研究課題と優先度",
+      "columns": ["研究領域", "優先度", "期待される成果"],
+      "rows": [
+        ["種間比較研究", "高", "デジタル適応能力の普遍性解明"],
+        ["長期追跡研究", "中", "技術学習の持続性評価"],
+        ["野外環境検証", "高", "現実世界での適応能力解明"],
+        ["バイオミミクリー応用", "最高", "革新的な技術デザイン"]
+      ],
+      "style": {
+        "header_bg_color": "lightyellow",
+        "cell_bg_color": "white",
+        "border_color": "orange",
+        "border_width": 1
       }
     }
   ]

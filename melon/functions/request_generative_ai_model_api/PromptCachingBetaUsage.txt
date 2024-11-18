@@ -1,0 +1,9 @@
+PromptCachingBetaUsage(cache_creation_input_tokens=11073, cache_read_input_tokens=0, input_tokens=4, output_tokens=871)
+
+PromptCachingBetaUsage(cache_creation_input_tokens=928, cache_read_input_tokens=11073, input_tokens=4, output_tokens=1379)
+
+PromptCachingBetaUsage(cache_creation_input_tokens=1429, cache_read_input_tokens=12001, input_tokens=4, output_tokens=1421)
+
+PromptCachingBetaUsage(cache_creation_input_tokens=1499, cache_read_input_tokens=13430, input_tokens=4, output_tokens=2010)
+
+PromptCachingBetaUsage(cache_creation_input_tokens=2060, cache_read_input_tokens=14929, input_tokens=4, output_tokens=1629)

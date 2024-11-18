@@ -1,89 +1,203 @@
 {
-    "graphs": [
-      {
-        "figure_width": 10,
-        "figure_height": 6,
-        "title": "Graph 1: 野菜のエネルギー生成量の推移",
-        "xlabel": "時間 (分)",
-        "ylabel": "エネルギー生成量 (ジュール)",
-        "grid": true,
-        "legend": true,
-        "charts": [
-          {
-            "chart_type": "line",
-            "lines": [
-              {
-                "x": [0, 15, 30, 45, 60, 75, 90],
-                "y": [0, 100, 250, 400, 550, 700, 800],
-                "label": "ニンジン由来エネルギー",
-                "color": "orange",
-                "linestyle": "-",
-                "marker": "o"
-              },
-              {
-                "x": [0, 15, 30, 45, 60, 75, 90],
-                "y": [0, 50, 150, 250, 400, 500, 550],
-                "label": "ホウレンソウ由来エネルギー",
-                "color": "green",
-                "linestyle": "--",
-                "marker": "x"
-              },
-              {
-                "x": [0, 15, 30, 45, 60, 75, 90],
-                "y": [0, 80, 200, 300, 420, 620, 750],
-                "label": "ジャガイモ由来エネルギー",
-                "color": "brown",
-                "linestyle": "-.",
-                "marker": "^"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "figure_width": 8,
-        "figure_height": 5,
-        "title": "Graph 2: 野菜別エネルギー効率の比較",
-        "xlabel": "野菜の種類",
-        "ylabel": "エネルギー効率 (ジュール/グラム)",
-        "grid": true,
-        "legend": false,
-        "charts": [
-          {
-            "chart_type": "bar",
-            "categories": ["ニンジン", "ホウレンソウ", "ジャガイモ", "トマト", "ブロッコリー"],
-            "values": [8.5, 7.2, 9.0, 6.8, 10.2],
-            "colors": ["orange", "green", "brown", "red", "darkgreen"]
-          }
-        ]
-      },
-      {
-        "figure_width": 10,
-        "figure_height": 6,
-        "title": "Graph 3: エネルギー変換効率の分布と理論曲線",
-        "xlabel": "エネルギー変換効率 (%)",
-        "ylabel": "頻度",
-        "grid": true,
-        "legend": true,
-        "charts": [
-          {
-            "chart_type": "histogram",
-            "data": [12, 15, 15, 20, 21, 22, 22, 25, 28, 28, 28, 30, 31, 35, 38, 40, 42, 45, 45, 46, 48, 50, 50],
-            "bins": 5,
-            "color": "purple",
-            "alpha": 0.7,
-            "edgecolor": "black"
-          },
-          {
-            "chart_type": "curve",
-            "x_range": [0, 100, 100],
-            "equation": "50 * np.exp(-0.5 * (x - 30)**2 / 50)",
-            "label": "理論的なエネルギー変換分布曲線",
-            "color": "red",
-            "linestyle": "-"
-          }
-        ]
-      }
-    ]
-  }
-  
+  "graphs": [
+    {
+      "id": "GRAPH_COGNITIVE_ABILITIES",
+      "figure_width": 8,
+      "figure_height": 6,
+      "title": "伝書鳩の認知能力分布",
+      "xlabel": "認知能力の種類",
+      "ylabel": "能力スコア",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "bar",
+          "categories": ["空間認識", "記憶能力", "学習速度", "デジタル適応"],
+          "values": [85, 75, 70, 45],
+          "colors": ["blue", "green", "red", "purple"]
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_TRAINING_PROGRESS",
+      "figure_width": 10,
+      "figure_height": 6,
+      "title": "鳩のデジタルマップ学習プログレス",
+      "xlabel": "トレーニングセッション",
+      "ylabel": "習熟度スコア",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "line",
+          "lines": [
+            {
+              "x": [1, 2, 3, 4, 5, 6, 7, 8],
+              "y": [10, 25, 40, 55, 70, 80, 90, 95],
+              "label": "平均習熟度",
+              "color": "blue",
+              "linestyle": "-",
+              "marker": "o"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_APP_PERFORMANCE",
+      "figure_width": 9,
+      "figure_height": 5,
+      "title": "鳩の地図アプリ操作パフォーマンス",
+      "xlabel": "実験セッション",
+      "ylabel": "操作正確性(%)",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "boxplot",
+          "data": [
+            [20, 25, 30, 35, 40],
+            [35, 45, 50, 55, 65],
+            [50, 60, 70, 75, 85],
+            [65, 75, 80, 85, 90]
+          ],
+          "labels": ["セッション1", "セッション2", "セッション3", "セッション4"]
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_TOUCH_ACCURACY",
+      "figure_width": 10,
+      "figure_height": 6,
+      "title": "鳩のタッチスクリーン操作精度",
+      "xlabel": "トレーニング日数",
+      "ylabel": "操作正確性(%)",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "line",
+          "lines": [
+            {
+              "x": [0, 1, 2, 3, 4, 5],
+              "y": [20, 45, 65, 80, 90, 95],
+              "label": "平均操作精度",
+              "color": "green",
+              "linestyle": "-",
+              "marker": "o"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_STATISTICAL_ANALYSIS",
+      "figure_width": 10,
+      "figure_height": 6,
+      "title": "ナビゲーション方法の比較分析",
+      "xlabel": "ナビゲーション方法",
+      "ylabel": "目的地到達率(%)",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "bar",
+          "categories": ["従来法", "デジタル地図支援"],
+          "values": [68, 92],
+          "colors": ["red", "blue"]
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_COGNITIVE_ADAPTATION",
+      "figure_width": 10,
+      "figure_height": 6,
+      "title": "鳩のデジタル技術適応プロセス",
+      "xlabel": "学習ステージ",
+      "ylabel": "適応スコア",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "line",
+          "lines": [
+            {
+              "x": [0, 1, 2, 3, 4, 5],
+              "y": [10, 30, 50, 70, 85, 95],
+              "label": "デジタル技術適応能力",
+              "color": "purple",
+              "linestyle": "-",
+              "marker": "o"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_NAVIGATION_EFFICIENCY",
+      "figure_width": 10,
+      "figure_height": 6,
+      "title": "ナビゲーション方法の効率性比較",
+      "xlabel": "ナビゲーション方法",
+      "ylabel": "目的地到達効率(%)",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "bar",
+          "categories": [
+            "従来の自然ナビゲーション",
+            "デジタル地図支援ナビゲーション"
+          ],
+          "values": [68, 92],
+          "colors": ["orange", "green"]
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_SAMPLE_LIMITATIONS",
+      "figure_width": 10,
+      "figure_height": 6,
+      "title": "サンプルサイズの制限と結果の信頼性",
+      "xlabel": "サンプルサイズ",
+      "ylabel": "結果の信頼性(%)",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "curve",
+          "x_range": [0, 50, 100],
+          "equation": "100 * (1 - exp(-x/10))",
+          "label": "結果の信頼性",
+          "color": "red",
+          "linestyle": "--"
+        }
+      ]
+    },
+    {
+      "id": "GRAPH_TOUCH_PERFORMANCE",
+      "figure_width": 10,
+      "figure_height": 6,
+      "title": "鳩のタッチスクリーン操作パフォーマンス",
+      "xlabel": "トレーニング日数",
+      "ylabel": "操作正確性(%)",
+      "grid": true,
+      "legend": true,
+      "charts": [
+        {
+          "chart_type": "line",
+          "lines": [
+            {
+              "x": [0, 1, 2, 3, 4, 5],
+              "y": [15, 40, 65, 85, 92, 95],
+              "label": "平均操作正確性",
+              "color": "blue",
+              "linestyle": "-",
+              "marker": "o"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
