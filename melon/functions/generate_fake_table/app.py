@@ -7,14 +7,11 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 
+from utilities import configure_matplotlib_fonts
+
 # S3のアップロード先情報
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
 TABLE_DATA_KEY = 'table_data.json'
-
-# Matplotlibで日本語を正しく表示できるようにフォントを設定
-mpl.font_manager.fontManager.addfont('NotoSansJP-VariableFont_wght.ttf')
-mpl.rc('font', family='Noto Sans JP')
-mpl.rcParams['axes.unicode_minus'] = False  # マイナス記号を正しく表示
 
 def lambda_handler(event, context):
     """
@@ -30,10 +27,17 @@ def lambda_handler(event, context):
                 'body': 'No table data provided in the event.'
             }
 
+        # フォント読み込み
+        configure_matplotlib_fonts()
+        
         table_images = []
         for table_data in tables:
+            print(table_data['table_type'])
             image_data = create_table_image(table_data)
-            table_images.append(image_data)
+            table_images.append({
+                'id' : table_data['id'],
+                'image_data' : image_data
+            })
 
         # S3_BUCKETが設定されている場合はS3にアップロード
         if S3_BUCKET:
@@ -62,22 +66,61 @@ def create_table_image(table_data):
     table_type = table_data.get('table_type')
     style = table_data.get('style', {})
 
-    # Matplotlib figureとaxisを作成
-    fig, ax = plt.subplots()
+    # # Matplotlib figureとAxesを作成
+    # fig, ax = plt.subplots(figsize=(12, 3))
     
     # スタイル設定の適用
     if 'font_size' in style:
+        print('font style')
         mpl.rcParams['font.size'] = style['font_size']
 
     if table_type == 'basic':
+        columnns = len(table_data['columns'])
+        rows = len(table_data['rows'])
+        
+        # 表サイズ決定
+        figsize = calculate_figsize(columns=columnns, rows=rows)
+        
+        fig, ax = plt.subplots(figsize=figsize)
+        
         table_object = render_basic_table(ax, table_data, style)
     elif table_type == 'summary':
+        columnns = 5
+        rows = len(table_data['statistics'])
+
+        # 表サイズ決定
+        figsize = calculate_figsize(columns=columnns, rows=rows)
+
+        fig, ax = plt.subplots(figsize=figsize)
         table_object = render_summary_table(ax, table_data, style)
     elif table_type == 'regression':
+        columnns = 5
+        rows = len(table_data['regression_results']['coefficients'])
+
+        # 表サイズ決定
+        figsize = calculate_figsize(columns=columnns, rows=rows)
+
+        fig, ax = plt.subplots(figsize=figsize)
         table_object = render_regression_table(ax, table_data, style)
     elif table_type == 'correlation':
+        # Matplotlib figureとAxesを作成
+        columnns = len(table_data['variables'])
+        rows = len(table_data['correlation_matrix'])
+
+        # 表サイズ決定
+        figsize = calculate_figsize(columns=columnns, rows=rows)
+
+        fig, ax = plt.subplots(figsize=figsize)
         table_object = render_correlation_table(ax, table_data, style)
     elif table_type == 'comparison':
+        # Matplotlib figureとAxesを作成
+        columnns = 4
+        rows = len(table_data['comparison_data'])
+
+        # 表サイズ決定
+        figsize = calculate_figsize(columns=columnns, rows=rows)
+
+        fig, ax = plt.subplots(figsize=figsize)
         table_object = render_comparison_table(ax, table_data, style)
     else:
         raise ValueError(f"Unsupported table_type: {table_type}")
@@ -86,18 +129,45 @@ def create_table_image(table_data):
     apply_table_style(table_object, style)
 
     # タイトルの設定
-    if 'title' in table_data:
-        ax.set_title(table_data['title'])
+    # if 'title' in table_data:
+    #     ax.set_title(table_data['title'])
 
     # 軸と外枠を非表示
     ax.axis('tight')
     ax.axis('off')
+    
+    # レイアウトを自動調整して見切れを防ぐ
+    plt.tight_layout()
 
+    # 余白を減らす
+    # fig.subplots_adjust(left=0.05, right=0.995, top=0.05, bottom=0.995)
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1) #この1行を入れる
+    
+    # tight_layoutでレイアウトを調整
+    fig.tight_layout(pad=0)
+    
     # 画像をバイナリデータとして保存し、Base64エンコード
     buf = io.BytesIO()
-    fig.savefig(buf, format='png')
+    fig.savefig(buf, format='png', bbox_inches="tight")
     plt.close(fig)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
+
+def calculate_figsize(columns, rows):
+    """
+    列数と行数に基づいて適切なfigsizeを計算
+    """
+    # ベースの倍率（1列あたり2.0インチ、1行あたり0.3インチ）
+    base_col_width = 2.5
+    base_row_height = 0.4
+
+    # 計算結果
+    width = max(columns * base_col_width, 5)  # 最低5インチ確保
+    height = max(rows * base_row_height, 2)  # 最低3インチ確保
+
+    print('--- サイズ ---')
+    print(width, height)
+
+    return (width, height)
 
 def render_basic_table(ax, table_data, style):
     """
@@ -118,6 +188,7 @@ def render_basic_table(ax, table_data, style):
     
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, colLabels=columns, loc='center', colWidths=col_widths)
+
     return table_object
 
 def render_summary_table(ax, table_data, style):
@@ -142,6 +213,7 @@ def render_summary_table(ax, table_data, style):
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, rowLabels=variables, colLabels=stats_labels, loc='center', colWidths=col_widths)
+
     return table_object
 
 def render_regression_table(ax, table_data, style):
@@ -164,6 +236,7 @@ def render_regression_table(ax, table_data, style):
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, colLabels=header, loc='center', colWidths=col_widths)
+
     return table_object
 
 def render_correlation_table(ax, table_data, style):
@@ -185,6 +258,7 @@ def render_correlation_table(ax, table_data, style):
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, rowLabels=variables, colLabels=variables, loc='center', colWidths=col_widths)
+
     return table_object
 
 def render_comparison_table(ax, table_data, style):
@@ -208,6 +282,7 @@ def render_comparison_table(ax, table_data, style):
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, rowLabels=categories, colLabels=stats_labels, loc='center', colWidths=col_widths)
+
     return table_object
 
 def apply_table_style(table_object, style):
@@ -248,8 +323,8 @@ def upload_to_s3(images):
     Base64エンコードされた画像データをS3にアップロードするヘルパー関数
     """
     s3 = boto3.resource('s3')
-    for i, image_data in enumerate(images):
+    for image in images:
         # 一意のキーを作成（例: table_0.png）
-        key = f"{TABLE_DATA_KEY.split('.')[0]}_{i}.png"
-        image_binary = base64.b64decode(image_data)
+        key = f"tables/{image['id']}.png"
+        image_binary = base64.b64decode(image['image_data'])
         s3.Object(S3_BUCKET, key).put(Body=image_binary, ContentType='image/png')

@@ -148,6 +148,103 @@
         "border_color": "orange",
         "border_width": 1
       }
+    },
+    {
+      "id": "TABLE_ABC123",
+      "table_type": "regression",
+      "title": "回帰分析結果",
+      "regression_results": {
+        "dependent_variable": "売上",
+        "r_squared": 0.85,
+        "adj_r_squared": 0.83,
+        "f_statistic": 25.3,
+        "coefficients": [
+          {
+            "variable": "広告費",
+            "coefficient": 0.5,
+            "std_error": 0.1,
+            "t_value": 5.0,
+            "p_value": 0.001
+          },
+          {
+            "variable": "店舗数",
+            "coefficient": 1.2,
+            "std_error": 0.3,
+            "t_value": 4.0,
+            "p_value": 0.002
+          },
+          {
+            "variable": "季節指数",
+            "coefficient": -0.8,
+            "std_error": 0.2,
+            "t_value": -4.0,
+            "p_value": 0.003
+          }
+        ]
+      },
+      "style": {
+        "header_bg_color": "#D3D3D3",
+        "header_font_color": "#000000",
+        "cell_bg_color": "#FFFFFF",
+        "cell_font_color": "#000000",
+        "border_color": "#CCCCCC",
+        "border_width": 1.0,
+        "col_widths": [0.2, 0.2, 0.2, 0.2, 0.2]
+      }
+    },
+    {
+      "id": "TABLE_DEF456",
+      "table_type": "correlation",
+      "title": "相関行列",
+      "variables": ["広告費", "店舗数", "売上"],
+      "correlation_matrix": [
+        [1.0, 0.8, 0.9],
+        [0.8, 1.0, 0.7],
+        [0.9, 0.7, 1.0]
+      ],
+      "style": {
+        "header_bg_color": "#EFEFEF",
+        "header_font_color": "#000000",
+        "cell_bg_color": "#FFFFFF",
+        "cell_font_color": "#333333",
+        "border_color": "#999999",
+        "border_width": 1,
+        "col_widths": [0.33, 0.33, 0.33]
+      }
+    },
+    {
+      "id": "TABLE_GHI789",
+      "table_type": "comparison",
+      "title": "カテゴリ別データ比較",
+      "comparison_data": {
+        "カテゴリA": {
+          "mean": 50.0,
+          "std": 10.0,
+          "min": 30.0,
+          "max": 70.0
+        },
+        "カテゴリB": {
+          "mean": 60.0,
+          "std": 15.0,
+          "min": 40.0,
+          "max": 90.0
+        },
+        "カテゴリC": {
+          "mean": 55.0,
+          "std": 12.0,
+          "min": 35.0,
+          "max": 80.0
+        }
+      },
+      "style": {
+        "header_bg_color": "#CFCFCF",
+        "header_font_color": "#FFFFFF",
+        "cell_bg_color": "#F9F9F9",
+        "cell_font_color": "#000000",
+        "border_color": "#333333",
+        "border_width": 1,
+        "col_widths": [0.25, 0.25, 0.25, 0.25]
+      }
     }
   ]
 }

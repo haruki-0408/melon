@@ -44,6 +44,8 @@
           "charts": {
             "type": "array",
             "description": "表示する複数のグラフの設定の配列。",
+            "minItems": 1,
+            "maxItems": 2,
             "items": {
               "oneOf": [
                 {

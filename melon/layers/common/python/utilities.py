@@ -1,9 +1,23 @@
 import json
 import boto3
 import re
+import matplotlib as mpl
 from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
 from string import Template
+
+# フォントの読み込みと設定関数
+def configure_matplotlib_fonts():
+    """
+    Matplotlibで日本語を正しく表示するためのフォント設定を行う。
+    使用フォント : IPAexGothic
+    """
+
+    FONT_PATH = '/opt/python/fonts/ipaexg.ttf'
+    
+    mpl.font_manager.fontManager.addfont(FONT_PATH)  # 適切なフォントファイルを指定
+    mpl.rc('font', family='IPAexGothic')
+    mpl.rcParams['axes.unicode_minus'] = False  # マイナス記号の表示対応
 
 # TemplateからgenresファイルのS3のパスを生成
 def generate_s3_prefix(datastore_id, file_type, year, month, day, filename):

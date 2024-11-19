@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import io
 import os
 import boto3
@@ -9,15 +8,11 @@ import json
 import sympy as sp
 from matplotlib.patches import Ellipse
 
+from utilities import configure_matplotlib_fonts
+
 # S3のアップロード先情報
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
 GRAPH_DATA_KEY = 'graph_data.json'
-
-# Matplotlibで日本語を正しく表示できるようにフォントを設定
-# 例としてNoto Sans JPを使用します
-mpl.font_manager.fontManager.addfont('NotoSansJP-VariableFont_wght.ttf')
-mpl.rc('font', family='Noto Sans JP')
-mpl.rcParams['axes.unicode_minus'] = False  # マイナス記号を正しく表示
 
 def lambda_handler(event, context):
     """
@@ -34,6 +29,9 @@ def lambda_handler(event, context):
                 'body': 'No graph data provided in the event.'
             }
 
+        # フォント読み込み
+        configure_matplotlib_fonts()
+        
         # グラフ画像を生成
         graph_images = []
         for graph_data in graphs:
@@ -92,7 +90,6 @@ def create_graph_image(graph_data):
         elif chart_type == 'histogram':
             plot_histogram(ax, chart)
         elif chart_type == 'pie':
-            # 円グラフは別軸を使用する必要があるため、特別に処理します
             plot_pie_chart(fig, chart)
         elif chart_type == 'boxplot':
             plot_boxplot(ax, chart)
@@ -151,7 +148,7 @@ def plot_bar_chart(ax, chart):
     categories = chart['categories']
     values = chart['values']
     colors = chart['colors']
-    ax.bar(categories, values, color=colors)
+    ax.bar(categories, values, color=colors, labels=categories)
     # データラベル表示（オプションで追加可）
     for index, value in enumerate(values):
         ax.text(index, value, str(value), ha='center', va='bottom')
