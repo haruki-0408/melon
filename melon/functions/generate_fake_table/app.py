@@ -6,7 +6,6 @@ import base64
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
-
 from utilities import configure_matplotlib_fonts
 
 # S3のアップロード先情報
@@ -32,7 +31,8 @@ def lambda_handler(event, context):
         
         table_images = []
         for table_data in tables:
-            print(table_data['table_type'])
+            print(f"--- [表] {table_data['id']} 処理中... ---")
+            print(f"  >  表タイプ: {table_data['table_type']}")
             image_data = create_table_image(table_data)
             table_images.append({
                 'id' : table_data['id'],
@@ -70,15 +70,15 @@ def create_table_image(table_data):
     # fig, ax = plt.subplots(figsize=(12, 3))
     
     # スタイル設定の適用
-    if 'font_size' in style:
-        print('font style')
-        mpl.rcParams['font.size'] = style['font_size']
+    # if 'font_size' in style:
+    #     mpl.rcParams['font.size'] = style['font_size']
+    mpl.rcParams['font.size'] = 14
 
     if table_type == 'basic':
         columnns = len(table_data['columns'])
         rows = len(table_data['rows'])
         
-        # 表サイズ決定
+        # 表を描画するスクリーンサイズ決定
         figsize = calculate_figsize(columns=columnns, rows=rows)
         
         fig, ax = plt.subplots(figsize=figsize)
@@ -88,7 +88,7 @@ def create_table_image(table_data):
         columnns = 5
         rows = len(table_data['statistics'])
 
-        # 表サイズ決定
+        # 表を描画するスクリーンサイズ決定
         figsize = calculate_figsize(columns=columnns, rows=rows)
 
         fig, ax = plt.subplots(figsize=figsize)
@@ -97,27 +97,25 @@ def create_table_image(table_data):
         columnns = 5
         rows = len(table_data['regression_results']['coefficients'])
 
-        # 表サイズ決定
+        # 表を描画するスクリーンサイズ決定
         figsize = calculate_figsize(columns=columnns, rows=rows)
 
         fig, ax = plt.subplots(figsize=figsize)
         table_object = render_regression_table(ax, table_data, style)
     elif table_type == 'correlation':
-        # Matplotlib figureとAxesを作成
         columnns = len(table_data['variables'])
         rows = len(table_data['correlation_matrix'])
 
-        # 表サイズ決定
+        # 表を描画するスクリーンサイズ決定
         figsize = calculate_figsize(columns=columnns, rows=rows)
 
         fig, ax = plt.subplots(figsize=figsize)
         table_object = render_correlation_table(ax, table_data, style)
     elif table_type == 'comparison':
-        # Matplotlib figureとAxesを作成
         columnns = 4
         rows = len(table_data['comparison_data'])
 
-        # 表サイズ決定
+        # 表を描画するスクリーンサイズ決定
         figsize = calculate_figsize(columns=columnns, rows=rows)
 
         fig, ax = plt.subplots(figsize=figsize)
@@ -158,14 +156,13 @@ def calculate_figsize(columns, rows):
     """
     # ベースの倍率（1列あたり2.0インチ、1行あたり0.3インチ）
     base_col_width = 2.5
-    base_row_height = 0.4
+    base_row_height = 0.2
 
     # 計算結果
-    width = max(columns * base_col_width, 5)  # 最低5インチ確保
-    height = max(rows * base_row_height, 2)  # 最低3インチ確保
+    width = max(columns * base_col_width, 10.0)  # 最低10インチ確保
+    height = max(rows * base_row_height, 2.5)  # 最低2.5インチ確保
 
-    print('--- サイズ ---')
-    print(width, height)
+    print(f"  >  サイズ(インチ): width {width}, height {height}")
 
     return (width, height)
 
@@ -182,9 +179,9 @@ def render_basic_table(ax, table_data, style):
         cell_text.append([str(item) for item in row])
 
     # 列幅の設定
-    col_widths = style.get('col_widths')
-    if col_widths is None:
-        col_widths = [1/len(columns)] * len(columns)
+    # col_widths = style.get('col_widths')
+    # if col_widths is None:
+    col_widths = [1/len(columns)] * len(columns)
     
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, colLabels=columns, loc='center', colWidths=col_widths)
@@ -207,9 +204,9 @@ def render_summary_table(ax, table_data, style):
         cell_text.append(row)
 
     # 列幅の設定
-    col_widths = style.get('col_widths')
-    if col_widths is None:
-        col_widths = [1/len(stats_labels)] * len(stats_labels)
+    # col_widths = style.get('col_widths')
+    # if col_widths is None:
+    col_widths = [1/len(stats_labels)] * len(stats_labels)
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, rowLabels=variables, colLabels=stats_labels, loc='center', colWidths=col_widths)
@@ -230,9 +227,9 @@ def render_regression_table(ax, table_data, style):
         cell_text.append([coef['variable'], coef['coefficient'], coef['std_error'], coef['t_value'], coef['p_value']])
 
     # 列幅の設定
-    col_widths = style.get('col_widths')
-    if col_widths is None:
-        col_widths = [1/len(header)] * len(header)
+    # col_widths = style.get('col_widths')
+    # if col_widths is None:
+    col_widths = [1/len(header)] * len(header)
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, colLabels=header, loc='center', colWidths=col_widths)
@@ -252,9 +249,9 @@ def render_correlation_table(ax, table_data, style):
         cell_text.append([f"{val:.3f}" for val in row])
 
     # 列幅の設定
-    col_widths = style.get('col_widths')
-    if col_widths is None:
-        col_widths = [1/len(variables)] * len(variables)
+    # col_widths = style.get('col_widths')
+    # if col_widths is None:
+    col_widths = [1/len(variables)] * len(variables)
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, rowLabels=variables, colLabels=variables, loc='center', colWidths=col_widths)
@@ -276,9 +273,9 @@ def render_comparison_table(ax, table_data, style):
         cell_text.append(row)
 
     # 列幅の設定
-    col_widths = style.get('col_widths')
-    if col_widths is None:
-        col_widths = [1/len(stats_labels)] * len(stats_labels)
+    # col_widths = style.get('col_widths')
+    # if col_widths is None:
+    col_widths = [1/len(stats_labels)] * len(stats_labels)
 
     # テーブルの描画
     table_object = ax.table(cellText=cell_text, rowLabels=categories, colLabels=stats_labels, loc='center', colWidths=col_widths)

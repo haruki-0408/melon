@@ -7,7 +7,6 @@ import numpy as np
 import json
 import sympy as sp
 from matplotlib.patches import Ellipse
-
 from utilities import configure_matplotlib_fonts
 
 # S3のアップロード先情報
@@ -35,8 +34,13 @@ def lambda_handler(event, context):
         # グラフ画像を生成
         graph_images = []
         for graph_data in graphs:
+            print(f"--- [グラフ] {graph_data['id']} 処理中... ---")
             image_data = create_graph_image(graph_data)
-            graph_images.append(image_data)
+            
+            graph_images.append({
+                'id' : graph_data['id'],
+                'image_data' : image_data
+            })
 
         # S3_BUCKETが設定されている場合はS3にアップロード
         if S3_BUCKET:
@@ -76,9 +80,8 @@ def create_graph_image(graph_data):
 
     # charts配列から個々のグラフを描画
     for chart in graph_data['charts']:
-        
         chart_type = chart['chart_type']
-        print(chart_type)
+        print(f"  >  グラフタイプ: {chart_type}")
         if chart_type == 'line':
             plot_line_chart(ax, chart)
         elif chart_type == 'area':
@@ -148,7 +151,7 @@ def plot_bar_chart(ax, chart):
     categories = chart['categories']
     values = chart['values']
     colors = chart['colors']
-    ax.bar(categories, values, color=colors, labels=categories)
+    ax.bar(categories, values, color=colors )
     # データラベル表示（オプションで追加可）
     for index, value in enumerate(values):
         ax.text(index, value, str(value), ha='center', va='bottom')
@@ -291,13 +294,13 @@ def plot_heatmap(ax, chart):
     cbar = plt.colorbar(heatmap, ax=ax)
     cbar.set_label(colorbar_label)
 
-def upload_to_s3(images):
+def upload_to_s3(graph_images):
     """
     Base64エンコードされた画像データをS3にアップロードするヘルパー関数
     """
     s3 = boto3.resource('s3')
-    for i, image_data in enumerate(images):
+    for graph in graph_images:
         # 一意のキーを作成（例: graph_0.png）
-        key = f"{GRAPH_DATA_KEY.split('.')[0]}_{i}.png"
-        image_binary = base64.b64decode(image_data)
+        key = f"graphs/{graph['id']}.png"
+        image_binary = base64.b64decode(graph['image_data'])
         s3.Object(S3_BUCKET, key).put(Body=image_binary, ContentType='image/png')

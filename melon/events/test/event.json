@@ -1,16 +1,4 @@
 {
-  "metadata_keys": [
-    "equation_0_metadata.json", 
-    "equation_1_metadata.json", 
-    "equation_2_metadata.json",
-    "equation_3_metadata.json",
-    "equation_4_metadata.json",
-    "equation_5_metadata.json",
-    "equation_6_metadata.json",
-    "equation_7_metadata.json",
-    "equation_8_metadata.json",
-    "equation_9_metadata.json",
-    "equation_10_metadata.json"
-  ],
+  "metadata_keys": ["formulas/FORMULA_NAVIGATION_metadata.json", "formulas/FORMULA_SUCCESS_RATE_metadata.json", "formulas/FORMULA_NAVIGATION_PERFORMANCE_metadata.json", "formulas/FORMULA_COGNITIVE_INTERPRETATION_metadata.json", "formulas/FORMULA_ERROR_ANALYSIS_metadata.json", "formulas/FORMULA_HYPOTHESIS_VERIFICATION_metadata.json"],
   "output_pdf_key": "formulas.pdf"
 }

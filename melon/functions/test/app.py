@@ -37,13 +37,13 @@ def lambda_handler(event, context):
     try:
         # フォントのパスを設定
         font_name = 'ipaexg'  # フォント名
-        font_path = os.path.join(os.path.dirname(__file__), 'ipaexg.ttf')
+        FONT_PATH = '/opt/python/fonts/ipaexm.ttf'
 
         # ReportLabにフォントを登録
-        pdfmetrics.registerFont(TTFont(font_name, font_path))
+        pdfmetrics.registerFont(TTFont(font_name, FONT_PATH))
 
         # Matplotlibにフォントを登録
-        font_prop = font_manager.FontProperties(fname=font_path)
+        font_prop = font_manager.FontProperties(fname=FONT_PATH)
         plt.rcParams['font.family'] = font_prop.get_name()
         plt.rcParams['font.sans-serif'] = [font_prop.get_name()]
         plt.rcParams['mathtext.fontset'] = 'custom'

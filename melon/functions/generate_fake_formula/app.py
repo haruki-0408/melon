@@ -27,7 +27,9 @@ def lambda_handler(event, context):
         }
 
     try:
-        for idx, eq in enumerate(formulas):
+        metadata_keys = []
+        for eq in formulas:
+            id = eq.get('id')
             latex_code = eq.get('latex_code')
             description = eq.get('description', '')
             parameters = eq.get('parameters', [])
@@ -35,7 +37,10 @@ def lambda_handler(event, context):
             # 入力の検証・サニタイズが必要
 
             # 数式のメタデータをS3に保存
-            metadata_key = f'equation_{idx}_metadata.json'
+            metadata_key = f'formulas/{id}_metadata.json'
+
+            metadata_keys.append(metadata_key)
+            
             metadata = {
                 'description': description,
                 'parameters': parameters,
@@ -50,7 +55,7 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': 'formulas saved to S3'})
+            'body': metadata_keys
         }
 
     except Exception as e:

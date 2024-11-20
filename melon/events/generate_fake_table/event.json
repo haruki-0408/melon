@@ -1,249 +1,144 @@
 {
   "tables": [
     {
-      "id": "TABLE_PREVIOUS_STUDIES",
-      "table_type": "basic",
-      "title": "動物の技術適応能力に関する先行研究概要",
-      "columns": ["研究者", "動物種", "技術", "適応レベル"],
-      "rows": [
-        ["Smith et al.", "チンパンジー", "タッチスクリーン", "高"],
-        ["Johnson & Lee", "イルカ", "音声認識", "中"],
-        ["Garcia et al.", "カラス", "デジタルパズル", "高"],
-        ["Our Study", "伝書鳩", "地図アプリ", "未知"]
-      ],
-      "style": {
-        "header_bg_color": "lightblue",
-        "cell_bg_color": "white",
-        "border_color": "gray",
-        "border_width": 1
-      }
-    },
-    {
-      "id": "TABLE_SOFTWARE_DETAILS",
-      "table_type": "basic",
-      "title": "実験用地図アプリケーションの技術仕様",
-      "columns": ["項目", "詳細", "特殊機能"],
-      "rows": [
-        ["アプリ名", "PigeonNavi", "鳩最適化インターフェース"],
-        ["画面解像度", "1024x768", "高コントラスト"],
-        ["タッチ感度", "拡大タッチエリア", "誤操作防止"],
-        ["データ追跡", "リアルタイム", "行動パターン記録"]
-      ],
-      "style": {
-        "header_bg_color": "lightyellow",
-        "cell_bg_color": "white",
-        "border_color": "black",
-        "border_width": 1
-      }
-    },
-    {
-      "id": "TABLE_INDIVIDUAL_PERFORMANCE",
-      "table_type": "basic",
-      "title": "各鳩の地図アプリ操作パフォーマンス",
-      "columns": ["鳩ID", "学習速度", "操作正確性(%)", "特記事項"],
-      "rows": [
-        ["PG-01", "非常に高速", 95, "最優秀学習者"],
-        ["PG-03", "中速", 85, "安定した performance"],
-        ["PG-07", "低速", 65, "慎重な学習アプローチ"],
-        ["PG-11", "高速", 90, "創造的な操作傾向"]
-      ],
-      "style": {
-        "header_bg_color": "lightgreen",
-        "cell_bg_color": "white",
-        "border_color": "gray",
-        "border_width": 1
-      }
-    },
-    {
-      "id": "TABLE_COGNITIVE_FLEXIBILITY",
+      "id": "TABLE_COGNITIVE_COMPARISON",
       "table_type": "comparison",
-      "title": "鳩の認知的柔軟性評価",
+      "title": "伝書鳩の認知能力比較：伝統的方法 vs デジタル技術",
       "comparison_data": {
-        "単純タスク": { "mean": 85.5, "std": 5.2, "min": 78, "max": 92 },
-        "中程度の複雑さ": { "mean": 75.3, "std": 6.1, "min": 65, "max": 85 },
-        "高度に複雑": { "mean": 62.7, "std": 7.5, "min": 50, "max": 75 }
+        "磁場ナビゲーション": {
+          "mean": 7.5,
+          "std": 1.2,
+          "min": 6.0,
+          "max": 9.0
+        },
+        "デジタル地図ナビゲーション": {
+          "mean": 6.8,
+          "std": 1.5,
+          "min": 5.0,
+          "max": 8.5
+        }
       },
       "style": {
-        "header_bg_color": "lightblue",
+        "font_size": 10,
+        "header_bg_color": "#A0D8EF",
+        "header_font_color": "black",
         "cell_bg_color": "white",
-        "border_color": "navy",
-        "border_width": 1
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1,
+        "col_widths": [100, 50, 50, 50, 50]
+      }
+    },
+    {
+      "id": "TABLE_RESEARCH_TOOLS",
+      "table_type": "basic",
+      "title": "研究に使用した主要ツールと技術",
+      "columns": ["カテゴリ", "詳細", "仕様"],
+      "rows": [
+        [
+          "ハードウェア",
+          "カスタマイズiPad Pro",
+          "10インチ、高感度タッチスクリーン"
+        ],
+        ["GPS追跡", "超小型記録デバイス", "重量3g、精度±2m"],
+        ["ソフトウェア", "鳩用地図アプリ", "カスタムUI、報酬システム統合"],
+        ["分析ツール", "機械学習アルゴリズム", "行動パターン自動検出"]
+      ],
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "#90EE90",
+        "header_font_color": "black",
+        "cell_bg_color": "white",
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1,
+        "col_widths": [80, 100, 100]
+      }
+    },
+    {
+      "id": "TABLE_PERFORMANCE_METRICS",
+      "table_type": "summary",
+      "title": "実験群別パフォーマンス指標の統計的概要",
+      "statistics": {
+        "学習速度": {
+          "mean": 6.7,
+          "median": 6.5,
+          "std": 1.2,
+          "min": 4.0,
+          "max": 8.5
+        },
+        "タッチスクリーン正確性": {
+          "mean": 7.2,
+          "median": 7.0,
+          "std": 1.1,
+          "min": 5.0,
+          "max": 9.0
+        },
+        "目的地特定一貫性": {
+          "mean": 6.9,
+          "median": 7.0,
+          "std": 1.3,
+          "min": 4.5,
+          "max": 8.5
+        }
+      },
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "#FFB6C1",
+        "header_font_color": "black",
+        "cell_bg_color": "white",
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1,
+        "col_widths": [100, 50, 50, 50, 50]
       }
     },
     {
       "id": "TABLE_HYPOTHESIS_COMPARISON",
       "table_type": "basic",
-      "title": "初期仮説と実験結果の比較",
-      "columns": ["仮説", "予測", "実際の結果", "一致度"],
+      "title": "仮説と実験結果の比較分析",
+      "columns": ["仮説", "予測", "実際の結果", "一致/相違"],
       "rows": [
-        ["タッチスクリーン操作", "部分的な理解", "完全な操作", "100%"],
-        ["地図アプリ操作", "基本的インターフェース", "高度な機能理解", "90%"],
-        ["ナビゲーション効率", "効率の向上", "大幅な効率改善", "95%"]
+        ["地図アプリ理解", "部分的理解", "高度な機能理解", "部分的一致"],
+        ["学習速度", "低速", "非常に高速", "不一致"],
+        ["タッチスクリーン操作", "基本的操作", "高度な操作", "不一致"],
+        ["目的地特定能力", "限定的", "驚くほど正確", "不一致"]
       ],
       "style": {
-        "header_bg_color": "lightgreen",
+        "font_size": 10,
+        "header_bg_color": "#98FB98",
+        "header_font_color": "black",
         "cell_bg_color": "white",
-        "border_color": "green",
-        "border_width": 1
-      }
-    },
-    {
-      "id": "TABLE_INDIVIDUAL_VARIATIONS",
-      "table_type": "summary",
-      "title": "鳩の個体差に関する統計的サマリー",
-      "statistics": {
-        "学習速度": {
-          "mean": 72.5,
-          "median": 75.0,
-          "std": 15.3,
-          "min": 45.0,
-          "max": 95.0
-        },
-        "操作正確性": {
-          "mean": 80.2,
-          "median": 82.0,
-          "std": 12.7,
-          "min": 55.0,
-          "max": 98.0
-        }
-      },
-      "style": {
-        "header_bg_color": "lightyellow",
-        "cell_bg_color": "white",
-        "border_color": "brown",
-        "border_width": 1
-      }
-    },
-    {
-      "id": "TABLE_HYPOTHESIS_SUMMARY",
-      "table_type": "basic",
-      "title": "仮説検証結果の総括",
-      "columns": ["仮説", "検証結果", "信頼性", "コメント"],
-      "rows": [
-        ["タッチスクリーン理解", "完全立証", "95%", "予想を上回る学習能力"],
-        ["地図アプリ操作", "完全立証", "92%", "高度な機能理解"],
-        ["ナビゲーション効率", "完全立証", "90%", "顕著な性能向上"]
-      ],
-      "style": {
-        "header_bg_color": "lightgreen",
-        "cell_bg_color": "white",
-        "border_color": "green",
-        "border_width": 1
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1,
+        "col_widths": [100, 80, 80, 80]
       }
     },
     {
       "id": "TABLE_FUTURE_RESEARCH",
       "table_type": "basic",
-      "title": "今後の研究課題と優先度",
-      "columns": ["研究領域", "優先度", "期待される成果"],
+      "title": "推奨される今後の研究方向性",
+      "columns": ["研究領域", "主要目的", "期待される成果"],
       "rows": [
-        ["種間比較研究", "高", "デジタル適応能力の普遍性解明"],
-        ["長期追跡研究", "中", "技術学習の持続性評価"],
-        ["野外環境検証", "高", "現実世界での適応能力解明"],
-        ["バイオミミクリー応用", "最高", "革新的な技術デザイン"]
+        [
+          "種間比較研究",
+          "異なる鳥種の認知能力検証",
+          "テクノロジー適応の普遍性解明"
+        ],
+        ["神経科学的アプローチ", "認知メカニズムの解明", "脳の可塑性理解"],
+        ["長期追跡研究", "技術適応の発達過程", "世代間の認知変化"],
+        ["複合的インターフェース研究", "より複雑な技術環境", "認知限界の探求"]
       ],
       "style": {
-        "header_bg_color": "lightyellow",
+        "font_size": 10,
+        "header_bg_color": "#87CEFA",
+        "header_font_color": "black",
         "cell_bg_color": "white",
-        "border_color": "orange",
-        "border_width": 1
-      }
-    },
-    {
-      "id": "TABLE_ABC123",
-      "table_type": "regression",
-      "title": "回帰分析結果",
-      "regression_results": {
-        "dependent_variable": "売上",
-        "r_squared": 0.85,
-        "adj_r_squared": 0.83,
-        "f_statistic": 25.3,
-        "coefficients": [
-          {
-            "variable": "広告費",
-            "coefficient": 0.5,
-            "std_error": 0.1,
-            "t_value": 5.0,
-            "p_value": 0.001
-          },
-          {
-            "variable": "店舗数",
-            "coefficient": 1.2,
-            "std_error": 0.3,
-            "t_value": 4.0,
-            "p_value": 0.002
-          },
-          {
-            "variable": "季節指数",
-            "coefficient": -0.8,
-            "std_error": 0.2,
-            "t_value": -4.0,
-            "p_value": 0.003
-          }
-        ]
-      },
-      "style": {
-        "header_bg_color": "#D3D3D3",
-        "header_font_color": "#000000",
-        "cell_bg_color": "#FFFFFF",
-        "cell_font_color": "#000000",
-        "border_color": "#CCCCCC",
-        "border_width": 1.0,
-        "col_widths": [0.2, 0.2, 0.2, 0.2, 0.2]
-      }
-    },
-    {
-      "id": "TABLE_DEF456",
-      "table_type": "correlation",
-      "title": "相関行列",
-      "variables": ["広告費", "店舗数", "売上"],
-      "correlation_matrix": [
-        [1.0, 0.8, 0.9],
-        [0.8, 1.0, 0.7],
-        [0.9, 0.7, 1.0]
-      ],
-      "style": {
-        "header_bg_color": "#EFEFEF",
-        "header_font_color": "#000000",
-        "cell_bg_color": "#FFFFFF",
-        "cell_font_color": "#333333",
-        "border_color": "#999999",
+        "cell_font_color": "black",
+        "border_color": "gray",
         "border_width": 1,
-        "col_widths": [0.33, 0.33, 0.33]
-      }
-    },
-    {
-      "id": "TABLE_GHI789",
-      "table_type": "comparison",
-      "title": "カテゴリ別データ比較",
-      "comparison_data": {
-        "カテゴリA": {
-          "mean": 50.0,
-          "std": 10.0,
-          "min": 30.0,
-          "max": 70.0
-        },
-        "カテゴリB": {
-          "mean": 60.0,
-          "std": 15.0,
-          "min": 40.0,
-          "max": 90.0
-        },
-        "カテゴリC": {
-          "mean": 55.0,
-          "std": 12.0,
-          "min": 35.0,
-          "max": 80.0
-        }
-      },
-      "style": {
-        "header_bg_color": "#CFCFCF",
-        "header_font_color": "#FFFFFF",
-        "cell_bg_color": "#F9F9F9",
-        "cell_font_color": "#000000",
-        "border_color": "#333333",
-        "border_width": 1,
-        "col_widths": [0.25, 0.25, 0.25, 0.25]
+        "col_widths": [100, 100, 100]
       }
     }
   ]

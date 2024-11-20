@@ -1,5 +1,5 @@
 {
     "python.analysis.extraPaths": [
-        "./melon/layers/common/python"
+        "./melon/layers/common/"
     ]
 }

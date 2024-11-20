@@ -3,7 +3,7 @@ import os
 import boto3
 from aws_lambda_powertools.utilities.validation import validator
 from aws_lambda_powertools.utilities.validation import SchemaValidationError
-from utilities import get_dynamo_item, get_logger, upload_to_s3
+from melon.layers.common.utilities import get_dynamo_item, get_logger, upload_to_s3
 import event_schemas as event_schemas
 
 # スキーマファイルのパスを設定
@@ -71,6 +71,7 @@ def lambda_handler(event, context):
         # )
 
         prompts = {
+            "title" : title,
             "system_prompt" : system_prompt,
             "section_formats" : section_formats
         } 

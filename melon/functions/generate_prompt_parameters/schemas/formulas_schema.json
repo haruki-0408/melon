@@ -29,11 +29,11 @@
                 "properties": {
                   "symbol": {
                     "type": "string",
-                    "description": "数式内で使用されるシンボル"
+                    "description": "数式内で使用されるシンボル　日本語は絶対煮含めないこと"
                   },
                   "description": {
                     "type": "string",
-                    "description": "パラメータの詳細な説明"
+                    "description": "パラメータの詳細な説明(日本語)"
                   }
                 },
                 "required": ["symbol", "description"]
