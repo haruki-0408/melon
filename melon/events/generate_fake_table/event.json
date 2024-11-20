@@ -1,144 +1,222 @@
 {
   "tables": [
     {
-      "id": "TABLE_COGNITIVE_COMPARISON",
+      "id": "TABLE_THEORETICAL_BACKGROUND",
       "table_type": "comparison",
-      "title": "伝書鳩の認知能力比較：伝統的方法 vs デジタル技術",
+      "title": "伝書鳩の能力と人工的ナビゲーションシステムの比較",
       "comparison_data": {
-        "磁場ナビゲーション": {
-          "mean": 7.5,
-          "std": 1.2,
-          "min": 6.0,
-          "max": 9.0
+        "生物学的ナビゲーション": {
+          "mean": 0.7,
+          "std": 0.2,
+          "min": 0.4,
+          "max": 1.0
         },
-        "デジタル地図ナビゲーション": {
-          "mean": 6.8,
-          "std": 1.5,
-          "min": 5.0,
-          "max": 8.5
+        "デジタル地図アプリ": {
+          "mean": 0.9,
+          "std": 0.1,
+          "min": 0.7,
+          "max": 1.1
         }
       },
       "style": {
         "font_size": 10,
-        "header_bg_color": "#A0D8EF",
+        "header_bg_color": "lightblue",
         "header_font_color": "black",
         "cell_bg_color": "white",
         "cell_font_color": "black",
         "border_color": "gray",
-        "border_width": 1,
-        "col_widths": [100, 50, 50, 50, 50]
+        "border_width": 1
       }
     },
     {
-      "id": "TABLE_RESEARCH_TOOLS",
+      "id": "TABLE_EXPERIMENTAL_CONDITIONS",
       "table_type": "basic",
-      "title": "研究に使用した主要ツールと技術",
-      "columns": ["カテゴリ", "詳細", "仕様"],
+      "title": "実験環境と条件詳細",
+      "columns": ["環境タイプ", "距離", "障害物", "天候条件", "成功率"],
       "rows": [
-        [
-          "ハードウェア",
-          "カスタマイズiPad Pro",
-          "10インチ、高感度タッチスクリーン"
-        ],
-        ["GPS追跡", "超小型記録デバイス", "重量3g、精度±2m"],
-        ["ソフトウェア", "鳩用地図アプリ", "カスタムUI、報酬システム統合"],
-        ["分析ツール", "機械学習アルゴリズム", "行動パターン自動検出"]
+        ["都市部", "5km", "中程度", "晴れ", "82%"],
+        ["郊外", "10km", "低", "曇り", "91%"],
+        ["山岳地帯", "15km", "高", "霧", "67%"]
       ],
       "style": {
         "font_size": 10,
-        "header_bg_color": "#90EE90",
+        "header_bg_color": "lightgreen",
         "header_font_color": "black",
         "cell_bg_color": "white",
         "cell_font_color": "black",
         "border_color": "gray",
-        "border_width": 1,
-        "col_widths": [80, 100, 100]
+        "border_width": 1
       }
     },
     {
-      "id": "TABLE_PERFORMANCE_METRICS",
+      "id": "TABLE_TECHNICAL_SPECIFICATIONS",
+      "table_type": "basic",
+      "title": "研究に使用した主要テクノロジーの仕様",
+      "columns": [
+        "デバイス",
+        "重量",
+        "精度",
+        "データ更新頻度",
+        "バッテリー持続時間"
+      ],
+      "rows": [
+        ["GPSトラッカー", "3g", "±2m", "1Hz", "48時間"],
+        ["生体センサー", "2g", "±0.1%", "10Hz", "72時間"],
+        ["タッチスクリーン", "5g", "95%", "60Hz", "24時間"]
+      ],
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "lightyellow",
+        "header_font_color": "black",
+        "cell_bg_color": "white",
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_EXPERIMENTAL_RESULTS",
       "table_type": "summary",
-      "title": "実験群別パフォーマンス指標の統計的概要",
+      "title": "実験結果の統計的サマリー",
       "statistics": {
-        "学習速度": {
-          "mean": 6.7,
-          "median": 6.5,
-          "std": 1.2,
-          "min": 4.0,
-          "max": 8.5
+        "ナビゲーション正確性": {
+          "mean": 84.0,
+          "median": 85.5,
+          "std": 7.2,
+          "min": 75.0,
+          "max": 92.0
         },
-        "タッチスクリーン正確性": {
-          "mean": 7.2,
-          "median": 7.0,
-          "std": 1.1,
-          "min": 5.0,
-          "max": 9.0
-        },
-        "目的地特定一貫性": {
-          "mean": 6.9,
-          "median": 7.0,
-          "std": 1.3,
-          "min": 4.5,
-          "max": 8.5
+        "デジタルインターフェース理解度": {
+          "mean": 85.0,
+          "median": 86.0,
+          "std": 6.5,
+          "min": 78.0,
+          "max": 93.0
         }
       },
       "style": {
         "font_size": 10,
-        "header_bg_color": "#FFB6C1",
+        "header_bg_color": "lightblue",
         "header_font_color": "black",
         "cell_bg_color": "white",
         "cell_font_color": "black",
         "border_color": "gray",
-        "border_width": 1,
-        "col_widths": [100, 50, 50, 50, 50]
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_CORRELATION_ANALYSIS",
+      "table_type": "correlation",
+      "title": "環境変数とナビゲーション性能の相関分析",
+      "variables": ["天候", "地形複雑性", "障害物密度", "ナビゲーション精度"],
+      "correlation_matrix": [
+        [1.0, 0.3, 0.2, 0.7],
+        [0.3, 1.0, 0.5, 0.6],
+        [0.2, 0.5, 1.0, 0.4],
+        [0.7, 0.6, 0.4, 1.0]
+      ]
+    },
+    {
+      "id": "TABLE_COGNITIVE_INTERPRETATION",
+      "table_type": "comparison",
+      "title": "鳩の認知能力と人工システムの比較分析",
+      "comparison_data": {
+        "空間認知能力": { "mean": 0.85, "std": 0.15, "min": 0.7, "max": 1.0 },
+        "アルゴリズム類似性": {
+          "mean": 0.78,
+          "std": 0.12,
+          "min": 0.6,
+          "max": 0.9
+        }
+      },
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "lightgreen",
+        "header_font_color": "black",
+        "cell_bg_color": "white",
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1
       }
     },
     {
       "id": "TABLE_HYPOTHESIS_COMPARISON",
       "table_type": "basic",
-      "title": "仮説と実験結果の比較分析",
-      "columns": ["仮説", "予測", "実際の結果", "一致/相違"],
+      "title": "仮説と実験結果の詳細比較",
+      "columns": ["評価項目", "初期仮説", "実験結果", "一致度"],
       "rows": [
-        ["地図アプリ理解", "部分的理解", "高度な機能理解", "部分的一致"],
-        ["学習速度", "低速", "非常に高速", "不一致"],
-        ["タッチスクリーン操作", "基本的操作", "高度な操作", "不一致"],
-        ["目的地特定能力", "限定的", "驚くほど正確", "不一致"]
+        ["デジタルインターフェース理解", "70%", "85%", "121%"],
+        ["ルート最適化能力", "75%", "82%", "109%"],
+        ["環境適応性", "80%", "79%", "98%"]
       ],
       "style": {
         "font_size": 10,
-        "header_bg_color": "#98FB98",
+        "header_bg_color": "lightyellow",
         "header_font_color": "black",
         "cell_bg_color": "white",
         "cell_font_color": "black",
         "border_color": "gray",
-        "border_width": 1,
-        "col_widths": [100, 80, 80, 80]
+        "border_width": 1
       }
     },
     {
-      "id": "TABLE_FUTURE_RESEARCH",
+      "id": "TABLE_RESEARCH_LIMITATIONS",
       "table_type": "basic",
-      "title": "推奨される今後の研究方向性",
-      "columns": ["研究領域", "主要目的", "期待される成果"],
+      "title": "研究の限界と将来の改善点",
+      "columns": ["限界カテゴリ", "具体的な制約", "改善提案"],
       "rows": [
-        [
-          "種間比較研究",
-          "異なる鳥種の認知能力検証",
-          "テクノロジー適応の普遍性解明"
-        ],
-        ["神経科学的アプローチ", "認知メカニズムの解明", "脳の可塑性理解"],
-        ["長期追跡研究", "技術適応の発達過程", "世代間の認知変化"],
-        ["複合的インターフェース研究", "より複雑な技術環境", "認知限界の探求"]
+        ["サンプルサイズ", "限定的な個体数", "より大規模な研究の実施"],
+        ["実験環境", "高度に制御された環境", "より自然な環境での追加実験"],
+        ["測定技術", "技術的誤差の存在", "高精度センサーの導入"]
       ],
       "style": {
         "font_size": 10,
-        "header_bg_color": "#87CEFA",
+        "header_bg_color": "lightpink",
         "header_font_color": "black",
         "cell_bg_color": "white",
         "cell_font_color": "black",
         "border_color": "gray",
-        "border_width": 1,
-        "col_widths": [100, 100, 100]
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_HYPOTHESIS_SUMMARY",
+      "table_type": "basic",
+      "title": "仮説検証結果の詳細サマリー",
+      "columns": ["仮説要素", "当初予測", "実験結果", "検証状況"],
+      "rows": [
+        ["デジタルインターフェース理解", "70%", "85%", "完全支持"],
+        ["ルート最適化能力", "75%", "82%", "部分的支持"],
+        ["環境適応性", "80%", "79%", "概ね支持"]
+      ],
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "lightyellow",
+        "header_font_color": "black",
+        "cell_bg_color": "white",
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1
+      }
+    },
+    {
+      "id": "TABLE_RESEARCH_DIRECTIONS",
+      "table_type": "basic",
+      "title": "今後の研究方向性と具体的提案",
+      "columns": ["研究領域", "具体的提案", "期待される成果"],
+      "rows": [
+        ["比較認知研究", "他の鳥類種での検証", "認知能力の普遍性解明"],
+        ["技術統合", "先進的センシング技術の導入", "より精密な行動分析"],
+        ["長期追跡研究", "個体の認知能力経年変化", "発達過程の理解"]
+      ],
+      "style": {
+        "font_size": 10,
+        "header_bg_color": "lightgreen",
+        "header_font_color": "black",
+        "cell_bg_color": "white",
+        "cell_font_color": "black",
+        "border_color": "gray",
+        "border_width": 1
       }
     }
   ]

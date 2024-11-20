@@ -5,7 +5,9 @@ import random
 import anthropic
 from anthropic.types.beta.message_create_params import MessageCreateParamsNonStreaming
 from anthropic.types.beta.messages.batch_create_params import Request
-from utilities import upload_to_s3
+from utilities import get_logger, upload_to_s3
+
+logger = get_logger(service_name="request_generative_ai_model_api")
 
 # envパラメータ
 API_URL = os.environ["ANTHROPIC_API_URL"]
@@ -13,100 +15,135 @@ API_MODEL = os.environ["ANTHROPIC_API_MODEL"]
 
 client = anthropic.Anthropic(api_key = os.environ["ANTHROPIC_API_KEY"])
 
+@logger.inject_lambda_context(log_event=False)
 def lambda_handler(event, context):
-    # eventパラメータ
-    title = event.get("title")  
-    system_prompt = event.get("system_prompt")  
-    section_formats = event.get("section_formats")
+    try:
+        # eventパラメータ
+        title = event.get("title")  
+        system_prompt = event.get("system_prompt")  
+        section_formats = event.get("section_formats")
 
-    # 各プロンプトについて生成AI APIを呼び出し
+        # 各プロンプトについて生成AI APIを呼び出し
 
-    # 会話のやり取りを保持する配列
-    response_format = []
-    messages = []
-    for section_format in section_formats:
-        section_title = section_format["title_name"]
-        print(section_title)
+        # 会話のやり取りを保持する配列
+        response_format = []
+        messages = []
+        for section_format in section_formats:
+            section_title = section_format["title_name"]
+            print(section_title)
+            
+            # 各セクションのプロンプトを追加
+            messages.append(
+                {
+                    "role" : "user",
+                    "content" : [
+                        {
+                            "type" : "text",
+                            "text" : json.dumps(section_format,ensure_ascii=False)
+                        }
+                    ]
+                }
+            )
+
+            # 最近2件のユーザーメッセージのみキャッシュコントロールを有効化する
+            result = []
+            user_turns_processed = 0
+            for message in reversed(messages):
+                if message["role"] == "user" and user_turns_processed < 2:
+                    result.append({
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": message["content"][0]["text"],
+                                "cache_control": {"type": "ephemeral"}
+                            }
+                        ]
+                    })
+                    user_turns_processed += 1
+                else:
+                    result.append(message)
+
+            # 順番を下に戻す
+            messages_to_send = list(reversed(result))
+
+            # 生成AI API呼び出し（前の返答も含める）
+            assistant_response = call_anthropic_api_message_request(system_prompt=system_prompt, messages=messages_to_send)            
+
+            response_format.append(json.loads(assistant_response))
+
+            messages.append({
+                "role" : "assistant",
+                "content" : assistant_response
+            })
         
-        # 各セクションのプロンプトを追加
+        # 論文のまとめ要旨作成
+        abstract_prompt = "生成してくれた各セクションを簡潔にまとめた論文の要旨文章をテキスト形式で作成してください。文字数は300文字以上で内容を簡潔にまとめたものにしてください。レスポンスは必ずjson形式でなく改行コードを含めたテキスト形式にしてください。" 
+        
         messages.append(
             {
                 "role" : "user",
                 "content" : [
                     {
                         "type" : "text",
-                        "text" : json.dumps(section_format,ensure_ascii=False)
+                        "text" : abstract_prompt
                     }
                 ]
             }
         )
 
-         # 最近2件のユーザーメッセージのみキャッシュコントロールを有効化する
-        result = []
-        user_turns_processed = 0
-        for message in reversed(messages):
-            if message["role"] == "user" and user_turns_processed < 2:
-                result.append({
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": message["content"][0]["text"],
-                            "cache_control": {"type": "ephemeral"}
-                        }
-                    ]
-                })
-                user_turns_processed += 1
-            else:
-                result.append(message)
+        abstract_response = call_anthropic_api_message_request(system_prompt=abstract_prompt, messages=messages)
 
-        # 順番を下に戻す
-        messages_to_send = list(reversed(result))
+        print('--- 要旨 ---')
+        print(abstract_response)
+        print('------------')
 
-        try:
-            # 生成AI API呼び出し（前の返答も含める）
-            assistant_response = call_anthropic_api_message_request(system_prompt=system_prompt, messages=messages_to_send)
-        except anthropic.APIConnectionError as e:
-            print("The server could not be reached")
-            print(e.__cause__)  # an underlying Exception, likely raised within httpx.
-        except anthropic.RateLimitError as e:
-            print("A 429 status code was received; we should back off a bit.")
-        except anthropic.APIStatusError as e:
-            print("Another non-200-range status code was received")
-            print(e.status_code)
-            print(e.response)
+        # 最終的なレスポンス
+        response_graphs = []
+        response_tables = []
+        response_formulas = []
+
+        for section in response_format:
+            for sub_section in section['sub_sections']:
+                response_graphs.extend(sub_section['graphs'])
+                response_tables.extend(sub_section['tables'])
+                response_formulas.extend(sub_section['formulas'])
         
+        # 分かりやすいようにS3に保存
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses.json",data=json.dumps({
+            "title" : title,
+            "abstract" : abstract_response,
+            "sections_format" : response_format
+        }, ensure_ascii=False))
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_tables.json",data=json.dumps(response_tables, ensure_ascii=False))
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_formulas.json",data=json.dumps(response_formulas, ensure_ascii=False))
 
-        response_format.append(json.loads(assistant_response))
+    except anthropic.APIConnectionError as e:
+        logger.error("The server could not be reached")
 
-        messages.append({
-            "role" : "assistant",
-            "content" : assistant_response
-        })
-    
-    # 論文のまとめ要旨作成
-    abstract_prompt = "生成してくれた各セクションを簡潔にまとめた論文の要旨文章をテキスト形式で作成してください。文字数は300文字以上で内容を簡潔にまとめたものにしてください。レスポンスは必ずjson形式でなく改行コードを含めたテキスト形式にしてください。" 
-    abstract_response = call_anthropic_api_message_request(system_prompt=abstract_prompt, messages=[])
-    print('--- 要旨 ---')
-    print(abstract_response)
-    print('------------')
+        return {
+            'statusCode': 500,
+            'body': e   
+        }
+    except anthropic.RateLimitError as e:
+        logger.error("A 429 status code was received; we should back off a bit.")
 
-    # 最終的なレスポンス
-    response_graphs = []
-    response_tables = []
-    response_formulas = []
-
-    for section in response_format:
-        for sub_section in section['sub_sections']:
-            response_graphs.extend(sub_section['graphs'])
-            response_tables.extend(sub_section['tables'])
-            response_formulas.extend(sub_section['formulas'])
-    
-    # 分かりやすいようにS3に保存
-    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses.json",data=json.dumps(response_format, ensure_ascii=False))
-    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
-    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_tables.json",data=json.dumps(response_tables, ensure_ascii=False))
-    upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_formulas.json",data=json.dumps(response_formulas, ensure_ascii=False))
+        return {
+            'statusCode': 429,
+            'body': e
+        }
+    except Exception as e:
+        error = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "payload": event
+        }
+        logger.error(error)
+        return {
+            'statusCode': 500,
+            'body': error
+        }
 
     return {
         'statusCode': 200,
@@ -134,8 +171,8 @@ def call_anthropic_api_message_request(system_prompt, messages):
         ],
         messages=messages
     )
-    print(response)
-    print(f"Usage: {response.usage}")
+    print(f"====== Usage  ======")
+    print(response.usage)
 
     assistant_response = response.content[0].text
     

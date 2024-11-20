@@ -1,79 +1,80 @@
 {
   "formulas": [
     {
-      "id": "FORMULA_NAVIGATION",
-      "latex_code": "N(t) = \\frac{GPS_{location}}{Instinct_{factor} + Technology_{influence}}",
-      "description": "伝書鳩のナビゲーション能力を示す仮説的数式",
+      "id": "FORMULA_DATA_PROCESSING",
+      "latex_code": "N(t) = \\frac{\\int_{0}^{t} V(x) dx}{D} \\cdot \\epsilon(t)",
+      "description": "鳩のナビゲーション能力を評価するための複合的データ処理モデル",
       "parameters": [
-        { "symbol": "N(t)", "description": "時間tにおけるナビゲーション能力" },
         {
-          "symbol": "GPS_{location}",
-          "description": "デジタル地図からの位置情報"
+          "symbol": "N(t)",
+          "description": "時間tにおけるナビゲーション性能指標"
         },
-        {
-          "symbol": "Instinct_{factor}",
-          "description": "鳥の本能的ナビゲーション要因"
-        },
-        {
-          "symbol": "Technology_{influence}",
-          "description": "テクノロジーによる認知能力の影響"
-        }
+        { "symbol": "V(x)", "description": "移動速度の関数" },
+        { "symbol": "D", "description": "総移動距離" },
+        { "symbol": "ε(t)", "description": "環境誤差係数" }
       ]
     },
     {
-      "id": "FORMULA_SUCCESS_RATE",
-      "latex_code": "S = \\frac{C_{correct}}{T_{total}} \\times 100\\%",
-      "description": "デジタル地図ナビゲーション成功率の計算式",
+      "id": "FORMULA_DATA_CORRELATION",
+      "latex_code": "r_{xy} = \\frac{\\sum_{i=1}^{n} (x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum_{i=1}^{n} (x_i - \\bar{x})^2 \\sum_{i=1}^{n} (y_i - \\bar{y})^2}}",
+      "description": "環境変数とナビゲーション性能間の相関係数を計算するためのピアソン相関係数",
       "parameters": [
-        { "symbol": "S", "description": "成功率" },
-        { "symbol": "C_{correct}", "description": "正確に到達した目的地の数" },
-        { "symbol": "T_{total}", "description": "総試行回数" }
+        { "symbol": "r_{xy}", "description": "相関係数" },
+        { "symbol": "x_i", "description": "環境変数の値" },
+        { "symbol": "y_i", "description": "ナビゲーション性能の値" }
       ]
     },
     {
-      "id": "FORMULA_NAVIGATION_PERFORMANCE",
-      "latex_code": "P_{digital} = \\alpha \\times L_{learning} + \\beta \\times T_{technological}",
-      "description": "デジタル環境における鳩のナビゲーション性能評価式",
+      "id": "FORMULA_COGNITIVE_MODEL",
+      "latex_code": "C(t) = \\alpha \\cdot \\int_{0}^{t} \\frac{I(x)}{E(x)} dx + \\beta \\cdot \\log(P(t))",
+      "description": "鳩の認知プロセスを表現する複合的数学モデル",
       "parameters": [
         {
-          "symbol": "P_{digital}",
-          "description": "デジタルナビゲーション性能"
+          "symbol": "C(t)",
+          "description": "時間tにおける認知パフォーマンス"
         },
-        { "symbol": "L_{learning}", "description": "学習能力係数" },
-        { "symbol": "T_{technological}", "description": "技術適応係数" },
-        { "symbol": "\\alpha, \\beta", "description": "重み係数" }
+        { "symbol": "I(x)", "description": "情報入力の複雑性" },
+        { "symbol": "E(x)", "description": "環境の複雑性" },
+        { "symbol": "P(t)", "description": "経路選択の確率" }
       ]
     },
     {
-      "id": "FORMULA_COGNITIVE_INTERPRETATION",
-      "latex_code": "C_{adaptive} = \\frac{T_{technology}}{B_{biological}} \\times \\log(L_{learning})",
-      "description": "デジタル環境における認知適応能力評価式",
+      "id": "FORMULA_HYPOTHESIS_VALIDATION",
+      "latex_code": "H_0: \\mu_1 = \\mu_2 \\\\ H_1: \\mu_1 \\neq \\mu_2",
+      "description": "仮説検証のための統計的検定モデル（帰無仮説と対立仮説）",
       "parameters": [
-        { "symbol": "C_{adaptive}", "description": "認知適応係数" },
-        { "symbol": "T_{technology}", "description": "技術的複雑性" },
-        { "symbol": "B_{biological}", "description": "生物学的基本認知能力" },
-        { "symbol": "L_{learning}", "description": "学習速度" }
+        { "symbol": "μ₁", "description": "初期仮説の平均値" },
+        { "symbol": "μ₂", "description": "実験結果の平均値" }
       ]
     },
     {
       "id": "FORMULA_ERROR_ANALYSIS",
       "latex_code": "\\sigma_{error} = \\sqrt{\\frac{\\sum_{i=1}^{n} (x_i - \\bar{x})^2}{n-1}}",
-      "description": "実験誤差の標準偏差計算式",
+      "description": "実験誤差を評価するための標準偏差計算モデル",
       "parameters": [
-        { "symbol": "\\sigma_{error}", "description": "誤差の標準偏差" },
-        { "symbol": "x_i", "description": "個々の観測値" },
-        { "symbol": "\\bar{x}", "description": "観測値の平均" },
-        { "symbol": "n", "description": "観測数" }
+        { "symbol": "σ_{error}", "description": "実験誤差の標準偏差" },
+        { "symbol": "x_i", "description": "個々の測定値" },
+        { "symbol": "\\bar{x}", "description": "測定値の平均" }
       ]
     },
     {
-      "id": "FORMULA_HYPOTHESIS_VERIFICATION",
-      "latex_code": "H_{verification} = \\frac{E_{experimental}}{H_{initial}} \\times 100\\%",
-      "description": "仮説検証の定量的評価式",
+      "id": "FORMULA_HYPOTHESIS_SUMMARY",
+      "latex_code": "H_{validation} = \\frac{\\sum_{i=1}^{n} (R_i - P_i)^2}{n} \\cdot 100\\%",
+      "description": "仮説検証の総合的な適合度を計算するモデル",
       "parameters": [
-        { "symbol": "H_{verification}", "description": "仮説検証の割合" },
-        { "symbol": "E_{experimental}", "description": "実験結果の整合性" },
-        { "symbol": "H_{initial}", "description": "初期仮説の予測" }
+        { "symbol": "H_{validation}", "description": "仮説検証の総合適合率" },
+        { "symbol": "R_i", "description": "実験結果" },
+        { "symbol": "P_i", "description": "初期予測" }
+      ]
+    },
+    {
+      "id": "FORMULA_RESEARCH_POTENTIAL",
+      "latex_code": "P_{research} = \\sum_{i=1}^{n} w_i \\cdot I_i",
+      "description": "研究可能性を評価するための複合指標モデル",
+      "parameters": [
+        { "symbol": "P_{research}", "description": "研究可能性の総合指標" },
+        { "symbol": "w_i", "description": "各研究領域の重み係数" },
+        { "symbol": "I_i", "description": "各研究領域の重要性指数" }
       ]
     }
   ]

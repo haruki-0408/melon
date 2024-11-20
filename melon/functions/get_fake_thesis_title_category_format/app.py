@@ -2,7 +2,7 @@ import json
 import os
 from aws_lambda_powertools.utilities.validation import validator
 from aws_lambda_powertools.utilities.validation import SchemaValidationError
-from utilities import get_dynamo_item, get_logger
+from melon.layers.common.utilities import get_dynamo_item, get_logger
 import schemas
 
 # envパラメータ

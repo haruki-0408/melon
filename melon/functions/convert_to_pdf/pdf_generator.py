@@ -1,25 +1,25 @@
+import os
 from io import BytesIO
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import (BaseDocTemplate, Paragraph, Spacer, Table, PageBreak,
-                                Frame, PageTemplate)
+from reportlab.platypus import (BaseDocTemplate, Paragraph, Spacer, PageBreak,Frame, PageTemplate, Image)
 from reportlab.lib.units import mm
 
-# フォントとスタイル関連の関数をインポート
-from fonts import register_fonts
-from styles import get_pdf_styles, get_table_style
+from fonts import register_fonts #　フォントファイル
+from styles import get_pdf_styles, get_table_style #　スタイルファイル
+from formula_processor import process_formula # 数式処理
 
-def create_pdf_document(title, author, abstract, toc):
+import boto3
+import re
+
+def create_pdf_document(title, abstract, sections_format, s3_bucket):
     """
     PDFドキュメントを生成する関数。
 
     Parameters:
     - title (str): 論文のタイトル。
-    - author (str): 著者名。
-    - abstract (str): 要旨。
-    - toc (list): 目次情報（セクションとサブセクションのリスト）。
-
-    Returns:
-    - pdf_data (bytes): 生成されたPDFのバイナリデータ。
+    - abstract (str): 要約。
+    - sections_format (list): セクション情報のリスト。
+    - s3_bucket (str): S3バケット名。
     """
     # フォントの登録
     register_fonts()
@@ -82,13 +82,14 @@ def create_pdf_document(title, author, abstract, toc):
     elements = []
 
     # 表紙の作成
+    author = '嘘論文　生成器'
     elements.extend(create_cover_page(title, author, abstract, styles))
 
     # 目次の作成
-    elements.extend(create_toc_page(toc, styles, table_style))
+    elements.extend(create_toc_page(sections_format, styles, table_style))
 
     # 本文の作成
-    # elements.extend(create_main_content(toc, styles))
+    elements.extend(create_main_content(sections_format, styles, s3_bucket))
 
     # PDFの生成
     doc.build(elements)
@@ -102,15 +103,6 @@ def create_pdf_document(title, author, abstract, toc):
 def create_cover_page(title, author, abstract, styles):
     """
     表紙ページを作成する関数。
-
-    Parameters:
-    - title (str): 論文のタイトル。
-    - author (str): 著者名。
-    - abstract (str): 要旨。
-    - styles (StyleSheet1): スタイルシート。
-
-    Returns:
-    - elements (list): 表紙ページの要素リスト。
     """
     elements = []
     elements.append(Spacer(1, 120))  # 上部にスペースを追加
@@ -118,24 +110,19 @@ def create_cover_page(title, author, abstract, styles):
     elements.append(Spacer(1, 20))  # スペースを追加
     elements.append(Paragraph(f"著者: {author}", styles['Author']))  # 著者名を右寄せで表示
     elements.append(Spacer(1, 60))  # スペースを追加
-    elements.append(Paragraph("要旨", styles['AbstractHeading']))  # 要旨見出しを追加
+    elements.append(Paragraph("要旨", styles['AbstractHeading']))  # 要約見出しを追加
     elements.append(Spacer(1, 12))  # スペースを追加
-    elements.append(Paragraph(abstract, styles['FakeThesisBodyText']))  # 要旨本文を追加
-    elements.append(Spacer(1, 48))  # スペースを追加
+    # 改行を反映した要約のParagraphを追加
+    abstract_paragraphs = [Paragraph(p, styles['FakeThesisBodyText']) for p in abstract.split('\n')]
+    for para in abstract_paragraphs:
+        elements.append(para)
+        elements.append(Spacer(1, 12))
     elements.append(PageBreak())  # 改ページ
     return elements
 
-def create_toc_page(toc, styles, table_style):
+def create_toc_page(sections_format, styles, table_style):
     """
     目次ページを作成する関数。
-
-    Parameters:
-    - toc (list): 目次情報。
-    - styles (StyleSheet1): スタイルシート。
-    - table_style (TableStyle): テーブルスタイル。
-
-    Returns:
-    - elements (list): 目次ページの要素リスト。
     """
     elements = []
     elements.append(Paragraph("目次", styles['AbstractHeading']))  # 目次見出しを追加
@@ -143,55 +130,153 @@ def create_toc_page(toc, styles, table_style):
 
     # 目次データの作成
     table_data = []
-    for i, section in enumerate(toc, start=1):
-        section_title = section.get("title_name", "Untitled Section")
-        subsections = section.get("sub_sections", [])
+    for i, section in enumerate(sections_format, start=1):
+        section_title = section.get("title_name")
+        sub_sections = section.get("sub_sections")
 
         # セクションを目次に追加
         table_data.append([f"{i}. {section_title}", ""])
 
         # サブセクションを目次に追加
-        for j, subsection in enumerate(subsections, start=1):
-            subsection_title = subsection.get("title_name", "Untitled Subsection")
-            table_data.append([f"    {i}.{j} {subsection_title}", ""])
+        for j, sub_section in enumerate(sub_sections, start=1):
+            sub_section_title = sub_section.get("title_name")
+            table_data.append([f"    {i}.{j} {sub_section_title}", ""])
 
     # 目次テーブルの作成
+    from reportlab.platypus import Table
     table = Table(table_data, colWidths=[400, 100])
     table.setStyle(table_style)
     elements.append(table)
     elements.append(PageBreak())  # 改ページ
     return elements
 
-def create_main_content(toc, styles):
+def create_main_content(sections_format, styles, s3_bucket):
     """
     本文を作成する関数。
 
     Parameters:
-    - toc (list): 目次情報。
+    - sections_format (list): セクション情報のリスト。
     - styles (StyleSheet1): スタイルシート。
-
-    Returns:
-    - elements (list): 本文の要素リスト。
+    - s3_bucket (str): S3バケット名。
     """
     elements = []
-    for i, section in enumerate(toc, start=1):
-        section_title = section.get("title_name", "Untitled Section")
-        subsections = section.get("sub_sections", [])
-        content = section.get("content", "")
+    s3_client = boto3.client('s3')
+
+    for i, section in enumerate(sections_format, start=1):
+        section_title = section.get("title_name")
+        sub_sections = section.get("sub_sections")
 
         # セクションの追加
         elements.append(Paragraph(f"{i}. {section_title}", styles['SectionHeading']))
-        if content:
-            elements.append(Paragraph(content, styles['FakeThesisBodyText']))
 
         # サブセクションの追加
-        for j, subsection in enumerate(subsections, start=1):
-            subsection_title = subsection.get("title_name", "Untitled Subsection")
-            sub_content = subsection.get("content", "")
+        for j, sub_section in enumerate(sub_sections, start=1):
+            sub_section_title = sub_section.get("title_name")
+            text = sub_section.get("text", "")
+            # graphs = sub_section.get("graphs")
+            # tables = sub_section.get("tables")
+            # formulas = sub_section.get("formulas")
 
-            elements.append(Paragraph(f"{i}.{j} {subsection_title}", styles['SubSectionHeading']))
-            if sub_content:
-                elements.append(Paragraph(sub_content, styles['FakeThesisBodyText']))
+            # サブセクションのタイトル
+            elements.append(Paragraph(f"{i}.{j} {sub_section_title}", styles['SubSectionHeading']))
+
+            # テキストの処理（改行と挿入識別子の処理）
+            elements.extend(process_text(text, styles, s3_client, s3_bucket))
+
+    return elements
+
+def process_text(text, styles, s3_client, s3_bucket):
+    """
+    テキストを処理し、Paragraphと画像を生成する関数。
+
+    Parameters:
+    - text (str): 処理するテキスト。
+    - styles (StyleSheet1): スタイルシート。
+    - s3_client: S3クライアント。
+    - s3_bucket (str): S3バケット名。
+
+    Returns:
+    - elements (list): Paragraphや画像のリスト。
+    """
+    elements = []
+
+    # 改行でテキストを分割
+    paragraphs = text.split('\n')
+
+    for paragraph in paragraphs:
+        # 挿入識別子の検出
+        insert_pattern = r'\[INSERT_(.*?)\]'
+        matches = re.finditer(insert_pattern, paragraph)
+
+        last_end = 0
+        for match in matches:
+            start, end = match.span()
+            insert_id = match.group(1)
+
+            # 挿入識別子の前のテキストを追加
+            if start > last_end:
+                content = paragraph[last_end:start]
+                if content.strip():
+                    elements.append(Paragraph(content.strip(), styles['FakeThesisBodyText']))
+
+            # 挿入識別子の処理
+            if insert_id.startswith('FORMULA'):
+                # 数式の処理
+                object_key = f"formulas/{insert_id}.png"
+                formula_elements = process_formula(object_key, s3_client, s3_bucket, styles)
+                elements.extend(formula_elements)
+            elif insert_id.startswith('GRAPH'):
+                # グラフ画像の処理
+                object_key = f"graphs/{insert_id}.png"
+                image_elements = insert_image(object_key, s3_client, s3_bucket)
+                elements.extend(image_elements)
+            elif insert_id.startswith('TABLE'):
+                # 表画像の処理
+                object_key = f"tables/{insert_id}.png"
+                image_elements = insert_image(object_key, s3_client, s3_bucket)
+                elements.extend(image_elements)
+
+            last_end = end
+
+        # 挿入識別子の後のテキストを追加
+        if last_end < len(paragraph):
+            content = paragraph[last_end:]
+            if content.strip():
+                elements.append(Paragraph(content.strip(), styles['FakeThesisBodyText']))
+
+        # 段落間のスペース
+        elements.append(Spacer(1, 12))
+
+    return elements
+
+
+def insert_image(object_key, s3_client, s3_bucket):
+    """
+    画像をS3からダウンロードし、Imageオブジェクトを返す関数。
+
+    Parameters:
+    - image_id (str): 画像のID。
+    - s3_client: S3クライアント。
+    - s3_bucket (str): S3バケット名。
+
+    Returns:
+    - elements (list): 画像と改行のリスト。
+    """
+    elements = []
+    try:
+        # S3から画像をダウンロード
+        image_obj = s3_client.get_object(Bucket=s3_bucket, Key=object_key)
+        image_data = image_obj['Body'].read()
+
+        # 画像をImageオブジェクトとして追加
+        image = Image(BytesIO(image_data))
+        image.hAlign = 'CENTER'
+        elements.append(image)
+        elements.append(Spacer(1, 12))  # 画像の後に改行
+
+    except Exception as e:
+        print(f"Failed to insert image {object_key}: {str(e)}")
+
     return elements
 
 def add_page_number(canvas, doc):
