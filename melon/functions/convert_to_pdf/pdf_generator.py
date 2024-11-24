@@ -1,17 +1,22 @@
+import base64
+import io
 import os
 from io import BytesIO
+from aws_lambda_powertools import Logger
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import (BaseDocTemplate, Paragraph, Spacer, PageBreak,Frame, PageTemplate, Image)
+from PIL import Image as PILImage
 from reportlab.lib.units import mm
-
 from fonts import register_fonts #　フォントファイル
 from styles import get_pdf_styles, get_table_style #　スタイルファイル
 from formula_processor import process_formula # 数式処理
-
 import boto3
 import re
 
-def create_pdf_document(title, abstract, sections_format, s3_bucket):
+LOGGER_SERVICE = "convert_to_pdf"
+logger = Logger(service=LOGGER_SERVICE)
+
+def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket):
     """
     PDFドキュメントを生成する関数。
 
@@ -89,7 +94,7 @@ def create_pdf_document(title, abstract, sections_format, s3_bucket):
     elements.extend(create_toc_page(sections_format, styles, table_style))
 
     # 本文の作成
-    elements.extend(create_main_content(sections_format, styles, s3_bucket))
+    elements.extend(create_main_content(workflow_id, sections_format, styles, s3_bucket))
 
     # PDFの生成
     doc.build(elements)
@@ -150,7 +155,7 @@ def create_toc_page(sections_format, styles, table_style):
     elements.append(PageBreak())  # 改ページ
     return elements
 
-def create_main_content(sections_format, styles, s3_bucket):
+def create_main_content(workflow_id, sections_format, styles, s3_bucket):
     """
     本文を作成する関数。
 
@@ -181,11 +186,11 @@ def create_main_content(sections_format, styles, s3_bucket):
             elements.append(Paragraph(f"{i}.{j} {sub_section_title}", styles['SubSectionHeading']))
 
             # テキストの処理（改行と挿入識別子の処理）
-            elements.extend(process_text(text, styles, s3_client, s3_bucket))
+            elements.extend(process_text(workflow_id, text, styles, s3_client, s3_bucket))
 
     return elements
 
-def process_text(text, styles, s3_client, s3_bucket):
+def process_text(workflow_id, text, styles, s3_client, s3_bucket):
     """
     テキストを処理し、Paragraphと画像を生成する関数。
 
@@ -221,20 +226,20 @@ def process_text(text, styles, s3_client, s3_bucket):
 
             # 挿入識別子の処理
             if insert_id.startswith('FORMULA'):
-                # 数式の処理
-                object_key = f"formulas/{insert_id}.png"
+                # 数式メタデータの処理
+                object_key = f"{workflow_id}/formulas/{insert_id}_metadata.json"
                 formula_elements = process_formula(object_key, s3_client, s3_bucket, styles)
                 elements.extend(formula_elements)
             elif insert_id.startswith('GRAPH'):
                 # グラフ画像の処理
-                object_key = f"graphs/{insert_id}.png"
-                image_elements = insert_image(object_key, s3_client, s3_bucket)
-                elements.extend(image_elements)
+                object_key = f"{workflow_id}/graphs/{insert_id}.png"
+                graph_elements = insert_image(object_key, styles, s3_client, s3_bucket)
+                elements.extend(graph_elements)
             elif insert_id.startswith('TABLE'):
                 # 表画像の処理
-                object_key = f"tables/{insert_id}.png"
-                image_elements = insert_image(object_key, s3_client, s3_bucket)
-                elements.extend(image_elements)
+                object_key = f"{workflow_id}/tables/{insert_id}.png"
+                table_elements = insert_image(object_key, styles, s3_client, s3_bucket)
+                elements.extend(table_elements)
 
             last_end = end
 
@@ -249,35 +254,73 @@ def process_text(text, styles, s3_client, s3_bucket):
 
     return elements
 
-
-def insert_image(object_key, s3_client, s3_bucket):
+def insert_image(object_key, styles, s3_client, s3_bucket):
     """
-    画像をS3からダウンロードし、Imageオブジェクトを返す関数。
+    画像をS3からダウンロードし、メタデータに基づいてタイトルを追加してImageオブジェクトを返す関数。
 
     Parameters:
-    - image_id (str): 画像のID。
+    - object_key (str): S3内のオブジェクトキー（画像ファイルのキー）。
     - s3_client: S3クライアント。
     - s3_bucket (str): S3バケット名。
 
     Returns:
-    - elements (list): 画像と改行のリスト。
+    - elements (list): タイトルと画像を含むリスト。
     """
     elements = []
     try:
         # S3から画像をダウンロード
-        image_obj = s3_client.get_object(Bucket=s3_bucket, Key=object_key)
-        image_data = image_obj['Body'].read()
+        response = s3_client.get_object(Bucket=s3_bucket, Key=object_key)
+        image_data = response['Body'].read()
 
-        # 画像をImageオブジェクトとして追加
-        image = Image(BytesIO(image_data))
-        image.hAlign = 'CENTER'
-        elements.append(image)
-        elements.append(Spacer(1, 12))  # 画像の後に改行
+        # メタデータを取得してデコード
+        metadata = response['Metadata']
+        print(metadata)
+        number = metadata.get('number')  # デフォルト値を設定
+        title_base64 = metadata.get('title')
+        content_type = metadata.get('type')
+
+        print('------')
+        print(number)
+        print(title_base64)
+        print(content_type)
+        title = base64.b64decode(title_base64).decode('utf-8') if title_base64 else 'Untitled'
+        
+        logger.info(title)
+
+        # Pillowを使って画像をリサイズ
+        image = PILImage.open(io.BytesIO(image_data))
+        original_width, original_height = image.size
+
+        # サイズを半分にリサイズ
+        new_width = original_width // 2
+        new_height = original_height // 2
+        resized_image = image.resize((new_width, new_height), PILImage.Resampling.LANCZOS)
+
+        # リサイズ画像をBytesIOに保存
+        image_buffer = io.BytesIO()
+        resized_image.save(image_buffer, format=image.format)
+        image_buffer.seek(0)
+
+        # ReportLabのImageオブジェクトを作成
+        reportlab_image = Image(image_buffer, width=new_width, height=new_height)
+        reportlab_image.hAlign = 'CENTER'
+
+        if content_type == 'table':
+            # 表のタイトルを画像の上に追加
+            elements.append(Paragraph(f"表{number}. {title}", styles['FakeThesisBodyText']))
+            elements.append(Spacer(1, 12))
+            elements.append(reportlab_image)
+        elif content_type == 'graph':
+            # 図のタイトルを画像の下に追加
+            elements.append(reportlab_image)
+            elements.append(Spacer(1, 12))  # 画像とタイトルの間にスペースを追加
+            elements.append(Paragraph(f"図{number}. {title}", styles['FakeThesisBodyText']))
 
     except Exception as e:
-        print(f"Failed to insert image {object_key}: {str(e)}")
+        logger.exception(f"Failed to insert image {object_key}: {str(e)}")
 
     return elements
+
 
 def add_page_number(canvas, doc):
     """
@@ -301,4 +344,3 @@ def add_page_number(canvas, doc):
         text = f"{page_num - 1}"
         canvas.setFont("IPAexMincho", 10)  # フォントを設定
         canvas.drawString(280, 15, text)
-        # canvas.drawRightString(A4[0] - 40, 30, text)  # ページ右下にページ番号を描画

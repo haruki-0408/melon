@@ -15,6 +15,14 @@
                 "type": "string",
                 "description": "TABLE_{重複を許さない大文字英数字}の形式で{text}内の挿入識別子と合わせる"
               },
+              "figure_width": {
+                "type": "number",
+                "description": "描画する表全体の横幅（インチ単位）でA4サイズの横幅に収まるサイズ。"
+              },
+              "figure_height": {
+                "type": "number",
+                "description": "描画する表全体の高さ（インチ単位）。でA4サイズの横幅に収まるサイズ"
+              },
               "table_type": {
                 "type": "string",
                 "enum": ["basic"],

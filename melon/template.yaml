@@ -177,12 +177,10 @@ Resources:
       CodeUri: functions/convert_to_pdf/
       Handler: app.lambda_handler
       Description: "" #関数の説明
-      MemorySize: 256 # メモリサイズ (MB)
+      MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
       Layers:
-        # - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-Pillow:4 #Klayer Pillow
-        # - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p311-reportlab:6 #Klayer reportlab
         - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       Environment:
         Variables:

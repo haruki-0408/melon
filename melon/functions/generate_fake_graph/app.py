@@ -1,3 +1,4 @@
+from aws_lambda_powertools import Logger
 import matplotlib.pyplot as plt
 import io
 import os
@@ -9,10 +10,12 @@ import sympy as sp
 from matplotlib.patches import Ellipse
 from utilities import configure_matplotlib_fonts
 
+logger = Logger(service="generate_fake_graph")
+
 # S3のアップロード先情報
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
-GRAPH_DATA_KEY = 'graph_data.json'
 
+@logger.inject_lambda_context(log_event=False)
 def lambda_handler(event, context):
     """
     イベントオブジェクトからグラフデータを受け取り、動的にグラフを生成してS3にアップロードまたは
@@ -20,6 +23,7 @@ def lambda_handler(event, context):
     """
     try:
         # イベントからgraphsプロパティを取得
+        workflow_id = event.get('workflow_id')
         graphs = event.get('graphs', [])
 
         if not graphs:
@@ -33,18 +37,21 @@ def lambda_handler(event, context):
         
         # グラフ画像を生成
         graph_images = []
-        for graph_data in graphs:
+        for index, graph_data in enumerate(graphs):
             print(f"--- [グラフ] {graph_data['id']} 処理中... ---")
             image_data = create_graph_image(graph_data)
             
             graph_images.append({
                 'id' : graph_data['id'],
-                'image_data' : image_data
+                'image_data' : image_data,
+                'graph_number' : str(index + 1),
+                'title': graph_data['title']  # タイトルを保持
             })
 
         # S3_BUCKETが設定されている場合はS3にアップロード
         if S3_BUCKET:
-            upload_to_s3(graph_images)
+            non_trailing_slash_prefix = f"{workflow_id}/graphs"
+            upload_to_s3(non_trailing_slash_prefix, graph_images)
             return {
                 'statusCode': 200,
                 'body': json.dumps({'message': 'Graphs uploaded to S3 successfully.'})
@@ -57,6 +64,7 @@ def lambda_handler(event, context):
             }
 
     except Exception as e:
+        logger.exception(e)
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
@@ -68,10 +76,14 @@ def create_graph_image(graph_data):
     graph_data は指定したスキーマに従います。
     """
     # フィギュアと軸の作成
-    fig, ax = plt.subplots(figsize=(graph_data['figure_width'], graph_data['figure_height']))
+    # fig, ax = plt.subplots(figsize=(graph_data['figure_width'], graph_data['figure_height']))
+    # グラフのサイズを動的に設定
+    figure_width = graph_data.get('figure_width', 8)  # デフォルト値: 8インチ
+    figure_height = graph_data.get('figure_height', 5)  # デフォルト値: 5インチ
+    fig, ax = plt.subplots(figsize=(figure_width, figure_height))
 
     # 図全体のプロパティを設定
-    ax.set_title(graph_data['title'])
+    # ax.set_title(graph_data['title'])
     ax.set_xlabel(graph_data['xlabel'])
     ax.set_ylabel(graph_data['ylabel'])
 
@@ -81,7 +93,7 @@ def create_graph_image(graph_data):
     # charts配列から個々のグラフを描画
     for chart in graph_data['charts']:
         chart_type = chart['chart_type']
-        print(f"  >  グラフタイプ: {chart_type}")
+        print(f"  >  タイプ: {chart_type}")
         if chart_type == 'line':
             plot_line_chart(ax, chart)
         elif chart_type == 'area':
@@ -113,7 +125,7 @@ def create_graph_image(graph_data):
 
     # 画像をバイナリデータとして保存し、Base64エンコード
     buf = io.BytesIO()
-    fig.savefig(buf, format='png')
+    fig.savefig(buf, format='png',bbox_inches='tight')
     plt.close(fig)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
@@ -294,13 +306,26 @@ def plot_heatmap(ax, chart):
     cbar = plt.colorbar(heatmap, ax=ax)
     cbar.set_label(colorbar_label)
 
-def upload_to_s3(graph_images):
+def upload_to_s3(non_trailing_slash_prefix, graphs):
     """
     Base64エンコードされた画像データをS3にアップロードするヘルパー関数
     """
     s3 = boto3.resource('s3')
-    for graph in graph_images:
+    for graph in graphs:
         # 一意のキーを作成（例: graph_0.png）
-        key = f"graphs/{graph['id']}.png"
+        key = f"{non_trailing_slash_prefix}/{graph['id']}.png"
         image_binary = base64.b64decode(graph['image_data'])
-        s3.Object(S3_BUCKET, key).put(Body=image_binary, ContentType='image/png')
+
+        # 日本語タイトルをBase64エンコード
+        encoded_title = base64.b64encode(graph['title'].encode('utf-8')).decode('utf-8')
+
+        s3.Object(S3_BUCKET, key).put(
+            Body=image_binary,
+            ContentType='image/png',
+            Metadata={
+                'number': graph['graph_number'],
+                'type' : 'graph', 
+                'title': encoded_title
+            }
+        )
+        # s3.Object(S3_BUCKET, key).put(Body=image_binary, ContentType='image/png')

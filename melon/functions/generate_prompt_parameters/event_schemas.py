@@ -2,6 +2,15 @@ INPUT = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
+        "workflow_id": {
+            "type": "string",
+            "description": "実行ID"
+        },
+        "title": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "タイトル"
+        },
         "format": {
             "type": "object",
             "properties": {
@@ -65,12 +74,7 @@ INPUT = {
                 }
             },
             "required": ["category_type_en", "category_type_jp", "sections"]
-        },
-        "title": {
-            "type": "string",
-            "maxLength": 100,
-            "description": "タイトル"
         }
     },
-    "required": ["format", "title"]
+    "required": ["workflow_id","title","format"]
 }

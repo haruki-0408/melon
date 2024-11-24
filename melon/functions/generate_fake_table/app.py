@@ -1,6 +1,7 @@
 import json
 import io
 import os
+from aws_lambda_powertools import Logger
 import boto3
 import base64
 import matplotlib.pyplot as plt
@@ -8,16 +9,19 @@ import matplotlib as mpl
 import numpy as np
 from utilities import configure_matplotlib_fonts
 
+logger = Logger(service="generate_fake_table")
+
 # S3のアップロード先情報
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
-TABLE_DATA_KEY = 'table_data.json'
 
+@logger.inject_lambda_context(log_event=False)
 def lambda_handler(event, context):
     """
     イベントオブジェクトから表データの配列を受け取り、それぞれのテーブルを画像化して返すLambda関数。
     """
     try:
         # イベントからtablesプロパティを取得
+        workflow_id = event.get('workflow_id')
         tables = event.get('tables', [])
 
         if not tables:
@@ -30,18 +34,21 @@ def lambda_handler(event, context):
         configure_matplotlib_fonts()
         
         table_images = []
-        for table_data in tables:
+        for index, table_data in enumerate(tables):
             print(f"--- [表] {table_data['id']} 処理中... ---")
-            print(f"  >  表タイプ: {table_data['table_type']}")
+            print(f"  >  タイプ: {table_data['table_type']}")
             image_data = create_table_image(table_data)
             table_images.append({
                 'id' : table_data['id'],
-                'image_data' : image_data
+                'image_data' : image_data,
+                'table_number' : str(index + 1),
+                'title': table_data['title']  # タイトルを保持
             })
 
         # S3_BUCKETが設定されている場合はS3にアップロード
         if S3_BUCKET:
-            upload_to_s3(table_images)
+            non_trailing_slash_prefix=f"{workflow_id}/tables"
+            upload_to_s3(non_trailing_slash_prefix,table_images)
             return {
                 'statusCode': 200,
                 'body': json.dumps({'message': 'Tables uploaded to S3 successfully.'})
@@ -54,6 +61,7 @@ def lambda_handler(event, context):
             }
 
     except Exception as e:
+        logger.exception(e)
         return {
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
@@ -315,13 +323,25 @@ def apply_table_style(table_object, style):
         for cell in cells.values():
             cell.set_linewidth(style['border_width'])
 
-def upload_to_s3(images):
+def upload_to_s3(non_trailing_slash_prefix,tables):
     """
     Base64エンコードされた画像データをS3にアップロードするヘルパー関数
     """
     s3 = boto3.resource('s3')
-    for image in images:
+    for table in tables:
         # 一意のキーを作成（例: table_0.png）
-        key = f"tables/{image['id']}.png"
-        image_binary = base64.b64decode(image['image_data'])
-        s3.Object(S3_BUCKET, key).put(Body=image_binary, ContentType='image/png')
+        key = f"{non_trailing_slash_prefix}/{table['id']}.png"
+        image_binary = base64.b64decode(table['image_data'])
+
+        # 日本語タイトルをBase64エンコード
+        encoded_title = base64.b64encode(table['title'].encode('utf-8')).decode('utf-8')
+
+        s3.Object(S3_BUCKET, key).put(
+            Body=image_binary,
+            ContentType='image/png',
+            Metadata={
+                'number': table['table_number'],
+                'type' : 'table', 
+                'title': encoded_title
+            }
+        )

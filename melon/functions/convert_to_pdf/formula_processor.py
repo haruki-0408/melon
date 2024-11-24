@@ -1,16 +1,19 @@
 import os
 import json
 import io
-import boto3
+from aws_lambda_powertools import Logger
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as font_manager
-from reportlab.platypus import Image, Spacer
+from reportlab.platypus import Image, Spacer, Paragraph
 from reportlab.lib.utils import ImageReader
 
-# フォントのパスを設定
-FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "ipaexm.ttf")
+LOGGER_SERVICE = "convert_to_pdf"
+logger = Logger(service=LOGGER_SERVICE)
 
-def process_formula(formula_id, s3_client, s3_bucket, styles):
+# フォントのパスを設定
+FONT_PATH = '/opt/python/fonts/ipaexm.ttf'
+
+def process_formula(object_key, s3_client, s3_bucket, styles):
     """
     数式のメタデータを処理し、数式画像を生成してPDF要素を返す関数。
 
@@ -27,8 +30,7 @@ def process_formula(formula_id, s3_client, s3_bucket, styles):
 
     try:
         # メタデータをS3から取得
-        metadata_key = f"{formula_id}_metadata.json"
-        response = s3_client.get_object(Bucket=s3_bucket, Key=metadata_key)
+        response = s3_client.get_object(Bucket=s3_bucket, Key=object_key)
         metadata = json.loads(response['Body'].read().decode('utf-8'))
 
         latex_code = metadata.get('latex_code', '')
@@ -74,7 +76,7 @@ def process_formula(formula_id, s3_client, s3_bucket, styles):
                 elements.append(Spacer(1, 12))
 
     except Exception as e:
-        print(f"Failed to process formula {formula_id}: {str(e)}")
+        logger.exception(f"Failed to process formula {object_key}: {str(e)}")
 
     return elements
 
@@ -99,8 +101,7 @@ def generate_equation_image(latex_code, font_prop):
         return image_buffer
 
     except Exception as e:
-        print(f"数式画像の生成中にエラーが発生しました: {latex_code}")
-        print(str(e))
+        logger.exception(f"数式画像の生成中にエラーが発生しました: {e}")
         return None
 
 def generate_parameter_image(symbol, description, font_prop):
@@ -126,8 +127,7 @@ def generate_parameter_image(symbol, description, font_prop):
         return image_buffer
 
     except Exception as e:
-        print(f"パラメータ画像の生成中にエラーが発生しました: {symbol} : {description}")
-        print(str(e))
+        logger.exception(f"パラメータ画像の生成中にエラーが発生しました: {e}")
         return None
 
 def sanitize_latex_code(latex_code):
@@ -135,7 +135,7 @@ def sanitize_latex_code(latex_code):
     LaTeXコードをサニタイズする関数（簡易的な例）
     """
     # 禁止されたコマンドを除去
-    forbidden_commands = ['\\write', '\\input', '\\include', '\\catcode', '\\def', '\\open', '\\loop', '\\read']
+    forbidden_commands = ['\\\\','\\write', '\\input', '\\include', '\\catcode', '\\def', '\\open', '\\loop', '\\read']
     for cmd in forbidden_commands:
         latex_code = latex_code.replace(cmd, '')
     return latex_code

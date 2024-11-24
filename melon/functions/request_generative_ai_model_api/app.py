@@ -5,9 +5,10 @@ import random
 import anthropic
 from anthropic.types.beta.message_create_params import MessageCreateParamsNonStreaming
 from anthropic.types.beta.messages.batch_create_params import Request
-from utilities import get_logger, upload_to_s3
+from aws_lambda_powertools import Logger
+from utilities import upload_to_s3
 
-logger = get_logger(service_name="request_generative_ai_model_api")
+logger = Logger(service_name="request_generative_ai_model_api")
 
 # envパラメータ
 API_URL = os.environ["ANTHROPIC_API_URL"]
@@ -19,6 +20,7 @@ client = anthropic.Anthropic(api_key = os.environ["ANTHROPIC_API_KEY"])
 def lambda_handler(event, context):
     try:
         # eventパラメータ
+        workflow_id = event.get("workflow_id")
         title = event.get("title")  
         system_prompt = event.get("system_prompt")  
         section_formats = event.get("section_formats")
@@ -30,7 +32,7 @@ def lambda_handler(event, context):
         messages = []
         for section_format in section_formats:
             section_title = section_format["title_name"]
-            print(section_title)
+            print(f"====== セクション: {section_title}  ======")
             
             # 各セクションのプロンプトを追加
             messages.append(
@@ -91,12 +93,8 @@ def lambda_handler(event, context):
                 ]
             }
         )
-
+        print(f"====== 要旨  ======")
         abstract_response = call_anthropic_api_message_request(system_prompt=abstract_prompt, messages=messages)
-
-        print('--- 要旨 ---')
-        print(abstract_response)
-        print('------------')
 
         # 最終的なレスポンス
         response_graphs = []
@@ -110,24 +108,24 @@ def lambda_handler(event, context):
                 response_formulas.extend(sub_section['formulas'])
         
         # 分かりやすいようにS3に保存
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses.json",data=json.dumps({
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses.json",data=json.dumps({
             "title" : title,
             "abstract" : abstract_response,
             "sections_format" : response_format
         }, ensure_ascii=False))
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_tables.json",data=json.dumps(response_tables, ensure_ascii=False))
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key="responses_formulas.json",data=json.dumps(response_formulas, ensure_ascii=False))
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_tables.json",data=json.dumps(response_tables, ensure_ascii=False))
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_formulas.json",data=json.dumps(response_formulas, ensure_ascii=False))
 
     except anthropic.APIConnectionError as e:
-        logger.error("The server could not be reached")
+        logger.exception("The server could not be reached")
 
         return {
             'statusCode': 500,
             'body': e   
         }
     except anthropic.RateLimitError as e:
-        logger.error("A 429 status code was received; we should back off a bit.")
+        logger.exception("A 429 status code was received; we should back off a bit.")
 
         return {
             'statusCode': 429,
@@ -139,7 +137,7 @@ def lambda_handler(event, context):
             "error_message": str(e),
             "payload": event
         }
-        logger.error(error)
+        logger.exception(error)
         return {
             'statusCode': 500,
             'body': error
@@ -171,7 +169,6 @@ def call_anthropic_api_message_request(system_prompt, messages):
         ],
         messages=messages
     )
-    print(f"====== Usage  ======")
     print(response.usage)
 
     assistant_response = response.content[0].text

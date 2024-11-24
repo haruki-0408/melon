@@ -1,85 +1,47 @@
 {
-  "title": "伝書鳩が実は地図アプリを使っている説",
-  "abstract": "本研究は、伝書鳩の空間認知能力に関する革新的な探求を行い、デジタル地図アプリケーションと驚くほど類似した情報処理メカニズムを発見した。85%の精度で複雑な空間情報を処理可能な鳩の能力は、従来の動物認知能力に対する理解を根本的に再考させる画期的な知見をもたらした。\n\n実験では、都市部、郊外、山岳地帯における鳩のナビゲーション能力を詳細に分析し、その驚くべき認知的柔軟性と適応性を明らかにした。デジタルインターフェースの理解と最適ルート選択において、人工的なアルゴリズムに匹敵する性能を示し、動物の認知プロセスの複雑さと高度な情報処理能力を実証した。\n\n本研究の意義は、生物学、認知科学、情報工学の学際的アプローチを通じて、鳥類の認知能力に対する新たな視点を提供した点にある。今後は、他の鳥類種や哺乳類との比較研究、先進的なセンシング技術の導入、長期追跡調査を通じて、本研究で得られた知見のさらなる検証と発展が期待される。\n\nこの研究は、動物の認知能力に対する我々の理解を根本的に変革し、生物の情報処理メカニズムに関する新たな洞察を提供する重要な学術的貢献となった。",
+  "workflow_id": "test",
+  "title": "ハンターハンターの念能力が現実にも存在する",
+  "abstract": "本研究は、人気マンガ『ハンターハンター』に登場する念能力を科学的に検証することを目的とした斬新な学術的挑戦である。100名の被験者を対象とした6週間の集中的な精神トレーニング実験の結果、37名が超常的現象に類似した反応を示し、人間の潜在的精神能力の存在を示唆する驚くべき知見が得られた。\n\n強化系、放出系、変化系など複数の能力カテゴリーにおいて、系統的なトレーニングが個人の精神的・身体的限界を拡張する可能性が観察された。脳波測定、MRI、バイオフィードバックセンサーなどの最先端技術を駆使した分析により、従来の科学的パラダイムを揺るがす萌芽的証拠を見出した。\n\nしかし、本研究には限定的なサンプルサイズ、短い実験期間、再現性の課題など、多くの科学的制約が存在する。それでも、人間の意識と能力に関する理解に新たな視点をもたらし、脳科学、量子力学、意識研究を横断する学際的アプローチの可能性を切り開いた点で、きわめて革新的な学術的貢献といえるだろう。",
   "sections_format": [
     {
       "sub_sections": [
         {
           "title_name": "目的と仮説",
-          "text": "本研究は、伝書鳩が地図アプリを使用している可能性について、革新的かつ学際的な観点から探求することを目的としている。近年、鳥類の認知能力に関する研究は急速に進展しており、特に伝書鳩の空間認知能力は従来の理解を大きく超えている可能性が示唆されている。\n\n本研究の主要な仮説は、伝書鳩が単なる本能的なナビゲーションシステムではなく、潜在的に高度な地理空間情報処理能力を有しているというものである。具体的には、伝書鳩が人工的な地図アプリケーションと類似した、または同等の認知マッピングメカニズムを持つ可能性を検証する。\n\n本研究の独創的な視点は、鳥類の認知能力を人間のテクノロジーとの比較を通じて理解しようとする点にある。従来の生物学的研究アプローチとは異なり、情報工学的、認知科学的な視点を導入することで、鳥類の空間認知能力に対する新たな理解を提供することを目指す。",
+          "text": "本研究は、人気マンガ『ハンターハンター』に登場する念能力が、実際の人間の潜在的な超能力的可能性を探求する斬新な学術的試みである。私たちの仮説は、人間の脳内には未開発の精神的エネルギー伝達メカニズムが存在し、それが特定の訓練と精神状態によって顕在化する可能性があるというものだ。\n\n伝統的な科学的アプローチとは異なり、本研究では、漫画というフィクショナルな世界から導き出される科学的な洞察に焦点を当てる。具体的には、念能力の多様な能力、特に「念の種類」と呼ばれる特殊な能力に着目する。",
           "graphs": [],
           "tables": [],
           "formulas": []
         },
         {
           "title_name": "仮説や理論の背景",
-          "text": "伝書鳩の空間認知能力に関する既存の研究は、主に生物学的な観点から行われてきた。これらの研究は、鳩が地球の磁場、太陽の位置、ランドマークなどを利用して効率的にナビゲーションを行う能力を明らかにしてきた。しかし、本研究では、これらの能力をさらに拡張し、現代のデジタル技術との類似性を探求する。\n\n背景理論として、認知地図理論（Cognitive Map Theory）を援用する。この理論は、動物が環境を抽象的な空間的表現として内部表現できることを提案している。我々の仮説は、伝書鳩がこの認知地図を、人間のスマートフォンアプリと驚くほど類似した方法で構築・利用している可能性を示唆している。\n\n[INSERT_GRAPH_COGNITIVE_MAP]本研究では、伝書鳩の認知マッピングプロセスを視覚化するグラフを導入する。このグラフは、鳩の空間認知メカニズムと現代的なデジタル地図アプリケーションとの潜在的な類似性を示すことを目的としている。\n\n理論的背景として、以下の3つの主要な観点から仮説を展開する：\n1. 生物学的ナビゲーション機能\n2. 情報処理能力\n3. 空間的抽象化能力\n\n[INSERT_TABLE_THEORETICAL_BACKGROUND]さらに、これらの観点を比較検証するための理論的背景テーブルを提示する。このテーブルは、伝書鳩の能力と人工的なナビゲーションシステムとの比較を詳細に示している。",
-          "graphs": [
+          "text": "念能力の科学的検証のためには、まず理論的背景を明確にする必要がある。本研究では、念能力を『ハンターハンター』における6つの基本的な「念の種類」に分類し、それぞれの特性を詳細に分析する。\n\n1. 強化系：身体能力を超人的に向上させる能力\n2. 放出系：エネルギーを外部に放出する能力\n3. 変化系：物質や自身の形状を変化させる能力\n4. 具現化系：想像上の存在を現実世界に具現化する能力\n5. specialヘッセン：特殊で個人的な能力\n6. 操作系：他者の心や行動を操作する能力\n\n[INSERT_FORMULA_NENSYSTEM]これらの能力は、単なるフィクションではなく、人間の未知の精神的可能性を示唆する重要な理論的枠組みを提供すると考えられる。",
+          "graphs": [],
+          "tables": [],
+          "formulas": [
             {
-              "id": "GRAPH_COGNITIVE_MAP",
-              "figure_width": 8,
-              "figure_height": 6,
-              "title": "伝書鳩の認知マッピングプロセス",
-              "xlabel": "空間的認知レベル",
-              "ylabel": "情報処理能力",
-              "grid": true,
-              "legend": true,
-              "charts": [
+              "id": "FORMULA_NENSYSTEM",
+              "latex_code": "NenPower = \\sum_{i=1}^{6} \\left(\\frac{MentalEnergy_i}{MentalResistance_i}\\right) \\times TrainingFactor",
+              "description": "念能力の潜在的エネルギー計算式",
+              "parameters": [
                 {
-                  "chart_type": "line",
-                  "lines": [
-                    {
-                      "x": [0, 1, 2, 3, 4],
-                      "y": [0.2, 0.5, 0.8, 1.2, 1.5],
-                      "label": "鳩の認知マッピング",
-                      "color": "blue",
-                      "linestyle": "-",
-                      "marker": "o"
-                    },
-                    {
-                      "x": [0, 1, 2, 3, 4],
-                      "y": [0.1, 0.3, 0.6, 1.0, 1.3],
-                      "label": "従来の生物学的ナビゲーション",
-                      "color": "red",
-                      "linestyle": "--",
-                      "marker": "x"
-                    }
-                  ]
+                  "symbol": "NenPower",
+                  "description": "総念力"
+                },
+                {
+                  "symbol": "MentalEnergy",
+                  "description": "精神的エネルギーの強度"
+                },
+                {
+                  "symbol": "MentalResistance",
+                  "description": "精神的抵抗値"
+                },
+                {
+                  "symbol": "TrainingFactor",
+                  "description": "訓練による能力向上係数"
                 }
               ]
             }
-          ],
-          "tables": [
-            {
-              "id": "TABLE_THEORETICAL_BACKGROUND",
-              "table_type": "comparison",
-              "title": "伝書鳩の能力と人工的ナビゲーションシステムの比較",
-              "comparison_data": {
-                "生物学的ナビゲーション": {
-                  "mean": 0.7,
-                  "std": 0.2,
-                  "min": 0.4,
-                  "max": 1.0
-                },
-                "デジタル地図アプリ": {
-                  "mean": 0.9,
-                  "std": 0.1,
-                  "min": 0.7,
-                  "max": 1.1
-                }
-              },
-              "style": {
-                "font_size": 10,
-                "header_bg_color": "lightblue",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
-              }
-            }
-          ],
-          "formulas": []
+          ]
         }
       ],
       "title_name": "はじめに"
@@ -88,15 +50,15 @@
       "sub_sections": [
         {
           "title_name": "実験の設計と実施方法",
-          "text": "本研究における実験は、伝書鳩の空間認知能力と地図アプリ類似性を検証するため、革新的かつ挑戦的な設計を採用した。実験プロトコルは、動物行動学、認知科学、情報工学の学際的アプローチを統合し、従来の研究手法を大きく超える斬新な方法論を提案する。\n\n実験は3段階のプロセスで構成される：\n\n1. 初期トレーニングフェーズ\n伝書鳩に対して、GPSトラッキングデバイスと小型の軽量モニタリングシステムを装着し、都市環境および自然環境における移動パターンを追跡した。\n\n2. デジタルインターフェースへの適応トレーニング\n鳩に対して、タッチスクリーン互換の特殊に開発されたインターフェースを導入し、地図情報の操作と理解能力を評価した。\n\n3. ナビゲーション検証実験\n[INSERT_GRAPH_EXPERIMENTAL_DESIGN]複数の異なる環境下で、鳩の実際のルート選択と、デジタル地図上の最適ルートとの相関性を詳細に分析する実験を実施した。\n\n[INSERT_TABLE_EXPERIMENTAL_CONDITIONS]本実験では、様々な環境条件下での鳩の行動を体系的に記録し、その空間認知能力の多角的な評価を試みた。",
+          "text": "本研究における念能力の検証実験は、前例のない斬新かつ挑戦的なアプローチを採用した。被験者100名を対象に、『ハンターハンター』の念能力トレーニング方法を模した独自のプロトコルを開発し、6週間にわたる集中的な精神トレーニングを実施した。\n\n実験は以下の4つのフェーズに分けて実施した：\n\n1. 初期評価フェーズ：被験者の基本的な精神的・身体的パラメータを測定\n2. 念能力トレーニングフェーズ：瞑想、想像力トレーニング、集中力強化プログラム\n3. 能力発現テストフェーズ：[INSERT_GRAPH_NENPOWER]各被験者の潜在的念能力を計測\n4. 最終評価フェーズ：トレーニング前後の変化を統計的に分析\n\n倫理的配慮として、全被験者から事前に詳細なインフォームドコンセントを得ており、本研究は学際的な科学探求の一環として位置づけられる。",
           "graphs": [
             {
-              "id": "GRAPH_EXPERIMENTAL_DESIGN",
-              "figure_width": 10,
-              "figure_height": 6,
-              "title": "伝書鳩のナビゲーション実験デザイン",
-              "xlabel": "実験ステージ",
-              "ylabel": "認知パフォーマンス",
+              "id": "GRAPH_NENPOWER",
+              "figure_width": 7,
+              "figure_height": 5,
+              "title": "被験者の念能力スコア分布",
+              "xlabel": "トレーニング期間（週）",
+              "ylabel": "念能力スコア",
               "grid": true,
               "legend": true,
               "charts": [
@@ -104,17 +66,37 @@
                   "chart_type": "line",
                   "lines": [
                     {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [0.2, 0.5, 0.8, 1.2, 1.5],
-                      "label": "デジタル適応度",
+                      "x": [
+                        0,
+                        2,
+                        4,
+                        6
+                      ],
+                      "y": [
+                        10,
+                        25,
+                        40,
+                        55
+                      ],
+                      "label": "平均念能力スコア",
                       "color": "blue",
                       "linestyle": "-",
                       "marker": "o"
                     },
                     {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [0.1, 0.3, 0.6, 0.9, 1.3],
-                      "label": "ルート最適化",
+                      "x": [
+                        0,
+                        2,
+                        4,
+                        6
+                      ],
+                      "y": [
+                        5,
+                        15,
+                        30,
+                        45
+                      ],
+                      "label": "最小念能力スコア",
                       "color": "red",
                       "linestyle": "--",
                       "marker": "x"
@@ -124,78 +106,56 @@
               ]
             }
           ],
+          "tables": [],
+          "formulas": []
+        },
+        {
+          "title_name": "使用したツール・技術・データセット",
+          "text": "本研究では、最先端の科学技術とユニークな測定機器を駆使し、念能力の客観的評価を試みた。[INSERT_TABLE_EXPERIMENTAL_TOOLS]\n\n主な使用ツールと技術は以下の通りである：\n\n1. 脳波測定装置：精神的エネルギーの変化を追跡\n2. バイオフィードバックセンサー：身体的反応を継続的にモニタリング\n3. 磁気共鳴イメージング（MRI）：脳活動パターンの詳細な分析\n4. カスタム開発された『念能力評価プラットフォーム』：総合的な能力スコアリングシステム\n\n実験で収集したデータは、厳密な統計解析と機械学習アルゴリズムを用いて処理し、念能力の科学的検証に向けた革新的なアプローチを確立した。",
+          "graphs": [],
           "tables": [
             {
-              "id": "TABLE_EXPERIMENTAL_CONDITIONS",
+              "id": "TABLE_EXPERIMENTAL_TOOLS",
               "table_type": "basic",
-              "title": "実験環境と条件詳細",
-              "columns": ["環境タイプ", "距離", "障害物", "天候条件", "成功率"],
+              "title": "実験で使用した主要ツールと技術",
+              "columns": [
+                "ツール/技術",
+                "目的",
+                "測定パラメータ"
+              ],
               "rows": [
-                ["都市部", "5km", "中程度", "晴れ", "82%"],
-                ["郊外", "10km", "低", "曇り", "91%"],
-                ["山岳地帯", "15km", "高", "霧", "67%"]
+                [
+                  "脳波測定装置",
+                  "精神的エネルギー追跡",
+                  "脳波パターン"
+                ],
+                [
+                  "バイオフィードバックセンサー",
+                  "身体的反応モニタリング",
+                  "生理学的指標"
+                ],
+                [
+                  "MRIスキャナ",
+                  "脳活動分析",
+                  "神経活動マッピング"
+                ],
+                [
+                  "念能力評価プラットフォーム",
+                  "総合的能力スコアリング",
+                  "複合的能力指標"
+                ]
               ],
               "style": {
                 "font_size": 10,
-                "header_bg_color": "lightgreen",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
+                "header_bg_color": "#4CAF50",
+                "header_font_color": "white",
+                "cell_bg_color": "#E8F5E9",
+                "border_color": "black",
                 "border_width": 1
               }
             }
           ],
           "formulas": []
-        },
-        {
-          "title_name": "使用したツール・技術・データセット",
-          "text": "本研究では、最先端のテクノロジーと革新的な計測技術を駆使し、伝書鳩の空間認知能力を詳細に分析した。使用したツール、技術、データセットは以下の通りである。\n\nハードウェアツール：\n1. 超小型GPS追跡デバイス（重量3g）\n2. 軽量生体モニタリングセンサー\n3. カスタマイズされたタッチスクリーンインターフェース\n\nソフトウェア技術：\n1. 機械学習アルゴリズム（ルート予測）\n2. 画像認識システム\n3. リアルタイムデータ分析プラットフォーム\n\n[INSERT_FORMULA_DATA_PROCESSING]データ処理の核心となる数学的モデルを定式化し、鳩のナビゲーション能力を定量的に評価するための数式を導入する。\n\n[INSERT_TABLE_TECHNICAL_SPECIFICATIONS]本研究で使用した主要な技術的仕様を詳細に示すテーブルを提示する。研究に使用したツールの技術的詳細と性能特性を明らかにする。",
-          "graphs": [],
-          "tables": [
-            {
-              "id": "TABLE_TECHNICAL_SPECIFICATIONS",
-              "table_type": "basic",
-              "title": "研究に使用した主要テクノロジーの仕様",
-              "columns": [
-                "デバイス",
-                "重量",
-                "精度",
-                "データ更新頻度",
-                "バッテリー持続時間"
-              ],
-              "rows": [
-                ["GPSトラッカー", "3g", "±2m", "1Hz", "48時間"],
-                ["生体センサー", "2g", "±0.1%", "10Hz", "72時間"],
-                ["タッチスクリーン", "5g", "95%", "60Hz", "24時間"]
-              ],
-              "style": {
-                "font_size": 10,
-                "header_bg_color": "lightyellow",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
-              }
-            }
-          ],
-          "formulas": [
-            {
-              "id": "FORMULA_DATA_PROCESSING",
-              "latex_code": "N(t) = \\frac{\\int_{0}^{t} V(x) dx}{D} \\cdot \\epsilon(t)",
-              "description": "鳩のナビゲーション能力を評価するための複合的データ処理モデル",
-              "parameters": [
-                {
-                  "symbol": "N(t)",
-                  "description": "時間tにおけるナビゲーション性能指標"
-                },
-                { "symbol": "V(x)", "description": "移動速度の関数" },
-                { "symbol": "D", "description": "総移動距離" },
-                { "symbol": "ε(t)", "description": "環境誤差係数" }
-              ]
-            }
-          ]
         }
       ],
       "title_name": "方法論"
@@ -204,127 +164,102 @@
       "sub_sections": [
         {
           "title_name": "実験結果の詳細",
-          "text": "本研究における実験結果は、伝書鳩の空間認知能力に関して驚くべき知見をもたらした。従来の生物学的理解を大きく超える、革新的な発見が明らかになった。\n\n実験の主要な結果は以下の通りである：\n\n1. デジタルインターフェース理解能力\n伝書鳩の85%が、カスタマイズされたタッチスクリーンインターフェースを驚くべき精度で操作可能であることが判明した。特に、ルート選択タスクにおいて、平均70%の正確性で最適経路を選択した。\n\n2. ナビゲーション精度\n[INSERT_GRAPH_NAVIGATION_ACCURACY]GPSトラッキングデータによると、鳩は人工的な地図アプリと極めて類似した経路選択パターンを示した。都市部、郊外、山岳地帯における実験で、驚くべき適応性が観察された。\n\n3. 環境適応能力\n異なる環境条件下での実験結果は、鳩の認知マッピング能力の高い柔軟性を示唆している。特に複雑な地理的障害がある環境でも、驚くべき空間認知能力を発揮した。\n\n[INSERT_TABLE_EXPERIMENTAL_RESULTS]本研究で得られた実験結果の詳細な統計的サマリーを示すテーブルを提示する。各実験条件における鳩のパフォーマンスを定量的に分析した。",
+          "text": "本研究における念能力検証実験から、驚くべき知見が明らかになった。[INSERT_GRAPH_ABILITYPROGRESSIONS]被験者100名中、実に37名が何らかの超常的現象に類似した反応を示し、科学的常識を揺るがす結果を得た。\n\n6週間の集中的なトレーニングを通じて、以下のような興味深い現象が観察された：\n\n1. 強化系能力：12名の被験者が通常を超える反射神経と筋力の向上を実証\n2. 放出系能力：8名が微弱な電磁気的エネルギー放出の兆候を示した\n3. 変化系能力：5名が身体感覚の異常な変容を報告\n4. 具現化系能力：2名が驚くべき想像力による物理的影響の痕跡を記録\n\n特に注目すべきは、これらの能力が完全にランダムではなく、系統的なトレーニングによって引き出された点である。",
           "graphs": [
             {
-              "id": "GRAPH_NAVIGATION_ACCURACY",
-              "figure_width": 10,
+              "id": "GRAPH_ABILITYPROGRESSIONS",
+              "figure_width": 8,
               "figure_height": 6,
-              "title": "環境別ナビゲーション精度比較",
-              "xlabel": "環境タイプ",
-              "ylabel": "ナビゲーション正確性(%)",
+              "title": "念能力タイプ別能力発現率",
+              "xlabel": "念能力タイプ",
+              "ylabel": "能力発現率（%）",
               "grid": true,
               "legend": true,
               "charts": [
                 {
                   "chart_type": "bar",
-                  "categories": ["都市部", "郊外", "山岳地帯"],
-                  "values": [85, 92, 75],
-                  "colors": ["blue", "green", "red"]
-                }
-              ]
-            }
-          ],
-          "tables": [
-            {
-              "id": "TABLE_EXPERIMENTAL_RESULTS",
-              "table_type": "summary",
-              "title": "実験結果の統計的サマリー",
-              "statistics": {
-                "ナビゲーション正確性": {
-                  "mean": 84.0,
-                  "median": 85.5,
-                  "std": 7.2,
-                  "min": 75.0,
-                  "max": 92.0
-                },
-                "デジタルインターフェース理解度": {
-                  "mean": 85.0,
-                  "median": 86.0,
-                  "std": 6.5,
-                  "min": 78.0,
-                  "max": 93.0
-                }
-              },
-              "style": {
-                "font_size": 10,
-                "header_bg_color": "lightblue",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
-              }
-            }
-          ],
-          "formulas": []
-        },
-        {
-          "title_name": "得られたデータの分析",
-          "text": "実験から得られたデータの詳細な分析により、伝書鳩の認知能力に関する新たな洞察が得られた。多角的なデータ解析アプローチを用いて、鳩の空間認知メカニズムを深く理解することを試みた。\n\nデータ分析の主要なポイント：\n\n1. 統計的有意性\n機械学習アルゴリズムを用いた分析により、鳩のナビゲーション能力が偶然によるものではなく、高度な認知プロセスに基づいていることが示された。\n\n2. パターン認識\n[INSERT_GRAPH_PATTERN_RECOGNITION]鳩のルート選択パターンと人工的な地図アプリのアルゴリズムとの驚くべき類似性が明らかになった。この発見は、動物の認知能力に関する従来の理解に挑戦するものである。\n\n3. 環境変数の影響\n異なる環境条件が鳩のナビゲーション能力にどのように影響するかを詳細に分析した。\n\n[INSERT_FORMULA_DATA_CORRELATION]鳩のナビゲーション能力と環境パラメータ間の相関関係を示す数学的モデルを導入する。\n\n[INSERT_TABLE_CORRELATION_ANALYSIS]環境変数と鳩のナビゲーション性能との相関関係を示す詳細な相関分析テーブルを提示する。",
-          "graphs": [
-            {
-              "id": "GRAPH_PATTERN_RECOGNITION",
-              "figure_width": 10,
-              "figure_height": 6,
-              "title": "鳩のルート選択パターンと地図アプリアルゴリズムの比較",
-              "xlabel": "ルート複雑性",
-              "ylabel": "パターン類似性(%)",
-              "grid": true,
-              "legend": true,
-              "charts": [
-                {
-                  "chart_type": "line",
-                  "lines": [
-                    {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [60, 75, 85, 90, 95],
-                      "label": "鳩のルート選択",
-                      "color": "blue",
-                      "linestyle": "-",
-                      "marker": "o"
-                    },
-                    {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [55, 70, 80, 88, 93],
-                      "label": "地図アプリアルゴリズム",
-                      "color": "red",
-                      "linestyle": "--",
-                      "marker": "x"
-                    }
+                  "categories": [
+                    "強化系",
+                    "放出系",
+                    "変化系",
+                    "具現化系",
+                    "操作系"
+                  ],
+                  "values": [
+                    12,
+                    8,
+                    5,
+                    2,
+                    1
+                  ],
+                  "colors": [
+                    "#FF6384",
+                    "#36A2EB",
+                    "#FFCE56",
+                    "#4BC0C0",
+                    "#9966FF"
                   ]
                 }
               ]
             }
           ],
+          "tables": [],
+          "formulas": []
+        },
+        {
+          "title_name": "得られたデータの分析",
+          "text": "データ分析により、念能力の発現には複雑な要因が関与していることが判明した。[INSERT_TABLE_STATISTIC_ANALYSIS][INSERT_FORMULA_NENPOWER_CALCULATION]\n\n統計的に最も興味深い知見は以下の通りである：\n\n1. 精神的集中度と能力発現には強い相関関係が存在する\n2. 年齢が30-40歳の被験者に最も高い能力発現率が観察された\n3. 瞑想経験のある被験者は、そうでない被験者より明確な能力変化を示した\n\n驚くべきことに、これらの結果は単なる偶然ではなく、人間の潜在的能力の存在を示唆する科学的証拠となり得る。",
+          "graphs": [],
           "tables": [
             {
-              "id": "TABLE_CORRELATION_ANALYSIS",
-              "table_type": "correlation",
-              "title": "環境変数とナビゲーション性能の相関分析",
-              "variables": [
-                "天候",
-                "地形複雑性",
-                "障害物密度",
-                "ナビゲーション精度"
-              ],
-              "correlation_matrix": [
-                [1.0, 0.3, 0.2, 0.7],
-                [0.3, 1.0, 0.5, 0.6],
-                [0.2, 0.5, 1.0, 0.4],
-                [0.7, 0.6, 0.4, 1.0]
-              ]
+              "id": "TABLE_STATISTIC_ANALYSIS",
+              "table_type": "summary",
+              "title": "念能力発現に関する統計分析",
+              "statistics": {
+                "能力発現率": {
+                  "mean": 7.4,
+                  "median": 6.5,
+                  "std": 3.2,
+                  "min": 1.0,
+                  "max": 12.0
+                },
+                "トレーニング効果": {
+                  "mean": 45.6,
+                  "median": 42.0,
+                  "std": 15.7,
+                  "min": 20.0,
+                  "max": 75.0
+                }
+              },
+              "style": {
+                "font_size": 10,
+                "header_bg_color": "#2196F3",
+                "header_font_color": "white"
+              }
             }
           ],
           "formulas": [
             {
-              "id": "FORMULA_DATA_CORRELATION",
-              "latex_code": "r_{xy} = \\frac{\\sum_{i=1}^{n} (x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum_{i=1}^{n} (x_i - \\bar{x})^2 \\sum_{i=1}^{n} (y_i - \\bar{y})^2}}",
-              "description": "環境変数とナビゲーション性能間の相関係数を計算するためのピアソン相関係数",
+              "id": "FORMULA_NENPOWER_CALCULATION",
+              "latex_code": "NenPower = \\frac{(\\sum Abilities) \\times ConcentrationFactor}{TrainingDuration}",
+              "description": "念能力の総合的計算式",
               "parameters": [
-                { "symbol": "r_{xy}", "description": "相関係数" },
-                { "symbol": "x_i", "description": "環境変数の値" },
-                { "symbol": "y_i", "description": "ナビゲーション性能の値" }
+                {
+                  "symbol": "NenPower",
+                  "description": "総合念能力スコア"
+                },
+                {
+                  "symbol": "Abilities",
+                  "description": "個別能力スコアの合計"
+                },
+                {
+                  "symbol": "ConcentrationFactor",
+                  "description": "精神集中係数"
+                },
+                {
+                  "symbol": "TrainingDuration",
+                  "description": "トレーニング期間"
+                }
               ]
             }
           ]
@@ -336,215 +271,177 @@
       "sub_sections": [
         {
           "title_name": "結果に対する解釈",
-          "text": "本研究の実験結果は、伝書鳩の認知能力に関して従来の科学的理解を根本的に再考させる画期的な知見をもたらした。得られた結果は、鳩が単なる本能的なナビゲーター以上の高度な空間認知能力を持つ可能性を強く示唆している。\n\n主要な解釈ポイント：\n\n1. 認知的柔軟性\n実験結果は、伝書鳩が驚くべき認知的柔軟性を持ち、デジタル技術に匹敵するほどの空間情報処理能力を有することを示唆している。従来の生物学的限界を大きく超える、革新的な認知メカニズムの存在が示唆された。\n\n2. アルゴリズム的思考\n[INSERT_GRAPH_COGNITIVE_INTERPRETATION]鳩のルート選択パターンと人工的な地図アプリのアルゴリズムとの驚くべき類似性は、鳥類の認知プロセスが計算論的思考に近い可能性を示唆している。\n\n3. 環境適応能力\n異なる地理的環境下での高い適応性は、鳩の認知システムが動的で柔軟であることを明確に示している。\n\n[INSERT_FORMULA_COGNITIVE_MODEL]鳩の認知プロセスを数学的に表現するモデルを導入し、その複雑な情報処理メカニズムを定量的に理解する試みを行う。\n\n[INSERT_TABLE_COGNITIVE_INTERPRETATION]実験結果の認知科学的解釈を詳細に示すテーブルを提示し、鳩の空間認知能力の多角的な分析を行う。",
+          "text": "本研究における念能力の科学的検証は、従来の科学パラダイムに挑戦する斬新な知見をもたらした。[INSERT_GRAPH_NENPOWER_INTERPRETATION]\n\n観察された現象は、単なる偶然や主観的体験を超えた、人間の潜在的精神能力の存在を示唆している。特に興味深いのは、トレーニングによって引き出された超常的能力の系統的な変化パターンである。\n\n我々の解釈によれば、人間の脳は未知の精神的エネルギー伝達メカニズムを秘めており、適切な訓練と精神状態によって、通常の認知限界を超える可能性が示唆された。具体的には：\n\n1. 強化系能力：身体の生理学的限界を超える潜在的メカニズムの存在\n2. 放出系能力：未知の生体電磁気的相互作用の可能性\n3. 変化系能力：意識による身体制御の新たな理解",
           "graphs": [
             {
-              "id": "GRAPH_COGNITIVE_INTERPRETATION",
-              "figure_width": 10,
+              "id": "GRAPH_NENPOWER_INTERPRETATION",
+              "figure_width": 8,
               "figure_height": 6,
-              "title": "鳩の認知処理と地図アプリアルゴリズムの比較",
-              "xlabel": "情報処理複雑性",
-              "ylabel": "認知パフォーマンス",
+              "title": "念能力発現の因果関係分析",
+              "xlabel": "トレーニング強度",
+              "ylabel": "能力発現度",
               "grid": true,
               "legend": true,
               "charts": [
                 {
                   "chart_type": "scatter",
-                  "x": [1, 2, 3, 4, 5, 6, 7],
-                  "y": [0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2],
-                  "colors": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1],
-                  "sizes": [50, 60, 70, 80, 90, 100, 110],
+                  "x": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                  ],
+                  "y": [
+                    10,
+                    25,
+                    40,
+                    55,
+                    65,
+                    75
+                  ],
+                  "colors": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6
+                  ],
+                  "sizes": [
+                    30,
+                    40,
+                    50,
+                    60,
+                    70,
+                    80
+                  ],
                   "alpha": 0.7,
                   "cmap": "viridis"
                 }
               ]
             }
           ],
-          "tables": [
-            {
-              "id": "TABLE_COGNITIVE_INTERPRETATION",
-              "table_type": "comparison",
-              "title": "鳩の認知能力と人工システムの比較分析",
-              "comparison_data": {
-                "空間認知能力": {
-                  "mean": 0.85,
-                  "std": 0.15,
-                  "min": 0.7,
-                  "max": 1.0
-                },
-                "アルゴリズム類似性": {
-                  "mean": 0.78,
-                  "std": 0.12,
-                  "min": 0.6,
-                  "max": 0.9
-                }
-              },
-              "style": {
-                "font_size": 10,
-                "header_bg_color": "lightgreen",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
-              }
-            }
-          ],
-          "formulas": [
-            {
-              "id": "FORMULA_COGNITIVE_MODEL",
-              "latex_code": "C(t) = \\alpha \\cdot \\int_{0}^{t} \\frac{I(x)}{E(x)} dx + \\beta \\cdot \\log(P(t))",
-              "description": "鳩の認知プロセスを表現する複合的数学モデル",
-              "parameters": [
-                {
-                  "symbol": "C(t)",
-                  "description": "時間tにおける認知パフォーマンス"
-                },
-                { "symbol": "I(x)", "description": "情報入力の複雑性" },
-                { "symbol": "E(x)", "description": "環境の複雑性" },
-                { "symbol": "P(t)", "description": "経路選択の確率" }
-              ]
-            }
-          ]
+          "tables": [],
+          "formulas": []
         },
         {
           "title_name": "仮説と実験結果の一致/不一致",
-          "text": "本研究の当初の仮説と実験結果の比較分析は、興味深い一致点と予想外の発見をもたらした。研究の主要な仮説に対する検証結果を詳細に検討する。\n\n仮説検証の主要ポイント：\n\n1. デジタルインターフェース理解仮説\n当初の仮説では、鳩がデジタルインターフェースを70%の精度で理解可能と予測していたが、実際の実験結果は85%と予想を大きく上回った。\n\n2. ルート最適化能力\n[INSERT_GRAPH_HYPOTHESIS_COMPARISON]仮説と実際の実験結果におけるルート最適化能力の比較グラフを提示し、予測と実際の乖離を視覚的に分析する。\n\n3. 環境適応能力\n異なる環境条件下での鳩の性能は、当初の予測をほぼ正確に支持する結果となった。\n\n[INSERT_FORMULA_HYPOTHESIS_VALIDATION]仮説検証のための統計的検定モデルを導入し、結果の科学的妥当性を定量的に評価する。\n\n[INSERT_TABLE_HYPOTHESIS_COMPARISON]仮説と実験結果の詳細な比較分析を示すテーブルを提示し、各要素における一致度と乖離を明確にする。",
-          "graphs": [
-            {
-              "id": "GRAPH_HYPOTHESIS_COMPARISON",
-              "figure_width": 10,
-              "figure_height": 6,
-              "title": "仮説と実験結果のルート最適化能力比較",
-              "xlabel": "環境複雑性",
-              "ylabel": "最適化性能",
-              "grid": true,
-              "legend": true,
-              "charts": [
-                {
-                  "chart_type": "line",
-                  "lines": [
-                    {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [0.6, 0.7, 0.8, 0.9, 1.0],
-                      "label": "初期仮説",
-                      "color": "blue",
-                      "linestyle": "--",
-                      "marker": "o"
-                    },
-                    {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [0.7, 0.8, 0.9, 1.0, 1.1],
-                      "label": "実験結果",
-                      "color": "red",
-                      "linestyle": "-",
-                      "marker": "x"
-                    }
-                  ]
-                }
-              ]
-            }
-          ],
+          "text": "初期仮説と実験結果の比較分析により、興味深い一致点と相違点が明らかになった。[INSERT_TABLE_HYPOTHESIS_COMPARISON]\n\n一致した点：\n1. 精神的トレーニングが能力発現に影響を与える\n2. 個人差が能力発現に大きく関与する\n3. 念能力の多様性が確認された\n\n相違点：\n1. 能力発現率が予想を下回った\n2. 具現化系能力の再現性が極めて低い\n3. 個人の精神状態による変動が予想以上に大きい\n\n[INSERT_FORMULA_HYPOTHESIS_DEVIATION]これらの結果は、我々の仮説を完全に支持するものではないが、人間の未知の精神的可能性を示唆する重要な科学的示唆を提供している。",
+          "graphs": [],
           "tables": [
             {
               "id": "TABLE_HYPOTHESIS_COMPARISON",
               "table_type": "basic",
-              "title": "仮説と実験結果の詳細比較",
-              "columns": ["評価項目", "初期仮説", "実験結果", "一致度"],
+              "title": "仮説と実験結果の比較",
+              "columns": [
+                "仮説項目",
+                "予想",
+                "実際の結果",
+                "一致度"
+              ],
               "rows": [
-                ["デジタルインターフェース理解", "70%", "85%", "121%"],
-                ["ルート最適化能力", "75%", "82%", "109%"],
-                ["環境適応性", "80%", "79%", "98%"]
+                [
+                  "能力発現率",
+                  "50%",
+                  "37%",
+                  "部分的一致"
+                ],
+                [
+                  "トレーニング効果",
+                  "高い",
+                  "中程度",
+                  "部分的一致"
+                ],
+                [
+                  "個人差の影響",
+                  "大",
+                  "非常に大",
+                  "完全一致"
+                ],
+                [
+                  "具現化系能力",
+                  "高い再現性",
+                  "極めて低い",
+                  "不一致"
+                ]
               ],
               "style": {
                 "font_size": 10,
-                "header_bg_color": "lightyellow",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
+                "header_bg_color": "#FF5722",
+                "header_font_color": "white",
+                "cell_bg_color": "#FFF3E0"
               }
             }
           ],
           "formulas": [
             {
-              "id": "FORMULA_HYPOTHESIS_VALIDATION",
-              "latex_code": "H_0: \\mu_1 = \\mu_2 \\\\ H_1: \\mu_1 \\neq \\mu_2",
-              "description": "仮説検証のための統計的検定モデル（帰無仮説と対立仮説）",
+              "id": "FORMULA_HYPOTHESIS_DEVIATION",
+              "latex_code": "DeviationFactor = \\frac{|Hypothesis - Experimental Result|}{Hypothesis} \\times 100\\%",
+              "description": "仮説からの偏差計算式",
               "parameters": [
-                { "symbol": "μ₁", "description": "初期仮説の平均値" },
-                { "symbol": "μ₂", "description": "実験結果の平均値" }
+                {
+                  "symbol": "DeviationFactor",
+                  "description": "仮説からの偏差率"
+                },
+                {
+                  "symbol": "Hypothesis",
+                  "description": "元の仮説値"
+                },
+                {
+                  "symbol": "Experimental Result",
+                  "description": "実験結果の値"
+                }
               ]
             }
           ]
         },
         {
           "title_name": "実験の限界・誤差・改善点",
-          "text": "本研究は革新的な知見を提供する一方で、科学的誠実性の観点から実験の限界と潜在的な改善点を慎重に検討する必要がある。\n\n主要な限界と改善点：\n\n1. サンプルサイズの制約\n本研究は限定的なサンプルサイズで実施されたため、結果の一般化には慎重な解釈が必要である。\n\n2. 実験環境の人工性\n[INSERT_GRAPH_EXPERIMENTAL_LIMITATIONS]実験環境の人工性が研究結果に与える潜在的な影響を視覚的に分析する。\n\n3. 技術的制約\n使用した計測技術には固有の誤差と限界が存在し、これらが結果の解釈に影響を与える可能性がある。\n\n[INSERT_FORMULA_ERROR_ANALYSIS]実験誤差を定量的に評価するための統計的モデルを導入する。\n\n[INSERT_TABLE_RESEARCH_LIMITATIONS]研究の限界と潜在的な改善点を詳細に示すテーブルを提示し、将来の研究に向けた具体的な提言を行う。",
-          "graphs": [
-            {
-              "id": "GRAPH_EXPERIMENTAL_LIMITATIONS",
-              "figure_width": 10,
-              "figure_height": 6,
-              "title": "実験環境の人工性が結果に与える影響",
-              "xlabel": "環境要因",
-              "ylabel": "潜在的バイアス",
-              "grid": true,
-              "legend": true,
-              "charts": [
-                {
-                  "chart_type": "bar",
-                  "categories": [
-                    "サンプルサイズ",
-                    "環境制御",
-                    "測定技術",
-                    "個体差"
-                  ],
-                  "values": [0.7, 0.6, 0.5, 0.4],
-                  "colors": ["blue", "green", "red", "purple"]
-                }
-              ]
-            }
-          ],
+          "text": "本研究には複数の重要な限界と改善の余地がある。[INSERT_TABLE_EXPERIMENTAL_LIMITATIONS]\n\n主な限界：\n1. サンプルサイズの制限（100名の被験者）\n2. 実験期間の短さ（6週間）\n3. 厳密な再現性の欠如\n4. 倫理的・科学的検証の難しさ\n\n具体的な改善提案：\n1. より大規模なサンプル集団での検証\n2. 長期的な追跡調査\n3. 多角的な測定技術の導入\n4. 厳密な二重盲検法の適用\n\n私たちの研究は、人間の潜在能力に関する科学的探求の端緒であり、今後さらなる検証と深い学際的アプローチが求められる。",
+          "graphs": [],
           "tables": [
             {
-              "id": "TABLE_RESEARCH_LIMITATIONS",
+              "id": "TABLE_EXPERIMENTAL_LIMITATIONS",
               "table_type": "basic",
-              "title": "研究の限界と将来の改善点",
-              "columns": ["限界カテゴリ", "具体的な制約", "改善提案"],
+              "title": "実験の限界と改善点",
+              "columns": [
+                "カテゴリ",
+                "現状の限界",
+                "改善案"
+              ],
               "rows": [
-                ["サンプルサイズ", "限定的な個体数", "より大規模な研究の実施"],
                 [
-                  "実験環境",
-                  "高度に制御された環境",
-                  "より自然な環境での追加実験"
+                  "サンプルサイズ",
+                  "100名",
+                  "1000名以上"
                 ],
-                ["測定技術", "技術的誤差の存在", "高精度センサーの導入"]
+                [
+                  "実験期間",
+                  "6週間",
+                  "1年以上の追跡"
+                ],
+                [
+                  "測定技術",
+                  "限定的",
+                  "複合的測定法"
+                ],
+                [
+                  "再現性",
+                  "低い",
+                  "厳密なプロトコル開発"
+                ]
               ],
               "style": {
                 "font_size": 10,
-                "header_bg_color": "lightpink",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
+                "header_bg_color": "#9C27B0",
+                "header_font_color": "white",
+                "cell_bg_color": "#F3E5F5"
               }
             }
           ],
-          "formulas": [
-            {
-              "id": "FORMULA_ERROR_ANALYSIS",
-              "latex_code": "\\sigma_{error} = \\sqrt{\\frac{\\sum_{i=1}^{n} (x_i - \\bar{x})^2}{n-1}}",
-              "description": "実験誤差を評価するための標準偏差計算モデル",
-              "parameters": [
-                { "symbol": "σ_{error}", "description": "実験誤差の標準偏差" },
-                { "symbol": "x_i", "description": "個々の測定値" },
-                { "symbol": "\\bar{x}", "description": "測定値の平均" }
-              ]
-            }
-          ]
+          "formulas": []
         }
       ],
       "title_name": "考察"
@@ -553,158 +450,117 @@
       "sub_sections": [
         {
           "title_name": "仮説の検証結果",
-          "text": "本研究は、伝書鳩が地図アプリを使用している可能性についての革新的な探求を行い、驚くべき知見を得た。当初の仮説は、鳩の空間認知能力が人工的なナビゲーションシステムと驚くほど類似した特性を持つというものであった。\n\n仮説検証の主要な結果：\n\n1. デジタル技術類似性\n鳩は、デジタル地図アプリと驚くほど類似したルート選択アルゴリズムを持つことが明らかになった。当初の予想を大きく上回る85%の精度で、複雑な空間情報を処理することが可能であることが示された。\n\n2. 認知的柔軟性\n[INSERT_GRAPH_HYPOTHESIS_VERIFICATION]異なる環境条件下での鳩のナビゲーション能力を比較するグラフを提示し、その驚くべき認知的柔軟性を視覚的に示す。\n\n3. 理論的貢献\n本研究は、動物の認知能力に関する従来の理解に挑戦し、鳥類の空間認知メカニズムについて新たな視点を提供した。\n\n[INSERT_FORMULA_HYPOTHESIS_SUMMARY]仮説検証の結果を数学的に要約するモデルを導入し、研究の定量的な成果を示す。\n\n[INSERT_TABLE_HYPOTHESIS_SUMMARY]仮説の各要素に対する検証結果を詳細に示すテーブルを提示し、研究の包括的な成果を明確にする。",
+          "text": "本研究における『ハンターハンター』の念能力を科学的に検証する挑戦的な試みは、驚くべき知見と同時に多くの疑問を提起した。[INSERT_GRAPH_HYPOTHESIS_VERIFICATION]\n\n最終的な仮説検証結果は、以下のように要約できる：\n\n1. 人間の潜在的精神能力の存在を部分的に支持\n2. 系統的トレーニングによる能力開発の可能性を示唆\n3. 従来の科学的パラダイムを揺るがす萌芽的証拠の発見\n\n特筆すべきは、37%の被験者が何らかの超常的現象に類似した反応を示し、単なる偶然を超えた結果を得たことである。[INSERT_FORMULA_HYPOTHESIS_VALIDATION]これは、人間の意識と能力に関する既存の科学的理解に挑戦する重要な知見となった。",
           "graphs": [
             {
               "id": "GRAPH_HYPOTHESIS_VERIFICATION",
-              "figure_width": 10,
+              "figure_width": 8,
               "figure_height": 6,
-              "title": "環境条件別ナビゲーション能力比較",
-              "xlabel": "環境複雑性",
-              "ylabel": "ナビゲーション性能",
+              "title": "仮説検証結果の総合評価",
+              "xlabel": "仮説の検証項目",
+              "ylabel": "検証度（%）",
               "grid": true,
               "legend": true,
               "charts": [
                 {
-                  "chart_type": "line",
-                  "lines": [
-                    {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [0.7, 0.8, 0.9, 1.0, 1.1],
-                      "label": "都市部",
-                      "color": "blue",
-                      "linestyle": "-",
-                      "marker": "o"
-                    },
-                    {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [0.6, 0.7, 0.8, 0.9, 1.0],
-                      "label": "郊外",
-                      "color": "green",
-                      "linestyle": "--",
-                      "marker": "x"
-                    },
-                    {
-                      "x": [1, 2, 3, 4, 5],
-                      "y": [0.5, 0.6, 0.7, 0.8, 0.9],
-                      "label": "山岳地帯",
-                      "color": "red",
-                      "linestyle": "-.",
-                      "marker": "^"
-                    }
-                  ]
+                  "chart_type": "pie",
+                  "labels": [
+                    "部分的支持",
+                    "限定的支持",
+                    "追加研究必要",
+                    "棄却"
+                  ],
+                  "sizes": [
+                    37,
+                    25,
+                    23,
+                    15
+                  ],
+                  "explode": [
+                    0.1,
+                    0,
+                    0,
+                    0
+                  ],
+                  "autopct": "%1.1f%%",
+                  "shadow": true,
+                  "startangle": 90
                 }
               ]
             }
           ],
-          "tables": [
-            {
-              "id": "TABLE_HYPOTHESIS_SUMMARY",
-              "table_type": "basic",
-              "title": "仮説検証結果の詳細サマリー",
-              "columns": ["仮説要素", "当初予測", "実験結果", "検証状況"],
-              "rows": [
-                ["デジタルインターフェース理解", "70%", "85%", "完全支持"],
-                ["ルート最適化能力", "75%", "82%", "部分的支持"],
-                ["環境適応性", "80%", "79%", "概ね支持"]
-              ],
-              "style": {
-                "font_size": 10,
-                "header_bg_color": "lightyellow",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
-              }
-            }
-          ],
+          "tables": [],
           "formulas": [
             {
-              "id": "FORMULA_HYPOTHESIS_SUMMARY",
-              "latex_code": "H_{validation} = \\frac{\\sum_{i=1}^{n} (R_i - P_i)^2}{n} \\cdot 100\\%",
-              "description": "仮説検証の総合的な適合度を計算するモデル",
+              "id": "FORMULA_HYPOTHESIS_VALIDATION",
+              "latex_code": "HypothesisValidation = \\frac{PositiveObservations}{TotalObservations} \\times ValidityFactor",
+              "description": "仮説検証の数学的評価式",
               "parameters": [
                 {
-                  "symbol": "H_{validation}",
-                  "description": "仮説検証の総合適合率"
+                  "symbol": "HypothesisValidation",
+                  "description": "仮説検証の総合評価値"
                 },
-                { "symbol": "R_i", "description": "実験結果" },
-                { "symbol": "P_i", "description": "初期予測" }
+                {
+                  "symbol": "PositiveObservations",
+                  "description": "肯定的観察結果の数"
+                },
+                {
+                  "symbol": "TotalObservations",
+                  "description": "総観察結果数"
+                },
+                {
+                  "symbol": "ValidityFactor",
+                  "description": "観察の信頼性係数"
+                }
               ]
             }
           ]
         },
         {
           "title_name": "今後の研究方向性",
-          "text": "本研究で得られた革新的な知見は、動物の認知能力研究における新たな可能性を切り開くものである。今後の研究においては、さらなる探求と検証が必要な多くの興味深い方向性が示唆された。\n\n将来の研究アプローチ：\n\n1. 学際的研究の展開\n認知科学、生物学、情報工学の境界を越えた包括的な研究アプローチの重要性が明らかになった。\n\n2. 技術的拡張\n[INSERT_GRAPH_FUTURE_RESEARCH]将来の研究における潜在的な探求領域と可能性を視覚的に示すグラフを提示する。\n\n3. 比較認知研究\n他の鳥類種や哺乳類との比較研究により、本研究で得られた知見の普遍性を検証する必要がある。\n\n[INSERT_FORMULA_RESEARCH_POTENTIAL]将来の研究可能性を定量的に評価するモデルを導入する。\n\n[INSERT_TABLE_RESEARCH_DIRECTIONS]今後の研究方向性と具体的な研究提案を詳細に示すテーブルを提示し、学術コミュニティへの具体的な提言を行う。",
-          "graphs": [
-            {
-              "id": "GRAPH_FUTURE_RESEARCH",
-              "figure_width": 10,
-              "figure_height": 6,
-              "title": "将来の研究探求領域",
-              "xlabel": "研究領域",
-              "ylabel": "研究可能性",
-              "grid": true,
-              "legend": true,
-              "charts": [
-                {
-                  "chart_type": "bar",
-                  "categories": [
-                    "比較認知研究",
-                    "技術統合",
-                    "長期追跡",
-                    "種間比較",
-                    "認知モデリング"
-                  ],
-                  "values": [0.9, 0.8, 0.7, 0.6, 0.5],
-                  "colors": ["blue", "green", "red", "purple", "orange"]
-                }
-              ]
-            }
-          ],
+          "text": "本研究から導き出された知見は、人間の精神的能力に関する未踏の研究領域への扉を開いた。[INSERT_TABLE_FUTURE_RESEARCH]\n\n今後の研究における主要な方向性は以下の通りである：\n\n1. より大規模かつ長期的な実験プロトコルの開発\n2. 脳科学、量子力学、意識研究との学際的アプローチ\n3. 高度な測定技術と非侵襲的計測法の導入\n4. 個人の精神的・生理学的特性との相関分析\n5. 倫理的・科学的観点からの厳密な検証体制の構築\n\n『ハンターハンター』から着想を得たこの研究は、単なる学術的好奇心を超え、人間の潜在能力に対する革新的な科学的探求の先駆けとなることを目指す。",
+          "graphs": [],
           "tables": [
             {
-              "id": "TABLE_RESEARCH_DIRECTIONS",
+              "id": "TABLE_FUTURE_RESEARCH",
               "table_type": "basic",
-              "title": "今後の研究方向性と具体的提案",
-              "columns": ["研究領域", "具体的提案", "期待される成果"],
+              "title": "今後の研究方向性と優先課題",
+              "columns": [
+                "研究領域",
+                "具体的アプローチ",
+                "期待される成果"
+              ],
               "rows": [
-                ["比較認知研究", "他の鳥類種での検証", "認知能力の普遍性解明"],
                 [
-                  "技術統合",
-                  "先進的センシング技術の導入",
-                  "より精密な行動分析"
+                  "大規模実験",
+                  "1000名以上の被験者",
+                  "統計的信頼性向上"
                 ],
-                ["長期追跡研究", "個体の認知能力経年変化", "発達過程の理解"]
+                [
+                  "学際的研究",
+                  "脳科学・量子力学との連携",
+                  "包括的理解"
+                ],
+                [
+                  "技術開発",
+                  "高精度計測機器",
+                  "客観的データ収集"
+                ],
+                [
+                  "倫理的検証",
+                  "厳密な研究プロトコル",
+                  "科学的信頼性確保"
+                ]
               ],
               "style": {
                 "font_size": 10,
-                "header_bg_color": "lightgreen",
-                "header_font_color": "black",
-                "cell_bg_color": "white",
-                "cell_font_color": "black",
-                "border_color": "gray",
-                "border_width": 1
+                "header_bg_color": "#4CAF50",
+                "header_font_color": "white",
+                "cell_bg_color": "#E8F5E9"
               }
             }
           ],
-          "formulas": [
-            {
-              "id": "FORMULA_RESEARCH_POTENTIAL",
-              "latex_code": "P_{research} = \\sum_{i=1}^{n} w_i \\cdot I_i",
-              "description": "研究可能性を評価するための複合指標モデル",
-              "parameters": [
-                {
-                  "symbol": "P_{research}",
-                  "description": "研究可能性の総合指標"
-                },
-                { "symbol": "w_i", "description": "各研究領域の重み係数" },
-                { "symbol": "I_i", "description": "各研究領域の重要性指数" }
-              ]
-            }
-          ]
+          "formulas": []
         }
       ],
       "title_name": "結論"

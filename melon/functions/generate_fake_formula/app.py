@@ -9,7 +9,6 @@ def lambda_handler(event, context):
     """
     イベントで渡されたLaTeX数式とその説明をS3に保存するLambda関数
     """
-    # S3バケット名を環境変数から取得
     
     if not S3_BUCKET:
         return {
@@ -19,6 +18,7 @@ def lambda_handler(event, context):
 
 
     # イベントから数式の配列を取得
+    workflow_id = event.get('workflow_id')
     formulas = event.get('formulas', [])
     if not formulas:
         return {
@@ -37,7 +37,7 @@ def lambda_handler(event, context):
             # 入力の検証・サニタイズが必要
 
             # 数式のメタデータをS3に保存
-            metadata_key = f'formulas/{id}_metadata.json'
+            metadata_key = f'{workflow_id}/formulas/{id}_metadata.json'
 
             metadata_keys.append(metadata_key)
             

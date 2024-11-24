@@ -15,11 +15,11 @@
           },
           "figure_width": {
             "type": "number",
-            "description": "描画するグラフ全体の横幅（インチ単位）。"
+            "description": "描画するグラフ全体の横幅（インチ単位）でA4サイズの横幅に収まるサイズ。"
           },
           "figure_height": {
             "type": "number",
-            "description": "描画するグラフ全体の高さ（インチ単位）。"
+            "description": "描画するグラフ全体の高さ（インチ単位）。A4サイズの横幅に収まるサイズ"
           },
           "title": {
             "type": "string",
