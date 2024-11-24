@@ -307,14 +307,18 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
 
         if content_type == 'table':
             # 表のタイトルを画像の上に追加
-            elements.append(Paragraph(f"表{number}. {title}", styles['FakeThesisBodyText']))
+            elements.append(Spacer(1, 24))  # 画像前のスペースを追加
+            elements.append(Paragraph(f"表{number}. {title}", styles['CaptionText']))
             elements.append(Spacer(1, 12))
             elements.append(reportlab_image)
+            elements.append(Spacer(1, 24))  # 画像後のスペースを追加
         elif content_type == 'graph':
             # 図のタイトルを画像の下に追加
+            elements.append(Spacer(1, 24))  # 画像前のスペースを追加
             elements.append(reportlab_image)
             elements.append(Spacer(1, 12))  # 画像とタイトルの間にスペースを追加
-            elements.append(Paragraph(f"図{number}. {title}", styles['FakeThesisBodyText']))
+            elements.append(Paragraph(f"図{number}. {title}", styles['CaptionText']))
+            elements.append(Spacer(1, 24))  # 画像後のスペースを追加
 
     except Exception as e:
         logger.exception(f"Failed to insert image {object_key}: {str(e)}")

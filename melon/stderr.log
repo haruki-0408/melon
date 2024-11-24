@@ -6,68 +6,68 @@ Building image.........................
 Using local image: samcli/lambda-python:3.12-x86_64-64f4c8ccdc89ca3b7297a82fb.
 
 Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/ConvertToPdf as /var/task:ro,delegated, inside runtime container
-START RequestId: 6a8a6a12-51d3-40fb-95f6-0dee7c4ee5b3 Version: $LATEST
+START RequestId: cf31bd67-d9e5-4b26-a7fc-dbbaf8972b31 Version: $LATEST
 {'type': 'graph', 'number': '1', 'title': '6KKr6aiT6ICF44Gu5b+16IO95Yqb44K544Kz44Ki5YiG5biD'}
 ------
 1
 6KKr6aiT6ICF44Gu5b+16IO95Yqb44K544Kz44Ki5YiG5biD
 graph
-{"level":"INFO","location":"insert_image:288","message":"被験者の念能力スコア分布","timestamp":"2024-11-24 09:30:57,112+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"被験者の念能力スコア分布","timestamp":"2024-11-24 15:05:36,749+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 {'type': 'table', 'number': '1', 'title': '5a6f6aiT44Gn5L2/55So44GX44Gf5Li76KaB44OE44O844Or44Go5oqA6KGT'}
 ------
 1
 5a6f6aiT44Gn5L2/55So44GX44Gf5Li76KaB44OE44O844Or44Go5oqA6KGT
 table
-{"level":"INFO","location":"insert_image:288","message":"実験で使用した主要ツールと技術","timestamp":"2024-11-24 09:30:57,322+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"実験で使用した主要ツールと技術","timestamp":"2024-11-24 15:05:36,928+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 {'type': 'graph', 'number': '2', 'title': '5b+16IO95Yqb44K/44Kk44OX5Yil6IO95Yqb55m654++546H'}
 ------
 2
 5b+16IO95Yqb44K/44Kk44OX5Yil6IO95Yqb55m654++546H
 graph
-{"level":"INFO","location":"insert_image:288","message":"念能力タイプ別能力発現率","timestamp":"2024-11-24 09:30:57,521+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"念能力タイプ別能力発現率","timestamp":"2024-11-24 15:05:37,064+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 {'type': 'table', 'number': '2', 'title': '5b+16IO95Yqb55m654++44Gr6Zai44GZ44KL57Wx6KiI5YiG5p6Q'}
 ------
 2
 5b+16IO95Yqb55m654++44Gr6Zai44GZ44KL57Wx6KiI5YiG5p6Q
 table
-{"level":"INFO","location":"insert_image:288","message":"念能力発現に関する統計分析","timestamp":"2024-11-24 09:30:57,741+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
-[WARNING]	2024-11-24T09:30:57.974Z	bdef6b13-8281-45cb-b505-bfb362771555	findfont: Font family ['cursive'] not found. Falling back to DejaVu Sans.
-[WARNING]	2024-11-24T09:30:57.975Z	bdef6b13-8281-45cb-b505-bfb362771555	findfont: Generic family 'cursive' not found because none of the following families were found: Apple Chancery, Textile, Zapf Chancery, Sand, Script MT, Felipa, Comic Neue, Comic Sans MS, cursive
-[WARNING]	2024-11-24T09:30:57.982Z	bdef6b13-8281-45cb-b505-bfb362771555	findfont: Font family ['IPAexMincho'] not found. Falling back to DejaVu Sans.
-[WARNING]	2024-11-24T09:30:57.990Z	bdef6b13-8281-45cb-b505-bfb362771555	findfont: Font family ['sans'] not found. Falling back to DejaVu Sans.
-[WARNING]	2024-11-24T09:30:57.990Z	bdef6b13-8281-45cb-b505-bfb362771555	findfont: Generic family 'sans' not found because none of the following families were found: IPAexMincho
-[WARNING]	2024-11-24T09:30:57.994Z	bdef6b13-8281-45cb-b505-bfb362771555	findfont: Font family ['sans'] not found. Falling back to DejaVu Sans.
-[WARNING]	2024-11-24T09:30:57.995Z	bdef6b13-8281-45cb-b505-bfb362771555	findfont: Generic family 'sans' not found because none of the following families were found: IPAexMincho
+{"level":"INFO","location":"insert_image:288","message":"念能力発現に関する統計分析","timestamp":"2024-11-24 15:05:37,212+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
+[WARNING]	2024-11-24T15:05:37.399Z	fb10e821-683f-4228-9578-fc8c300716a2	findfont: Font family ['cursive'] not found. Falling back to DejaVu Sans.
+[WARNING]	2024-11-24T15:05:37.400Z	fb10e821-683f-4228-9578-fc8c300716a2	findfont: Generic family 'cursive' not found because none of the following families were found: Apple Chancery, Textile, Zapf Chancery, Sand, Script MT, Felipa, Comic Neue, Comic Sans MS, cursive
+[WARNING]	2024-11-24T15:05:37.405Z	fb10e821-683f-4228-9578-fc8c300716a2	findfont: Font family ['IPAexMincho'] not found. Falling back to DejaVu Sans.
+[WARNING]	2024-11-24T15:05:37.410Z	fb10e821-683f-4228-9578-fc8c300716a2	findfont: Font family ['sans'] not found. Falling back to DejaVu Sans.
+[WARNING]	2024-11-24T15:05:37.410Z	fb10e821-683f-4228-9578-fc8c300716a2	findfont: Generic family 'sans' not found because none of the following families were found: IPAexMincho
+[WARNING]	2024-11-24T15:05:37.412Z	fb10e821-683f-4228-9578-fc8c300716a2	findfont: Font family ['sans'] not found. Falling back to DejaVu Sans.
+[WARNING]	2024-11-24T15:05:37.413Z	fb10e821-683f-4228-9578-fc8c300716a2	findfont: Generic family 'sans' not found because none of the following families were found: IPAexMincho
 {'type': 'graph', 'number': '3', 'title': '5b+16IO95Yqb55m654++44Gu5Zug5p6c6Zai5L+C5YiG5p6Q'}
 ------
 3
 5b+16IO95Yqb55m654++44Gu5Zug5p6c6Zai5L+C5YiG5p6Q
 graph
-{"level":"INFO","location":"insert_image:288","message":"念能力発現の因果関係分析","timestamp":"2024-11-24 09:30:59,336+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"念能力発現の因果関係分析","timestamp":"2024-11-24 15:05:38,207+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 {'type': 'table', 'number': '3', 'title': '5Luu6Kqs44Go5a6f6aiT57WQ5p6c44Gu5q+U6LyD'}
 ------
 3
 5Luu6Kqs44Go5a6f6aiT57WQ5p6c44Gu5q+U6LyD
 table
-{"level":"INFO","location":"insert_image:288","message":"仮説と実験結果の比較","timestamp":"2024-11-24 09:30:59,567+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"仮説と実験結果の比較","timestamp":"2024-11-24 15:05:38,364+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 {'type': 'table', 'number': '4', 'title': '5a6f6aiT44Gu6ZmQ55WM44Go5pS55ZaE54K5'}
 ------
 4
 5a6f6aiT44Gu6ZmQ55WM44Go5pS55ZaE54K5
 table
-{"level":"INFO","location":"insert_image:288","message":"実験の限界と改善点","timestamp":"2024-11-24 09:31:01,015+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"実験の限界と改善点","timestamp":"2024-11-24 15:05:39,236+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 {'type': 'graph', 'number': '4', 'title': '5Luu6Kqs5qSc6Ki857WQ5p6c44Gu57eP5ZCI6KmV5L6h'}
 ------
 4
 5Luu6Kqs5qSc6Ki857WQ5p6c44Gu57eP5ZCI6KmV5L6h
 graph
-{"level":"INFO","location":"insert_image:288","message":"仮説検証結果の総合評価","timestamp":"2024-11-24 09:31:01,200+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"仮説検証結果の総合評価","timestamp":"2024-11-24 15:05:39,368+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 {'type': 'table', 'number': '5', 'title': '5LuK5b6M44Gu56CU56m25pa55ZCR5oCn44Go5YSq5YWI6Kqy6aGM'}
 ------
 5
 5LuK5b6M44Gu56CU56m25pa55ZCR5oCn44Go5YSq5YWI6Kqy6aGM
 table
-{"level":"INFO","location":"insert_image:288","message":"今後の研究方向性と優先課題","timestamp":"2024-11-24 09:31:03,098+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"bdef6b13-8281-45cb-b505-bfb362771555"}
+{"level":"INFO","location":"insert_image:288","message":"今後の研究方向性と優先課題","timestamp":"2024-11-24 15:05:40,515+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"fb10e821-683f-4228-9578-fc8c300716a2"}
 ------------------
 0
 ------------------
@@ -94,6 +94,8 @@ table
 11
 ------------------
 12
-END RequestId: bdef6b13-8281-45cb-b505-bfb362771555
-REPORT RequestId: bdef6b13-8281-45cb-b505-bfb362771555	Init Duration: 1.40 ms	Duration: 33555.99 ms	Billed Duration: 33556 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
+------------------
+13
+END RequestId: fb10e821-683f-4228-9578-fc8c300716a2
+REPORT RequestId: fb10e821-683f-4228-9578-fc8c300716a2	Init Duration: 1.81 ms	Duration: 20556.48 ms	Billed Duration: 20557 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
 

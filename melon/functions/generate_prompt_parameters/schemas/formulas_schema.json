@@ -29,7 +29,7 @@
                 "properties": {
                   "symbol": {
                     "type": "string",
-                    "description": "数式内で使用されるシンボル　日本語は絶対煮含めないこと"
+                    "description": "数式内で使用されるシンボル　日本語は絶対に含めず、長い英文字はNG"
                   },
                   "description": {
                     "type": "string",
