@@ -11,6 +11,7 @@ from fonts import register_fonts #　フォントファイル
 from styles import get_pdf_styles, get_table_style #　スタイルファイル
 from formula_processor import process_formula # 数式処理
 import boto3
+from svglib.svglib import svg2rlg
 import re
 
 LOGGER_SERVICE = "convert_to_pdf"
@@ -232,12 +233,12 @@ def process_text(workflow_id, text, styles, s3_client, s3_bucket):
                 elements.extend(formula_elements)
             elif insert_id.startswith('GRAPH'):
                 # グラフ画像の処理
-                object_key = f"{workflow_id}/graphs/{insert_id}.png"
+                object_key = f"{workflow_id}/graphs/{insert_id}.svg"
                 graph_elements = insert_image(object_key, styles, s3_client, s3_bucket)
                 elements.extend(graph_elements)
             elif insert_id.startswith('TABLE'):
                 # 表画像の処理
-                object_key = f"{workflow_id}/tables/{insert_id}.png"
+                object_key = f"{workflow_id}/tables/{insert_id}.svg"
                 table_elements = insert_image(object_key, styles, s3_client, s3_bucket)
                 elements.extend(table_elements)
 
@@ -256,15 +257,16 @@ def process_text(workflow_id, text, styles, s3_client, s3_bucket):
 
 def insert_image(object_key, styles, s3_client, s3_bucket):
     """
-    画像をS3からダウンロードし、メタデータに基づいてタイトルを追加してImageオブジェクトを返す関数。
+    画像をS3からダウンロードし、メタデータに基づいてタイトルを追加してPDFに埋め込む準備をする関数。
 
     Parameters:
     - object_key (str): S3内のオブジェクトキー（画像ファイルのキー）。
+    - styles: ReportLabのスタイル辞書。
     - s3_client: S3クライアント。
     - s3_bucket (str): S3バケット名。
 
     Returns:
-    - elements (list): タイトルと画像を含むリスト。
+    - elements (list): タイトルと画像（またはSVGを変換したDrawingオブジェクト）を含むリスト。
     """
     elements = []
     try:
@@ -274,51 +276,63 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
 
         # メタデータを取得してデコード
         metadata = response['Metadata']
-        print(metadata)
-        number = metadata.get('number')  # デフォルト値を設定
+        number = metadata.get('number', '')  # デフォルト値を設定
         title_base64 = metadata.get('title')
         content_type = metadata.get('type')
 
+        title = base64.b64decode(title_base64).decode('utf-8') if title_base64 else 'Untitled'
         print('------')
         print(number)
-        print(title_base64)
+        print(title)
         print(content_type)
-        title = base64.b64decode(title_base64).decode('utf-8') if title_base64 else 'Untitled'
-        
-        logger.info(title)
 
-        # Pillowを使って画像をリサイズ
-        image = PILImage.open(io.BytesIO(image_data))
-        original_width, original_height = image.size
+        # ファイルの拡張子を確認
+        # _, file_extension = os.path.splitext(object_key)
+        # file_extension = file_extension.lower()
+        # print(f"拡張子:{file_extension}")
 
-        # サイズを半分にリサイズ
-        new_width = original_width // 2
-        new_height = original_height // 2
-        resized_image = image.resize((new_width, new_height), PILImage.Resampling.LANCZOS)
+        if content_type == 'graph':
+            # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
+            svg_file_obj = io.BytesIO(image_data)
+            drawing = svg2rlg(svg_file_obj)
+            drawing.hAlign = 'CENTER'
 
-        # リサイズ画像をBytesIOに保存
-        image_buffer = io.BytesIO()
-        resized_image.save(image_buffer, format=image.format)
-        image_buffer.seek(0)
+            # サイズを半分にスケール
+            drawing.width = drawing.width / 2
+            drawing.height = drawing.height / 2
+            drawing.scale(0.5, 0.5)
 
-        # ReportLabのImageオブジェクトを作成
-        reportlab_image = Image(image_buffer, width=new_width, height=new_height)
-        reportlab_image.hAlign = 'CENTER'
+            # 描画オブジェクトをelementsに追加
+            reportlab_image = drawing
 
-        if content_type == 'table':
-            # 表のタイトルを画像の上に追加
-            elements.append(Spacer(1, 24))  # 画像前のスペースを追加
-            elements.append(Paragraph(f"表{number}. {title}", styles['CaptionText']))
-            elements.append(Spacer(1, 12))
-            elements.append(reportlab_image)
-            elements.append(Spacer(1, 24))  # 画像後のスペースを追加
-        elif content_type == 'graph':
             # 図のタイトルを画像の下に追加
             elements.append(Spacer(1, 24))  # 画像前のスペースを追加
             elements.append(reportlab_image)
             elements.append(Spacer(1, 12))  # 画像とタイトルの間にスペースを追加
             elements.append(Paragraph(f"図{number}. {title}", styles['CaptionText']))
             elements.append(Spacer(1, 24))  # 画像後のスペースを追加
+
+        elif content_type == 'table':
+            # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
+            svg_file_obj = io.BytesIO(image_data)
+            drawing = svg2rlg(svg_file_obj)
+            drawing.hAlign = 'CENTER'
+
+            # サイズを半分にスケール
+            drawing.width = drawing.width / 2
+            drawing.height = drawing.height / 2
+            drawing.scale(0.5, 0.5)
+
+            # 描画オブジェクトをelementsに追加
+            reportlab_image = drawing
+
+            # 表のタイトルを画像の上に追加
+            elements.append(Spacer(1, 24))  # 画像前のスペースを追加
+            elements.append(Paragraph(f"表{number}. {title}", styles['CaptionText']))
+            elements.append(Spacer(1, 12))
+            elements.append(reportlab_image)
+            elements.append(Spacer(1, 24))  # 画像後のスペースを追加
+            
 
     except Exception as e:
         logger.exception(f"Failed to insert image {object_key}: {str(e)}")
@@ -336,8 +350,6 @@ def add_page_number(canvas, doc):
     """
     # 現在のページ番号を取得（表紙を除くために -1）
     page_num = canvas.getPageNumber() - 1
-    print('------------------')
-    print(page_num)
     if page_num == 1:
         # 目次には ローマ数字でページ番号を付与
         text = "i"

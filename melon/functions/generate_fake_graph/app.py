@@ -78,8 +78,10 @@ def create_graph_image(graph_data):
     # フィギュアと軸の作成
     # fig, ax = plt.subplots(figsize=(graph_data['figure_width'], graph_data['figure_height']))
     # グラフのサイズを動的に設定
-    figure_width = graph_data.get('figure_width', 8)  # デフォルト値: 8インチ
-    figure_height = graph_data.get('figure_height', 5)  # デフォルト値: 5インチ
+    # figure_width = graph_data.get('figure_width', 8)  # デフォルト値: 8インチ
+    # figure_height = graph_data.get('figure_height', 5)  # デフォルト値: 5インチ
+    figure_width = 8
+    figure_height = 5
     fig, ax = plt.subplots(figsize=(figure_width, figure_height))
 
     # 図全体のプロパティを設定
@@ -123,9 +125,13 @@ def create_graph_image(graph_data):
     if graph_data.get('legend'):
         ax.legend()
 
+    # 余白を調整して、図全体をタイトにする
+    fig.tight_layout()
+
+
     # 画像をバイナリデータとして保存し、Base64エンコード
     buf = io.BytesIO()
-    fig.savefig(buf, format='png',bbox_inches='tight')
+    fig.savefig(buf, format='svg')
     plt.close(fig)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
@@ -312,8 +318,8 @@ def upload_to_s3(non_trailing_slash_prefix, graphs):
     """
     s3 = boto3.resource('s3')
     for graph in graphs:
-        # 一意のキーを作成（例: graph_0.png）
-        key = f"{non_trailing_slash_prefix}/{graph['id']}.png"
+        # 一意のキーを作成
+        key = f"{non_trailing_slash_prefix}/{graph['id']}.svg"
         image_binary = base64.b64decode(graph['image_data'])
 
         # 日本語タイトルをBase64エンコード
@@ -321,7 +327,7 @@ def upload_to_s3(non_trailing_slash_prefix, graphs):
 
         s3.Object(S3_BUCKET, key).put(
             Body=image_binary,
-            ContentType='image/png',
+            ContentType='image/svg+xml',
             Metadata={
                 'number': graph['graph_number'],
                 'type' : 'graph', 

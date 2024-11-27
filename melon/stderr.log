@@ -6,85 +6,43 @@ Building image.........................
 Using local image: samcli/lambda-python:3.12-x86_64-64f4c8ccdc89ca3b7297a82fb.
 
 Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/ConvertToPdf as /var/task:ro,delegated, inside runtime container
-START RequestId: 7bb86a82-903c-40e6-9799-ebdb194a9412 Version: $LATEST
-{'type': 'graph', 'number': '1', 'title': '6KKr6aiT6ICF44Gu5b+16IO95Yqb44K544Kz44Ki5YiG5biD'}
+START RequestId: 70901b09-e973-4fc9-9815-eaed5ce4baa9 Version: $LATEST
 ------
 1
-6KKr6aiT6ICF44Gu5b+16IO95Yqb44K544Kz44Ki5YiG5biD
+被験者の念能力スコア分布
 graph
-{"level":"INFO","location":"insert_image:288","message":"被験者の念能力スコア分布","timestamp":"2024-11-25 16:00:09,238+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'table', 'number': '1', 'title': '5a6f6aiT44Gn5L2/55So44GX44Gf5Li76KaB44OE44O844Or44Go5oqA6KGT'}
 ------
 1
-5a6f6aiT44Gn5L2/55So44GX44Gf5Li76KaB44OE44O844Or44Go5oqA6KGT
+実験で使用した主要ツールと技術
 table
-{"level":"INFO","location":"insert_image:288","message":"実験で使用した主要ツールと技術","timestamp":"2024-11-25 16:00:09,744+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'graph', 'number': '2', 'title': '5b+16IO95Yqb44K/44Kk44OX5Yil6IO95Yqb55m654++546H'}
 ------
 2
-5b+16IO95Yqb44K/44Kk44OX5Yil6IO95Yqb55m654++546H
+念能力タイプ別能力発現率
 graph
-{"level":"INFO","location":"insert_image:288","message":"念能力タイプ別能力発現率","timestamp":"2024-11-25 16:00:09,933+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'table', 'number': '2', 'title': '5b+16IO95Yqb55m654++44Gr6Zai44GZ44KL57Wx6KiI5YiG5p6Q'}
 ------
 2
-5b+16IO95Yqb55m654++44Gr6Zai44GZ44KL57Wx6KiI5YiG5p6Q
+念能力発現に関する統計分析
 table
-{"level":"INFO","location":"insert_image:288","message":"念能力発現に関する統計分析","timestamp":"2024-11-25 16:00:10,160+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'graph', 'number': '3', 'title': '5b+16IO95Yqb55m654++44Gu5Zug5p6c6Zai5L+C5YiG5p6Q'}
 ------
 3
-5b+16IO95Yqb55m654++44Gu5Zug5p6c6Zai5L+C5YiG5p6Q
+念能力発現の因果関係分析
 graph
-{"level":"INFO","location":"insert_image:288","message":"念能力発現の因果関係分析","timestamp":"2024-11-25 16:00:13,073+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'table', 'number': '3', 'title': '5Luu6Kqs44Go5a6f6aiT57WQ5p6c44Gu5q+U6LyD'}
 ------
 3
-5Luu6Kqs44Go5a6f6aiT57WQ5p6c44Gu5q+U6LyD
+仮説と実験結果の比較
 table
-{"level":"INFO","location":"insert_image:288","message":"仮説と実験結果の比較","timestamp":"2024-11-25 16:00:13,302+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'table', 'number': '4', 'title': '5a6f6aiT44Gu6ZmQ55WM44Go5pS55ZaE54K5'}
 ------
 4
-5a6f6aiT44Gu6ZmQ55WM44Go5pS55ZaE54K5
+実験の限界と改善点
 table
-{"level":"INFO","location":"insert_image:288","message":"実験の限界と改善点","timestamp":"2024-11-25 16:00:16,137+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'graph', 'number': '4', 'title': '5Luu6Kqs5qSc6Ki857WQ5p6c44Gu57eP5ZCI6KmV5L6h'}
 ------
 4
-5Luu6Kqs5qSc6Ki857WQ5p6c44Gu57eP5ZCI6KmV5L6h
+仮説検証結果の総合評価
 graph
-{"level":"INFO","location":"insert_image:288","message":"仮説検証結果の総合評価","timestamp":"2024-11-25 16:00:16,323+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-{'type': 'table', 'number': '5', 'title': '5LuK5b6M44Gu56CU56m25pa55ZCR5oCn44Go5YSq5YWI6Kqy6aGM'}
 ------
 5
-5LuK5b6M44Gu56CU56m25pa55ZCR5oCn44Go5YSq5YWI6Kqy6aGM
+今後の研究方向性と優先課題
 table
-{"level":"INFO","location":"insert_image:288","message":"今後の研究方向性と優先課題","timestamp":"2024-11-25 16:00:20,095+0000","service":"convert_to_pdf","cold_start":true,"function_name":"ConvertToPdf","function_memory_size":"512","function_arn":"arn:aws:lambda:us-east-1:012345678912:function:ConvertToPdf","function_request_id":"9488c882-6866-4dde-8045-dda17f394b2e"}
-------------------
-0
-------------------
-1
-------------------
-2
-------------------
-3
-------------------
-4
-------------------
-5
-------------------
-6
-------------------
-7
-------------------
-8
-------------------
-9
-------------------
-10
-------------------
-11
-END RequestId: 9488c882-6866-4dde-8045-dda17f394b2e
-REPORT RequestId: 9488c882-6866-4dde-8045-dda17f394b2e	Init Duration: 1.41 ms	Duration: 45879.81 ms	Billed Duration: 45880 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
+END RequestId: 9e364446-a2fd-4843-8232-bc22f896a39a
+REPORT RequestId: 9e364446-a2fd-4843-8232-bc22f896a39a	Init Duration: 0.75 ms	Duration: 30536.99 ms	Billed Duration: 30537 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
 
