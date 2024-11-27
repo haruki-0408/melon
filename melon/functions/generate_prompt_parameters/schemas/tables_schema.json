@@ -51,18 +51,12 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "font_size": { "type": "number", "description": "テーブル内のテキストのフォントサイズ。" },
                   "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
                   "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
                   "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
                   "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
                   "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
-                  "col_widths": {
-                    "type": "array",
-                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
-                    "description": "各列の幅を指定する配列。"
-                  }
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
                 },
                 "additionalProperties": false
               }
@@ -107,18 +101,12 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
                   "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
                   "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
                   "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
                   "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
                   "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
-                  "col_widths": {
-                    "type": "array",
-                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
-                    "description": "各列の幅を指定する配列。"
-                  }
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
                 },
                 "additionalProperties": false
               }
@@ -172,18 +160,12 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
                   "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
                   "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
                   "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
                   "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
                   "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
-                  "col_widths": {
-                    "type": "array",
-                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
-                    "description": "各列の幅を指定する配列。"
-                  }
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
                 },
                 "additionalProperties": false
               }
@@ -224,18 +206,12 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
                   "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
                   "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
                   "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
                   "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
                   "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
-                  "col_widths": {
-                    "type": "array",
-                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
-                    "description": "各列の幅を指定する配列。"
-                  }
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
                 },
                 "additionalProperties": false
               }
@@ -279,18 +255,12 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "font_size": { "type": "number", "description": "テキストのフォントサイズ。" },
                   "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
                   "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
                   "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
                   "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
                   "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" },
-                  "col_widths": {
-                    "type": "array",
-                    "items": { "type": "number", "description": "各列の幅を指定する数値。" },
-                    "description": "各列の幅を指定する配列。"
-                  }
+                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
                 },
                 "additionalProperties": false
               }

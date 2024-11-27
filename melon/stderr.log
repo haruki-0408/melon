@@ -6,7 +6,7 @@ Building image.........................
 Using local image: samcli/lambda-python:3.12-x86_64-64f4c8ccdc89ca3b7297a82fb.
 
 Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/ConvertToPdf as /var/task:ro,delegated, inside runtime container
-START RequestId: 70901b09-e973-4fc9-9815-eaed5ce4baa9 Version: $LATEST
+START RequestId: 78afd4c3-653a-491e-bb6d-021bed0796bf Version: $LATEST
 ------
 1
 被験者の念能力スコア分布
@@ -43,6 +43,6 @@ graph
 5
 今後の研究方向性と優先課題
 table
-END RequestId: 9e364446-a2fd-4843-8232-bc22f896a39a
-REPORT RequestId: 9e364446-a2fd-4843-8232-bc22f896a39a	Init Duration: 0.75 ms	Duration: 30536.99 ms	Billed Duration: 30537 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
+END RequestId: 6ecf2237-1b43-4334-b1e6-5f333b5f8831
+REPORT RequestId: 6ecf2237-1b43-4334-b1e6-5f333b5f8831	Init Duration: 0.73 ms	Duration: 31474.65 ms	Billed Duration: 31475 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
 

@@ -46,7 +46,8 @@ def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket
     # 第2ページ目以降の余白設定（指定された値をmmからポイントに変換）
     MAIN_LEFT_MARGIN = 24 * mm
     MAIN_RIGHT_MARGIN = 24 * mm
-    MAIN_TOP_MARGIN = 30 * mm
+    # MAIN_TOP_MARGIN = 30 * mm
+    MAIN_TOP_MARGIN = 0 * mm
     MAIN_BOTTOM_MARGIN = 28 * mm
 
     # バッファを作成（PDFのバイナリデータを一時的に保持）
@@ -298,9 +299,9 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
             drawing.hAlign = 'CENTER'
 
             # サイズを半分にスケール
-            drawing.width = drawing.width / 2
-            drawing.height = drawing.height / 2
-            drawing.scale(0.5, 0.5)
+            drawing.width = drawing.width / 1.6
+            drawing.height = drawing.height / 1.6
+            drawing.scale(0.625, 0.625)
 
             # 描画オブジェクトをelementsに追加
             reportlab_image = drawing
@@ -308,7 +309,7 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
             # 図のタイトルを画像の下に追加
             elements.append(Spacer(1, 24))  # 画像前のスペースを追加
             elements.append(reportlab_image)
-            elements.append(Spacer(1, 12))  # 画像とタイトルの間にスペースを追加
+            elements.append(Spacer(1, 3))  # 画像とタイトルの間にスペースを追加
             elements.append(Paragraph(f"図{number}. {title}", styles['CaptionText']))
             elements.append(Spacer(1, 24))  # 画像後のスペースを追加
 
@@ -318,10 +319,10 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
             drawing = svg2rlg(svg_file_obj)
             drawing.hAlign = 'CENTER'
 
-            # サイズを半分にスケール
-            drawing.width = drawing.width / 2
-            drawing.height = drawing.height / 2
-            drawing.scale(0.5, 0.5)
+            # サイズをにスケール
+            drawing.width = drawing.width / 1.6
+            drawing.height = drawing.height / 1.6
+            drawing.scale(0.625, 0.625)
 
             # 描画オブジェクトをelementsに追加
             reportlab_image = drawing
@@ -329,7 +330,7 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
             # 表のタイトルを画像の上に追加
             elements.append(Spacer(1, 24))  # 画像前のスペースを追加
             elements.append(Paragraph(f"表{number}. {title}", styles['CaptionText']))
-            elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 3)) # 画像とタイトルの間にスペースを追加
             elements.append(reportlab_image)
             elements.append(Spacer(1, 24))  # 画像後のスペースを追加
             

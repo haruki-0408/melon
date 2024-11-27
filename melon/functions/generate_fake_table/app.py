@@ -65,32 +65,48 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': str(e)})
         }
-
 def create_table_image(table_data):
     """
     単一のテーブル定義オブジェクトからテーブルを作成し、Base64エンコードされたSVGデータを返す関数。
     """
+    import matplotlib.patches as patches
+
     table_type = table_data.get('table_type')
     style = table_data.get('style', {})
 
-    # フォントサイズの設定（デフォルト12）
-    font_size = style.get('font_size', 12)
+    # フォントサイズの設定（デフォルト14）
+    font_size = 14
     mpl.rcParams['font.size'] = font_size
 
-    # フィギュアと軸を作成（サイズは自動調整）
+    # フィギュアと軸を作成
     fig, ax = plt.subplots()
 
     # テーブルタイプに応じて描画処理を分岐
     if table_type == 'basic':
-        table_object = render_basic_table(ax, table_data, style)
+        table_object, max_cell_width, max_cell_height = render_basic_table(ax, table_data)
+
+        cols = len(table_data.get('columns', []))
+        rows = len(table_data.get('rows', []))
     elif table_type == 'summary':
-        table_object = render_summary_table(ax, table_data, style)
+        table_object, max_cell_width, max_cell_height = render_summary_table(ax, table_data)
+
+        cols = 5
+        rows = len(table_data.get('statistics', []))
     elif table_type == 'regression':
-        table_object = render_regression_table(ax, table_data, style)
+        table_object, max_cell_width, max_cell_height = render_regression_table(ax, table_data)
+
+        cols = 5
+        rows = len(table_data.get('regression_results', []).get('coefficients', []))
     elif table_type == 'correlation':
-        table_object = render_correlation_table(ax, table_data, style)
+        table_object, max_cell_width, max_cell_height = render_correlation_table(ax, table_data)
+
+        cols = len(table_data.get('variables', []))
+        rows = len(table_data.get('correlation_matrix', []))
     elif table_type == 'comparison':
-        table_object = render_comparison_table(ax, table_data, style)
+        table_object, max_cell_width, max_cell_height = render_comparison_table(ax, table_data)
+
+        cols = 4
+        rows = len(table_data.get('comparison_data', []))
     else:
         raise ValueError(f"Unsupported table_type: {table_type}")
 
@@ -100,36 +116,55 @@ def create_table_image(table_data):
     # 軸と外枠を非表示
     ax.axis('off')
 
-    # 図を描画してレンダラーを取得
-    fig.canvas.draw()
-    renderer = fig.canvas.get_renderer()
+    # テーブルの描画領域を取得
+    # fig.canvas.draw()
+    # renderer = fig.canvas.get_renderer()
+    # table_bbox = table_object.get_window_extent(renderer)
 
-    # テーブルを軸全体にフィットさせる
-    table_bbox = table_object.get_window_extent(renderer).transformed(fig.dpi_scale_trans.inverted())
-    ax.set_xlim(table_bbox.x0, table_bbox.x1)
-    ax.set_ylim(table_bbox.y0, table_bbox.y1)
+    adjust_figure_size(fig, cols, rows, max_cell_width, max_cell_height)
+
+    # 軸をFigure全体に埋め尽くす
+    ax.set_position([0, 0, 1, 1])
 
     # 余白を最小化
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
     plt.tight_layout(pad=0)
 
-    # 画像をバイナリデータとして保存し、Base64エンコード（SVG形式）
+    # SVGとして画像を保存
     buf = io.BytesIO()
     fig.savefig(buf, format='svg', bbox_inches='tight', pad_inches=0)
     plt.close(fig)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
-def render_basic_table(ax, table_data, style):
+def adjust_figure_size(fig, cols, rows, base_cell_width, base_cell_height):
+    # 基準のセルサイズと列、行数を取得してFigureサイズを動的に調整
+    fig_width = round(cols * base_cell_width, 2)
+    fig_height = round(rows * base_cell_height * 2.5, 2) 
+
+    # 最小幅6.4インチを保証しつつアスペクト比を維持
+    if fig_width < 7.0:
+        aspect_ratio = fig_height / fig_width if fig_width > 0 else 1  # アスペクト比を計算
+        fig_width = 7.0
+        fig_height = round(fig_width * aspect_ratio, 1)
+
+    print(f" ========== ")
+    print(f"fig_width: {fig_width}")
+    print(f"fig_height: {fig_height}")
+
+    # Figureサイズを調整
+    fig.set_size_inches(fig_width, fig_height)
+
+
+def render_basic_table(ax, table_data):
     """
     基本的なデータテーブルを描画するヘルパー関数
     """
+
     columns = table_data['columns']
     rows = table_data['rows']
 
     # テーブルデータを文字列に変換
-    cell_text = []
-    for row in rows:
-        cell_text.append([str(item) for item in row])
+    cell_text = [[str(item) for item in row] for row in rows]
 
     # テーブルの描画（bboxで位置とサイズを制御）
     table_object = ax.table(
@@ -139,10 +174,27 @@ def render_basic_table(ax, table_data, style):
         cellLoc='center',
         bbox=[0, 0, 1, 1]  # (left, bottom, width, height)
     )
+    
+    # --- 最も長いセルと最も高いセルを計算する ---
+    renderer = ax.figure.canvas.get_renderer()
+    max_width = 0  # 最大の横幅（インチ）
+    max_height = 0  # 最大の縦幅（インチ）
 
-    return table_object
+    for (_, _), cell in table_object.get_celld().items():
+        bbox = cell.get_window_extent(renderer)  # ピクセル単位のバウンディングボックスを取得
+        width_in_inches = bbox.width / renderer.dpi  # ピクセルからインチに変換
+        height_in_inches = bbox.height / renderer.dpi
 
-def render_summary_table(ax, table_data, style):
+        # 最大値を更新
+        max_width = max(max_width, width_in_inches)
+        max_height = max(max_height, height_in_inches)
+
+    print(f"Max cell width (inches): {max_width}")
+    print(f"Max cell height (inches): {max_height}")
+
+    return table_object, max_width, max_height
+
+def render_summary_table(ax, table_data):
     """
     統計量のまとめ表を描画するヘルパー関数
     """
@@ -157,13 +209,6 @@ def render_summary_table(ax, table_data, style):
         cell_text.append(row)
 
     # テーブルの描画
-    # table_object = ax.table(
-    #     cellText=cell_text,
-    #     rowLabels=variables,
-    #     colLabels=stats_labels,
-    #     loc='center'
-    # )
-
     table_object = ax.table(
         cellText=cell_text,
         colLabels=stats_labels,
@@ -173,9 +218,26 @@ def render_summary_table(ax, table_data, style):
         bbox=[0, 0, 1, 1]  # (left, bottom, width, height)
     )
 
-    return table_object
+    # --- 最も長いセルと最も高いセルを計算する ---
+    renderer = ax.figure.canvas.get_renderer()
+    max_width = 0  # 最大の横幅（インチ）
+    max_height = 0  # 最大の縦幅（インチ）
 
-def render_regression_table(ax, table_data, style):
+    for (_, _), cell in table_object.get_celld().items():
+        bbox = cell.get_window_extent(renderer)  # ピクセル単位のバウンディングボックスを取得
+        width_in_inches = bbox.width / renderer.dpi  # ピクセルからインチに変換
+        height_in_inches = bbox.height / renderer.dpi
+
+        # 最大値を更新
+        max_width = max(max_width, width_in_inches)
+        max_height = max(max_height, height_in_inches)
+
+    print(f"Max cell width (inches): {max_width}")
+    print(f"Max cell height (inches): {max_height}")
+
+    return table_object, max_width, max_height
+
+def render_regression_table(ax, table_data):
     """
     回帰分析結果の表を描画するヘルパー関数
     """
@@ -195,12 +257,6 @@ def render_regression_table(ax, table_data, style):
         cell_text.append(row)
 
     # テーブルの描画
-    # table_object = ax.table(
-    #     cellText=cell_text,
-    #     colLabels=header,
-    #     loc='center'
-    # )
-
     table_object = ax.table(
         cellText=cell_text,
         colLabels=header,
@@ -209,9 +265,26 @@ def render_regression_table(ax, table_data, style):
         bbox=[0, 0, 1, 1]  # (left, bottom, width, height)
     )
 
-    return table_object
+    # --- 最も長いセルと最も高いセルを計算する ---
+    renderer = ax.figure.canvas.get_renderer()
+    max_width = 0  # 最大の横幅（インチ）
+    max_height = 0  # 最大の縦幅（インチ）
 
-def render_correlation_table(ax, table_data, style):
+    for (_, _), cell in table_object.get_celld().items():
+        bbox = cell.get_window_extent(renderer)  # ピクセル単位のバウンディングボックスを取得
+        width_in_inches = bbox.width / renderer.dpi  # ピクセルからインチに変換
+        height_in_inches = bbox.height / renderer.dpi
+
+        # 最大値を更新
+        max_width = max(max_width, width_in_inches)
+        max_height = max(max_height, height_in_inches)
+
+    print(f"Max cell width (inches): {max_width}")
+    print(f"Max cell height (inches): {max_height}")
+
+    return table_object, max_width, max_height
+
+def render_correlation_table(ax, table_data):
     """
     相関行列表を描画するヘルパー関数
     """
@@ -224,13 +297,6 @@ def render_correlation_table(ax, table_data, style):
         cell_text.append([f"{val:.3f}" for val in row])
 
     # テーブルの描画
-    # table_object = ax.table(
-    #     cellText=cell_text,
-    #     rowLabels=variables,
-    #     colLabels=variables,
-    #     loc='center'
-    # )
-
     table_object = ax.table(
         cellText=cell_text,
         colLabels=variables,
@@ -240,9 +306,26 @@ def render_correlation_table(ax, table_data, style):
         bbox=[0, 0, 1, 1]  # (left, bottom, width, height)
     )
 
-    return table_object
+    # --- 最も長いセルと最も高いセルを計算する ---
+    renderer = ax.figure.canvas.get_renderer()
+    max_width = 0  # 最大の横幅（インチ）
+    max_height = 0  # 最大の縦幅（インチ）
 
-def render_comparison_table(ax, table_data, style):
+    for (_, _), cell in table_object.get_celld().items():
+        bbox = cell.get_window_extent(renderer)  # ピクセル単位のバウンディングボックスを取得
+        width_in_inches = bbox.width / renderer.dpi  # ピクセルからインチに変換
+        height_in_inches = bbox.height / renderer.dpi
+
+        # 最大値を更新
+        max_width = max(max_width, width_in_inches)
+        max_height = max(max_height, height_in_inches)
+
+    print(f"Max cell width (inches): {max_width}")
+    print(f"Max cell height (inches): {max_height}")
+
+    return table_object, max_width, max_height
+
+def render_comparison_table(ax, table_data):
     """
     データ比較表を描画するヘルパー関数
     """
@@ -257,13 +340,6 @@ def render_comparison_table(ax, table_data, style):
         cell_text.append(row)
 
     # テーブルの描画
-    # table_object = ax.table(
-    #     cellText=cell_text,
-    #     rowLabels=categories,
-    #     colLabels=stats_labels,
-    #     loc='center'
-    # )
-
     table_object = ax.table(
         cellText=cell_text,
         colLabels=stats_labels,
@@ -273,7 +349,24 @@ def render_comparison_table(ax, table_data, style):
         bbox=[0, 0, 1, 1]  # (left, bottom, width, height)
     )
 
-    return table_object
+    # --- 最も長いセルと最も高いセルを計算する ---
+    renderer = ax.figure.canvas.get_renderer()
+    max_width = 0  # 最大の横幅（インチ）
+    max_height = 0  # 最大の縦幅（インチ）
+
+    for (_, _), cell in table_object.get_celld().items():
+        bbox = cell.get_window_extent(renderer)  # ピクセル単位のバウンディングボックスを取得
+        width_in_inches = bbox.width / renderer.dpi  # ピクセルからインチに変換
+        height_in_inches = bbox.height / renderer.dpi
+
+        # 最大値を更新
+        max_width = max(max_width, width_in_inches)
+        max_height = max(max_height, height_in_inches)
+
+    print(f"Max cell width (inches): {max_width}")
+    print(f"Max cell height (inches): {max_height}")
+
+    return table_object, max_width, max_height
 
 def apply_table_style(table_object, style):
     """
@@ -281,34 +374,33 @@ def apply_table_style(table_object, style):
     """
     cells = table_object.get_celld()
 
-    # ヘッダーセルのスタイル適用
-    if 'header_bg_color' in style or 'header_font_color' in style:
-        for (row, col), cell in cells.items():
-            # ヘッダーセルの判定（行ラベルや列ラベル）
-            if row == 0 or col == -1:
-                if 'header_bg_color' in style:
-                    cell.set_facecolor(style['header_bg_color'])
-                if 'header_font_color' in style:
-                    cell.get_text().set_color(style['header_font_color'])
-
     # データセルのスタイル適用
-    if 'cell_bg_color' in style or 'cell_font_color' in style:
-        for (row, col), cell in cells.items():
-            # データセルの判定
-            if row > 0 and col >= 0:
-                if 'cell_bg_color' in style:
-                    cell.set_facecolor(style['cell_bg_color'])
-                if 'cell_font_color' in style:
-                    cell.get_text().set_color(style['cell_font_color'])
+    # ヘッダー設定
+    header_bg_color = style.get('header_bg_color', '#FFFFFF')  # デフォルトは白
+    header_font_color = style.get('header_font_color', '#000000')  # デフォルトは黒
 
-    # 境界線の色と幅を設定
-    if 'border_color' in style:
-        for cell in cells.values():
-            cell.set_edgecolor(style['border_color'])
+    # セルの設定
+    cell_bg_color = style.get('cell_bg_color', '#FFFFFF')  # デフォルトは白
+    cell_font_color = style.get('cell_font_color', '#000000')  # デフォルトは黒
 
-    if 'border_width' in style:
-        for cell in cells.values():
-            cell.set_linewidth(style['border_width'])
+    # 境界線の設定
+    cell_border_width = style.get('border_width', 0.5) # デフォルトは0.5インチ
+    cell_border_color = style.get('border_color', '#FFFFFF') # デフォルトは白
+
+    for (row, col), cell in cells.items():
+        # ヘッダーセルの判定（行ラベルや列ラベル）
+        if row == 0 or col == -1:
+            cell.set_facecolor(header_bg_color)
+            cell.get_text().set_color(header_font_color)
+        
+        # データセルの判定
+        elif row > 0 and col >= 0:
+            cell.set_facecolor(cell_bg_color)
+            cell.get_text().set_color(cell_font_color)
+        
+        cell.set_linewidth(cell_border_width)
+        cell.set_edgecolor(cell_border_color)
+            
 
 def upload_to_s3(non_trailing_slash_prefix, tables):
     """
