@@ -13,6 +13,7 @@ from formula_processor import process_formula # 数式処理
 import boto3
 from svglib.svglib import svg2rlg
 import re
+from reportlab.platypus import Table
 
 LOGGER_SERVICE = "convert_to_pdf"
 logger = Logger(service=LOGGER_SERVICE)
@@ -59,7 +60,8 @@ def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket
         COVER_BOTTOM_MARGIN,
         PAGE_SIZE[0] - COVER_LEFT_MARGIN - COVER_RIGHT_MARGIN,
         PAGE_SIZE[1] - COVER_TOP_MARGIN - COVER_BOTTOM_MARGIN,
-        id='cover_frame'
+        id='cover_frame',
+        showBoundary=True
     )
 
     main_frame = Frame(
@@ -67,7 +69,8 @@ def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket
         MAIN_BOTTOM_MARGIN,
         PAGE_SIZE[0] - MAIN_LEFT_MARGIN - MAIN_RIGHT_MARGIN,
         PAGE_SIZE[1] - MAIN_TOP_MARGIN - MAIN_BOTTOM_MARGIN,
-        id='main_frame'
+        id='main_frame',
+        showBoundary=True
     )
 
     # ページテンプレートの作成（ページごとのレイアウトとページ番号設定）
@@ -150,8 +153,8 @@ def create_toc_page(sections_format, styles, table_style):
             table_data.append([f"    {i}.{j} {sub_section_title}", ""])
 
     # 目次テーブルの作成
-    from reportlab.platypus import Table
-    table = Table(table_data, colWidths=[400, 100])
+    
+    table = Table(table_data, colWidths=[400,40])
     table.setStyle(table_style)
     elements.append(table)
     elements.append(PageBreak())  # 改ページ

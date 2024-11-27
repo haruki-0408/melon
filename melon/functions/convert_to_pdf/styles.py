@@ -110,11 +110,13 @@ def get_table_style():
     from reportlab.platypus import TableStyle
 
     table_style = TableStyle([
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),  # テキストカラーを黒に設定
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),  # 左揃え
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # 上寄せに設定
         ('FONTNAME', (0, 0), (-1, -1), 'IPAexMincho'),  # フォントを明朝体に設定
         ('FONTSIZE', (0, 0), (-1, -1), 10.5),  # フォントサイズを10.5ポイントに設定
         ('BOTTOMPADDING', (0, 0), (-1, -1), 6),  # セル下部のパディング
-        ('TOPPADDING', (0, 0), (-1, -1), 6),     # セル上部のパディング
+        ('TOPPADDING', (0, 0), (-1, -1), 6)    # セル上部のパディング
     ])
     return table_style
