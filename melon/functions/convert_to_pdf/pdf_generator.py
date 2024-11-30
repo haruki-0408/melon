@@ -1,11 +1,9 @@
 import base64
 import io
-import os
 from io import BytesIO
 from aws_lambda_powertools import Logger
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import (BaseDocTemplate, Paragraph, Spacer, PageBreak,Frame, PageTemplate, Image)
-from PIL import Image as PILImage
+from reportlab.platypus import (BaseDocTemplate, Paragraph, Spacer, PageBreak,Frame, PageTemplate, NextPageTemplate, KeepTogether)
 from reportlab.lib.units import mm
 from fonts import register_fonts #　フォントファイル
 from styles import get_pdf_styles, get_table_style #　スタイルファイル
@@ -47,8 +45,7 @@ def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket
     # 第2ページ目以降の余白設定（指定された値をmmからポイントに変換）
     MAIN_LEFT_MARGIN = 24 * mm
     MAIN_RIGHT_MARGIN = 24 * mm
-    # MAIN_TOP_MARGIN = 30 * mm
-    MAIN_TOP_MARGIN = 0 * mm
+    MAIN_TOP_MARGIN = 30 * mm
     MAIN_BOTTOM_MARGIN = 28 * mm
 
     # バッファを作成（PDFのバイナリデータを一時的に保持）
@@ -56,21 +53,21 @@ def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket
 
     # フレームの作成（各ページのレイアウト領域を定義）
     cover_frame = Frame(
-        COVER_LEFT_MARGIN,
-        COVER_BOTTOM_MARGIN,
-        PAGE_SIZE[0] - COVER_LEFT_MARGIN - COVER_RIGHT_MARGIN,
-        PAGE_SIZE[1] - COVER_TOP_MARGIN - COVER_BOTTOM_MARGIN,
+        x1=COVER_LEFT_MARGIN, # フレームX軸左下の基準座標を設定
+        y1=COVER_BOTTOM_MARGIN, # フレームY軸左下の基準座標を設定
+        width=PAGE_SIZE[0] - COVER_LEFT_MARGIN - COVER_RIGHT_MARGIN, #フレームの幅設定
+        height=PAGE_SIZE[1] - COVER_TOP_MARGIN - COVER_BOTTOM_MARGIN, #フレームの高さ設定
         id='cover_frame',
-        showBoundary=True
+        showBoundary=0 #フレーム境界線を表示 / 非表示
     )
 
     main_frame = Frame(
-        MAIN_LEFT_MARGIN,
-        MAIN_BOTTOM_MARGIN,
-        PAGE_SIZE[0] - MAIN_LEFT_MARGIN - MAIN_RIGHT_MARGIN,
-        PAGE_SIZE[1] - MAIN_TOP_MARGIN - MAIN_BOTTOM_MARGIN,
+        x1=MAIN_LEFT_MARGIN,
+        y1=MAIN_BOTTOM_MARGIN,
+        width=PAGE_SIZE[0] - MAIN_LEFT_MARGIN - MAIN_RIGHT_MARGIN,
+        height=PAGE_SIZE[1] - MAIN_TOP_MARGIN - MAIN_BOTTOM_MARGIN,
         id='main_frame',
-        showBoundary=True
+        showBoundary=0 
     )
 
     # ページテンプレートの作成（ページごとのレイアウトとページ番号設定）
@@ -82,10 +79,6 @@ def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket
         buffer,
         pagesize=PAGE_SIZE,
         pageTemplates=[cover_template, main_template],
-        leftMargin=MAIN_LEFT_MARGIN,
-        rightMargin=MAIN_RIGHT_MARGIN,
-        topMargin=MAIN_TOP_MARGIN,
-        bottomMargin=MAIN_BOTTOM_MARGIN,
     )
 
     # コンテンツリスト（PDFに追加する要素のリスト）
@@ -127,6 +120,7 @@ def create_cover_page(title, author, abstract, styles):
     for para in abstract_paragraphs:
         elements.append(para)
         elements.append(Spacer(1, 12))
+    elements.append(NextPageTemplate('Main'))
     elements.append(PageBreak())  # 改ページ
     return elements
 
@@ -153,7 +147,6 @@ def create_toc_page(sections_format, styles, table_style):
             table_data.append([f"    {i}.{j} {sub_section_title}", ""])
 
     # 目次テーブルの作成
-    
     table = Table(table_data, colWidths=[400,40])
     table.setStyle(table_style)
     elements.append(table)
@@ -183,9 +176,6 @@ def create_main_content(workflow_id, sections_format, styles, s3_bucket):
         for j, sub_section in enumerate(sub_sections, start=1):
             sub_section_title = sub_section.get("title_name")
             text = sub_section.get("text", "")
-            # graphs = sub_section.get("graphs")
-            # tables = sub_section.get("tables")
-            # formulas = sub_section.get("formulas")
 
             # サブセクションのタイトル
             elements.append(Paragraph(f"{i}.{j} {sub_section_title}", styles['SubSectionHeading']))
@@ -290,18 +280,13 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
         print(title)
         print(content_type)
 
-        # ファイルの拡張子を確認
-        # _, file_extension = os.path.splitext(object_key)
-        # file_extension = file_extension.lower()
-        # print(f"拡張子:{file_extension}")
-
         if content_type == 'graph':
             # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
             svg_file_obj = io.BytesIO(image_data)
             drawing = svg2rlg(svg_file_obj)
             drawing.hAlign = 'CENTER'
 
-            # サイズを半分にスケール
+            # サイズスケール
             drawing.width = drawing.width / 1.6
             drawing.height = drawing.height / 1.6
             drawing.scale(0.625, 0.625)
@@ -310,11 +295,14 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
             reportlab_image = drawing
 
             # 図のタイトルを画像の下に追加
-            elements.append(Spacer(1, 24))  # 画像前のスペースを追加
-            elements.append(reportlab_image)
-            elements.append(Spacer(1, 3))  # 画像とタイトルの間にスペースを追加
-            elements.append(Paragraph(f"図{number}. {title}", styles['CaptionText']))
-            elements.append(Spacer(1, 24))  # 画像後のスペースを追加
+            keep_together_group = KeepTogether([
+                Spacer(1, 24), # 画像前のスペースを追加
+                reportlab_image,
+                Spacer(1, 3), # 画像とタイトルの間にスペースを追加
+                Paragraph(f"図{number}. {title}", styles['CaptionText']),
+                Spacer(1, 24), # 画像後のスペースを追加
+            ])
+            elements.append(keep_together_group)
 
         elif content_type == 'table':
             # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
@@ -322,7 +310,7 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
             drawing = svg2rlg(svg_file_obj)
             drawing.hAlign = 'CENTER'
 
-            # サイズをにスケール
+            # サイズスケール
             drawing.width = drawing.width / 1.6
             drawing.height = drawing.height / 1.6
             drawing.scale(0.625, 0.625)
@@ -331,11 +319,14 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
             reportlab_image = drawing
 
             # 表のタイトルを画像の上に追加
-            elements.append(Spacer(1, 24))  # 画像前のスペースを追加
-            elements.append(Paragraph(f"表{number}. {title}", styles['CaptionText']))
-            elements.append(Spacer(1, 3)) # 画像とタイトルの間にスペースを追加
-            elements.append(reportlab_image)
-            elements.append(Spacer(1, 24))  # 画像後のスペースを追加
+            keep_together_group = KeepTogether([
+                Spacer(1, 24), # 画像前のスペースを追加
+                Paragraph(f"表{number}. {title}", styles['CaptionText']),
+                Spacer(1, 3), # 画像とタイトルの間にスペースを追加
+                reportlab_image,
+                Spacer(1, 24), # 画像後のスペースを追加
+            ])
+            elements.append(keep_together_group)
             
 
     except Exception as e:

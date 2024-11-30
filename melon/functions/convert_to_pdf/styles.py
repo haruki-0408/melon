@@ -74,17 +74,6 @@ def get_pdf_styles():
         leading=10.5 * 1.2,
     ))
 
-    # 数式スタイル
-    # styles.add(ParagraphStyle(
-    #     name="FormulaStyle",
-    #     fontName='IPAexMincho',
-    #     fontSize=12,
-    #     leading=12 * 1.2,
-    #     alignment=1,  # 中央揃え
-    #     spaceBefore=12 * 1.0,
-    #     spaceAfter=12 * 1.0
-    # ))
-
     # キャプションスタイル（図表や数式の見出し用）
     styles.add(ParagraphStyle(
         name="CaptionText",

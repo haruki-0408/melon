@@ -1,9 +1,10 @@
 import json
 import os
+from aws_lambda_powertools import Logger
 import boto3
 from aws_lambda_powertools.utilities.validation import validator
 from aws_lambda_powertools.utilities.validation import SchemaValidationError
-from utilities import get_logger, upload_to_s3
+from utilities import upload_to_s3
 import event_schemas as event_schemas
 
 # スキーマファイルのパスを設定
@@ -15,7 +16,8 @@ TABLES_SCHEMA = os.path.join(SCHEMAS_DIR, 'tables_schema.json')
 # SQSクライアントを初期化
 sqs = boto3.client('sqs')
 
-logger = get_logger(service_name="get_fake_thesis_title_category_format")
+LOGGER_SERVICE = "generate_prompt_parameters"
+logger = Logger(service=LOGGER_SERVICE)
 
 @logger.inject_lambda_context(log_event=True)
 @validator(inbound_schema=event_schemas.INPUT)

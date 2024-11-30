@@ -287,7 +287,7 @@
                     "chart_type": {
                       "type": "string",
                       "enum": ["pie"],
-                      "description": "グラフの種類。ここでは 'pie'（円グラフ）を指定します。"
+                      "description": "グラフの種類。ここでは 'pie'（円グラフ）を指定します。円グラフは他のグラフ種類と組み合わせは禁止で単体で使うこと"
                     },
                     "labels": {
                       "type": "array",

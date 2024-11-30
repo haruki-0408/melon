@@ -25,23 +25,34 @@ def lambda_handler(event, context):
         system_prompt = event.get("system_prompt")  
         section_formats = event.get("section_formats")
 
-        # 各プロンプトについて生成AI APIを呼び出し
+        # 生成AIからのレスポンスを保持する配列
+        response_format = []
 
         # 会話のやり取りを保持する配列
-        response_format = []
         messages = []
-        for section_format in section_formats:
+        for idx, section_format in enumerate(section_formats):
             section_title = section_format["title_name"]
-            print(f"====== セクション: {section_title}  ======")
-            
-            # 各セクションのプロンプトを追加
+            print(f"====== セクション: {section_title} ======")
+
+            # 最後のセクションかどうかを判定
+            is_last = (idx == len(section_formats) - 1)
+
+            # 各セクションのプロンプトを準備
+            content_text = json.dumps(section_format, ensure_ascii=False)
+
+            # 最終セクションの場合、締めくくりの言葉を追加
+            if is_last:
+                closing_statement = "フォーマット内のテキストの最終行にこの研究の結論をまとめるような締めの文章を作成してフォーマット内に挿入してほしいです。"
+                content_text += f"\n\n{closing_statement}"
+
+            # プロンプトを追加
             messages.append(
                 {
-                    "role" : "user",
-                    "content" : [
+                    "role": "user",
+                    "content": [
                         {
-                            "type" : "text",
-                            "text" : json.dumps(section_format,ensure_ascii=False)
+                            "type": "text",
+                            "text": content_text
                         }
                     ]
                 }
@@ -96,11 +107,11 @@ def lambda_handler(event, context):
         print(f"====== 要旨  ======")
         abstract_response = call_anthropic_api_message_request(system_prompt=abstract_prompt, messages=messages)
 
-        # 最終的なレスポンス
         response_graphs = []
         response_tables = []
         response_formulas = []
 
+        # 各セクションからグラフ、表、数式データのみを抽出する
         for section in response_format:
             for sub_section in section['sub_sections']:
                 response_graphs.extend(sub_section['graphs'])
@@ -160,6 +171,7 @@ def call_anthropic_api_message_request(system_prompt, messages):
     response = client.beta.prompt_caching.messages.create(
         model=API_MODEL,
         max_tokens=4096,
+        temperature = 0.1,
         system=[
             {
                 "type": "text",
@@ -198,21 +210,6 @@ def genearte_anthropic_message_batch_request(prompt):
     )
 
     return request
-
-# Anthropic メッセージバッチ作成APIを呼び出す関数
-def create_anthropic_message_batch_request(requests):
-    response = client.beta.messages.batches.create(requests=requests)
-    # response = requests.post(, headers=headers, json=body, timeout=360)
-    # response.raise_for_status()  # ステータスコードが200以外の場合、例外を発生させる
-    
-    # 正常なレスポンスを返す
-    # print(response.json)
-    # print(content)
-    
-    # text = response_json['content'][0]['text']
-
-    # text_parsed = json.loads(text)
-    return response.id
 
 # Anthropic メッセージバッチ作成APIの進捗を確認する関数
 def retrieve_anthropic_message_batch_request(message_batch_id):

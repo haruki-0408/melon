@@ -46,8 +46,8 @@ def generate_s3_genre_id_prefix(datastore_id, file_type, genre_id, year, month, 
     )
 
 # AWS Lambda PowertoolsのLoggerを初期化して返却"
-def get_logger(service_name="default_service"):
-    return Logger(service=service_name)
+# def get_logger(service_name="default_service"):
+#     return Logger(service=service_name)
 
 # DynamoDBからアイテムを取得
 def get_dynamo_item(table_name, key, region='ap-northeast-1'):

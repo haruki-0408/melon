@@ -1,20 +1,45 @@
-import re
 import json
-import os
-import io
+import re
+from aws_lambda_powertools.utilities.validation import validate, SchemaValidationError
+from utilities import extract_schemas
 
 def lambda_handler(event, context):
-    try:
-        system_prompt = event['system_prompt']
-        formulas_schema, graphs_schema, tables_schema = extract_schemas(system_prompt)
-        
-        print(formulas_schema)
-        print('------=---')
-        print(graphs_schema)
-        print(tables_schema)
-    except ValueError as e:
-        print("Error:", e)
+    """
+    スキーマバリデーションを実行するLambda関数。
 
+    Parameters:
+    - event (dict): イベントデータ。
+      - system_prompt (str): システムプロンプト。
+      - response_format (list): 各セクションの生成AIレスポンス。
+
+    Returns:
+    - dict: バリデーション成功データ。
+    """
+    system_prompt = event["system_prompt"]
+    response_format = event["response_format"]
+
+    response_graphs, response_tables, response_formulas = [], [], []
+
+    for section in response_format:
+        for sub_section in section['sub_sections']:
+            response_graphs.extend(sub_section['graphs'])
+            response_tables.extend(sub_section['tables'])
+            response_formulas.extend(sub_section['formulas'])
+
+    formulas_schema, graphs_schema, tables_schema = extract_schemas(system_prompt)
+
+    try:
+        validate(event={"formulas": response_formulas}, schema=formulas_schema)
+        validate(event={"graphs": response_graphs}, schema=graphs_schema)
+        validate(event={"tables": response_tables}, schema=tables_schema)
+    except SchemaValidationError as e:
+        raise Exception(f"Schema validation failed: {str(e)}")
+
+    return {
+        "response_graphs": response_graphs,
+        "response_tables": response_tables,
+        "response_formulas": response_formulas
+    }
 
 def extract_schemas(system_prompt):
     """
@@ -53,4 +78,3 @@ def extract_schemas(system_prompt):
         extracted_schemas.get("graphs_schema"),
         extracted_schemas.get("tables_schema"),
     )
-
