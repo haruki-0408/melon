@@ -1,20 +1,13 @@
 import json
-import time
-import os
-import random
 import anthropic
-from anthropic.types.beta.message_create_params import MessageCreateParamsNonStreaming
-from anthropic.types.beta.messages.batch_create_params import Request
 from aws_lambda_powertools import Logger
+from anthropic_client import AnthropicClient
 from utilities import upload_to_s3
 
 logger = Logger(service_name="request_generative_ai_model_api")
 
-# envパラメータ
-API_URL = os.environ["ANTHROPIC_API_URL"]
-API_MODEL = os.environ["ANTHROPIC_API_MODEL"]
-
-client = anthropic.Anthropic(api_key = os.environ["ANTHROPIC_API_KEY"])
+# 生成AI リクエストインスタンス生成
+client = AnthropicClient()  
 
 @logger.inject_lambda_context(log_event=False)
 def lambda_handler(event, context):
@@ -25,10 +18,10 @@ def lambda_handler(event, context):
         system_prompt = event.get("system_prompt")  
         section_formats = event.get("section_formats")
 
-        # 生成AIからのレスポンスを保持する配列
+        # 生成AIからのレスポンスを保持するリスト
         response_format = []
 
-        # 会話のやり取りを保持する配列
+        # 会話のやり取りを保持するリスト
         messages = []
         for idx, section_format in enumerate(section_formats):
             section_title = section_format["title_name"]
@@ -81,7 +74,7 @@ def lambda_handler(event, context):
             messages_to_send = list(reversed(result))
 
             # 生成AI API呼び出し（前の返答も含める）
-            assistant_response = call_anthropic_api_message_request(system_prompt=system_prompt, messages=messages_to_send)            
+            assistant_response = client.call_message_request(system_prompt=system_prompt, messages=messages_to_send)            
 
             response_format.append(json.loads(assistant_response))
 
@@ -104,19 +97,8 @@ def lambda_handler(event, context):
                 ]
             }
         )
-        print(f"====== 要旨  ======")
-        abstract_response = call_anthropic_api_message_request(system_prompt=abstract_prompt, messages=messages)
 
-        response_graphs = []
-        response_tables = []
-        response_formulas = []
-
-        # 各セクションからグラフ、表、数式データのみを抽出する
-        for section in response_format:
-            for sub_section in section['sub_sections']:
-                response_graphs.extend(sub_section['graphs'])
-                response_tables.extend(sub_section['tables'])
-                response_formulas.extend(sub_section['formulas'])
+        abstract_response = client.call_message_request(system_prompt=abstract_prompt, messages=messages)
         
         # 分かりやすいようにS3に保存
         upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses.json",data=json.dumps({
@@ -124,9 +106,6 @@ def lambda_handler(event, context):
             "abstract" : abstract_response,
             "sections_format" : response_format
         }, ensure_ascii=False))
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_tables.json",data=json.dumps(response_tables, ensure_ascii=False))
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_formulas.json",data=json.dumps(response_formulas, ensure_ascii=False))
 
     except anthropic.APIConnectionError as e:
         logger.exception("The server could not be reached")
@@ -158,99 +137,7 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': {
             "title" : title,
-            "graphs": response_graphs,
-            "tables": response_tables,
             "abstract" : abstract_response,
-            "formulas": response_formulas,
             "sections_format" : response_format
         }
     }
-
-# Anthropic APIを呼び出す関数
-def call_anthropic_api_message_request(system_prompt, messages):
-    response = client.beta.prompt_caching.messages.create(
-        model=API_MODEL,
-        max_tokens=4096,
-        temperature = 0.1,
-        system=[
-            {
-                "type": "text",
-                "text": system_prompt,
-                "cache_control": {"type": "ephemeral"}
-            }
-        ],
-        messages=messages
-    )
-    print(response.usage)
-
-    assistant_response = response.content[0].text
-    
-    return assistant_response
-    
-
-# メッセージバッチリクエスト生成関数
-def genearte_anthropic_message_batch_request(prompt):
-    # カスタムID生成
-    custom_id = "message_" + str(random.randint(1, 10000))
-
-    request = Request(
-        custom_id = custom_id,
-        params = MessageCreateParamsNonStreaming(
-            model = API_MODEL,
-            max_tokens = 4096,
-            system = "",
-            temperature = 0.1,
-            messages = [
-                {
-                    "role" : "user",
-                    "content" : prompt
-                }
-            ]
-        )
-    )
-
-    return request
-
-# Anthropic メッセージバッチ作成APIの進捗を確認する関数
-def retrieve_anthropic_message_batch_request(message_batch_id):
-    
-    while True:
-        response = client.beta.messages.batches.retrieve(message_batch_id)
-
-        if response.processing_status == "ended":
-            break
-            
-        print(f"Batch {message_batch_id} is still processing...")
-        time.sleep(60)
-
-    print(response)
-    print(f"Batch {message_batch_id} is succeeded")
-
-    return  
-
-
-# Anthropic メッセージバッチ作成APIの結果を取得する関数
-def get_result_anthropic_message_batch_request(message_batch_id):
-    results = []
-    # Stream results file in memory-efficient chunks, processing one at a time
-    for result in client.beta.messages.batches.results(
-        message_batch_id,
-    ):
-        results.appned(result)
-
-    return results
-
-# Anthropic メッセージバッチ作成APIをすべてキャンセルする関数
-def cancel_anthropic_message_batch_request():
-    for message_batch in client.beta.messages.batches.list(
-        limit=20
-    ):
-        print('--- キャンセル前取得結果 ---')
-        print(message_batch)
-        cancel_message_batch = client.beta.messages.batches.cancel(
-            message_batch_id=message_batch.id,
-        )
-        print('--- キャンセル結果 ---')
-        print(cancel_message_batch)
-        
-    return 

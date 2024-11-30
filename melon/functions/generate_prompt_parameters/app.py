@@ -1,5 +1,4 @@
 import json
-import os
 from aws_lambda_powertools import Logger
 import boto3
 from aws_lambda_powertools.utilities.validation import validator
@@ -8,10 +7,9 @@ from utilities import upload_to_s3
 import event_schemas as event_schemas
 
 # スキーマファイルのパスを設定
-SCHEMAS_DIR = os.path.join(os.path.dirname(__file__), 'schemas')
-FORMULAS_SCHEMA = os.path.join(SCHEMAS_DIR, 'formulas_schema.json')
-GRAPHS_SCHEMA = os.path.join(SCHEMAS_DIR, 'graphs_schema.json')
-TABLES_SCHEMA = os.path.join(SCHEMAS_DIR, 'tables_schema.json')
+FORMULAS_SCHEMA = '/opt/python/schemas/formulas_schema.json'
+GRAPHS_SCHEMA = '/opt/python/schemas/graphs_schema.json'
+TABLES_SCHEMA = '/opt/python/schemas/tables_schema.json'
 
 # SQSクライアントを初期化
 sqs = boto3.client('sqs')
@@ -73,18 +71,18 @@ def lambda_handler(event, context):
         #     })
         # )
 
-        prompts = {
+        prompt_parameters = {
             "title" : title,
             "workflow_id": workflow_id,
             "system_prompt" : system_prompt,
             "section_formats" : section_formats
         } 
         
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/prompts.json",data=json.dumps(prompts, ensure_ascii=False))
+        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/prompt_parameters.json",data=json.dumps(prompt_parameters, ensure_ascii=False))
 
         return {
             'statusCode': 200,
-            'body': "Success"
+            'body': prompt_parameters
         }
     
     except Exception as e:

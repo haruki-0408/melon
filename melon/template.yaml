@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
+################################
+###  共通レイヤーグローバル化
+################################
 Globals:
   Function:
     Runtime: python3.12
@@ -8,14 +11,20 @@ Globals:
       - !Ref CommonLayer
 
 Resources:
-  # API Gateway HTTP APIの作成
+  ################################
+  ###  API Gateway
+  ###  HTTP API
+  ################################
   FakeThesisHttpApiGateway:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: "FakeThesisHttpApiGateway" # APIの名前
       ProtocolType: "HTTP"
-
-  # ApiGateway用 IAM Roleの作成
+  
+  ################################
+  ###  IAM Role
+  ###  ApiGateway用 IAM Role
+  ################################
   ApiGatewayInvokeRole:
     Type: AWS::IAM::Role
     Properties:
@@ -27,7 +36,10 @@ Resources:
               Service: "apigateway.amazonaws.com" # API Gatewayがこのロールを引き受ける
             Action: "sts:AssumeRole"
 
-  # API Gatewayのルート（エンドポイント）の作成
+  ################################
+  ###  API Gateway
+  ###  ルート（エンドポイント)
+  ################################
   ApiGatewayRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
@@ -35,7 +47,10 @@ Resources:
       RouteKey: "GET /example" # HTTPメソッドとエンドポイント
       Target: !Sub "integrations/${ApiGatewayStepFunctionsIntegration}" # Stepfunctions統合ターゲットを指定
 
-  # API GatewayとStep Functionsを統合するための統合リソース
+  ################################
+  ###  API Gateway
+  ###  Step Functionsとの統合リソース
+  ################################ 
   ApiGatewayStepFunctionsIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
@@ -44,7 +59,10 @@ Resources:
       # IntegrationUri: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${MyStepFunctionsStateMachine}"  # Step FunctionsのARNを指定
       PayloadFormatVersion: "2.0"
 
-  # 共通Lambda Layer
+  ################################
+  ###  Lambda Layer
+  ###  Lambda共通レイヤー
+  ################################ 
   CommonLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -57,7 +75,10 @@ Resources:
       BuildMethod: python3.12
       RetentionPolicy: Delete
 
-  # 論文フォーマット取得関数
+  ################################
+  ###  Lambda
+  ###  論文フォーマット取得関数
+  ################################ 
   GetFakeThesisTitleCategoryFormat:
     Type: AWS::Serverless::Function
     Properties:
@@ -76,7 +97,10 @@ Resources:
         Variables:
           DYNAMO_DB_TABLE: value
   
-  # フォーマットからプロンプトを生成する関数
+  ################################
+  ###  Lambda
+  ###  フォーマットからプロンプトを生成する関数
+  ################################ 
   GeneratePromptParameters:
     Type: AWS::Serverless::Function
     Properties:
@@ -94,7 +118,10 @@ Resources:
         Variables:
           DYNAMO_DB_TABLE: value
 
-  # 生成AI APIリクエスト関数
+  ################################
+  ###  Lambda
+  ###  生成AI APIリクエスト関数
+  ################################ 
   RequestGenerativeAiModelApi:
     Type: AWS::Serverless::Function
     Properties:
@@ -113,9 +140,45 @@ Resources:
           ANTHROPIC_API_URL: value
           ANTHROPIC_API_KEY: value
           ANTHROPIC_API_MODEL: value
+          
+  ################################
+  ###  Lambda
+  ###  論文データのスキーマバリデーション関数
+  ################################
+  FakeThesisDataValidation:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fake_thesis_data_validation
+      CodeUri: functions/fake_thesis_data_validation/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
 
+  ################################
+  ###  Lambda
+  ###  論文データスキーマ修正関数
+  ################################ 
+  FixFakeThesisData:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: fix_fake_thesis_data
+      CodeUri: functions/fix_fake_thesis_data/
+      Handler: app.lambda_handler
+      Description: "" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
 
-  # グラフデータの作成
+  ################################
+  ###  Lambda
+  ###  グラフデータの作成
+  ################################ 
   GenerateFakeGraph:
     Type: AWS::Serverless::Function
     Properties:
@@ -133,7 +196,11 @@ Resources:
         Variables:
           S3_BUCKET: value
   
-  # 表データの作成
+  
+  ################################
+  ###  Lambda
+  ###  表データの作成
+  ################################ 
   GenerateFakeTable:
     Type: AWS::Serverless::Function
     Properties:
@@ -151,7 +218,11 @@ Resources:
         Variables:
           S3_BUCKET: value
 
-  # 数式データの作成
+  
+  ################################
+  ###  Lambda
+  ###  数式データの作成
+  ################################ 
   GenerateFakeFormula:
     Type: AWS::Serverless::Function
     Properties:
@@ -169,7 +240,11 @@ Resources:
         Variables:
           S3_BUCKET: value
   
-  # PDFに変換する関数
+  
+  ################################
+  ###  Lambda
+  ###  PDF変換関数
+  ################################ 
   ConvertToPdf:
     Type: AWS::Serverless::Function
     Properties:
@@ -186,7 +261,10 @@ Resources:
         Variables:
           S3_BUCKET: value
     
-  # 論文データの整形
+  ################################
+  ###  Lambda
+  ###  テスト用関数
+  ################################ 
   Test:
     Type: AWS::Serverless::Function
     Properties:
@@ -205,8 +283,9 @@ Resources:
         Variables:
           S3_BUCKET: value
 
-
-  #Lambdaで使用するIAMロールの作成
+  ################################
+  ###  Lambdaで使用するIAMロールの作成
+  ################################ 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -266,7 +345,10 @@ Resources:
                   - sqs:GetQueueAttributes
                 Resource: "arn:aws:sqs:*:*:*"
 
-  # 論文フォーマットマスターテーブル
+  ################################
+  ###  DynamoDB
+  ###  論文フォーマットマスターテーブル
+  ################################ 
   MasterFakeThesisCategoryFormatsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -302,7 +384,10 @@ Resources:
         SSEEnabled: true
     DeletionPolicy: Retain
 
-  # ワークフロー進捗管理テーブル
+  ################################
+  ###  DynamoDB
+  ###  ワークフロー進捗管理テーブル
+  ################################ 
   WorkflowProgressManagementTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -342,7 +427,11 @@ Resources:
         SSEEnabled: true
     DeletionPolicy: Retain
 
-  # S3 バケット
+  # 
+  ################################
+  ###  S3
+  ###  論文データ保管用バケット
+  ################################ 
   FakeThesisBucket:
     Type: AWS::S3::Bucket
     Properties:

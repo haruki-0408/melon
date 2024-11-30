@@ -1,0 +1,68 @@
+Invoking app.lambda_handler (python3.12)
+CommonLayer is a local Layer in the template
+arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 is already cached. Skipping download
+Local image is up-to-date
+Building image.........................
+Using local image: samcli/lambda-python:3.12-x86_64-64f4c8ccdc89ca3b7297a82fb.
+
+Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/ConvertToPdf as /var/task:ro,delegated, inside runtime container
+START RequestId: ce2d4aa9-2e6c-4eda-80fc-86ac56602a40 Version: $LATEST
+------
+1
+古代ローマのWi-Fi技術と現代技術の進化比較
+graph
+------
+1
+古代ローマと現代のWi-Fi技術比較
+table
+------
+2
+アエリウス・ネットワークの通信範囲
+graph
+------
+2
+アエリウス・ネットワークの技術仕様
+table
+------
+3
+通信技術が帝国拡大に与えた影響
+graph
+------
+3
+通信技術が軍事作戦に与えた影響
+table
+------
+4
+通信技術の歴史的系譜
+graph
+------
+4
+ローマ帝国と現代の通信技術比較
+table
+------
+5
+情報格差の歴史的変遷
+graph
+------
+5
+通信技術における歴史的課題と現代的課題
+table
+------
+6
+技術革新の教訓：歴史的視点
+graph
+------
+6
+技術革新から学ぶ歴史的教訓
+table
+------
+7
+古代技術の現代的応用
+graph
+------
+7
+古代技術の現代的応用可能性
+table
+END RequestId: 969676e0-65a6-4587-826a-efeb6d86a9ed
+REPORT RequestId: 969676e0-65a6-4587-826a-efeb6d86a9ed	Init Duration: 0.87 ms	Duration: 36402.31 ms	Billed Duration: 36403 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
+

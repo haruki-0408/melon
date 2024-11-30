@@ -1,0 +1,29 @@
+Invoking app.lambda_handler (python3.12)
+CommonLayer is a local Layer in the template
+arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 is already cached. Skipping download
+arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 is already cached. Skipping download
+Local image is up-to-date
+Building image.............................
+Using local image: samcli/lambda-python:3.12-x86_64-1cd02839d601fb4ab0148b2f7.
+
+Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/GenerateFakeGraph as /var/task:ro,delegated, inside runtime container
+START RequestId: a744d632-a202-4966-be9f-e4426906a455 Version: $LATEST
+--- [グラフ] GRAPH_TECHNOLOGICAL_EVOLUTION 処理中... ---
+  >  タイプ: line
+--- [グラフ] GRAPH_COMMUNICATION_NETWORK 処理中... ---
+  >  タイプ: line
+--- [グラフ] GRAPH_IMPERIAL_EXPANSION 処理中... ---
+  >  タイプ: line
+--- [グラフ] GRAPH_TECHNOLOGICAL_LINEAGE 処理中... ---
+  >  タイプ: line
+--- [グラフ] GRAPH_INFORMATION_DISPARITY 処理中... ---
+  >  タイプ: line
+--- [グラフ] GRAPH_TECHNOLOGICAL_LESSONS 処理中... ---
+  >  タイプ: scatter
+/var/task/app.py:126: UserWarning: No artists with labels found to put in legend.  Note that artists whose label start with an underscore are ignored when legend() is called with no argument.
+  ax.legend()
+--- [グラフ] GRAPH_MODERN_APPLICATIONS 処理中... ---
+  >  タイプ: bar
+END RequestId: 6d15f281-20ff-40ec-ac93-9d5cd0058c93
+REPORT RequestId: 6d15f281-20ff-40ec-ac93-9d5cd0058c93	Init Duration: 0.83 ms	Duration: 29315.75 ms	Billed Duration: 29316 ms	Memory Size: 1024 MB	Max Memory Used: 1024 MB	
+

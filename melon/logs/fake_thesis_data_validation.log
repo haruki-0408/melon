@@ -1,0 +1,12 @@
+Invoking app.lambda_handler (python3.12)
+CommonLayer is a local Layer in the template
+arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 is already cached. Skipping download
+Local image is up-to-date
+Building image.........................
+Using local image: samcli/lambda-python:3.12-x86_64-64f4c8ccdc89ca3b7297a82fb.
+
+Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/FakeThesisDataValidation as /var/task:ro,delegated, inside runtime container
+START RequestId: 72e4927f-bcfe-42a1-b418-3a8059869f01 Version: $LATEST
+END RequestId: 8720cc14-2334-4a0b-9a70-21d245abeeec
+REPORT RequestId: 8720cc14-2334-4a0b-9a70-21d245abeeec	Init Duration: 0.84 ms	Duration: 7894.45 ms	Billed Duration: 7895 ms	Memory Size: 256 MB	Max Memory Used: 256 MB	
+
