@@ -37,8 +37,8 @@ def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket
     PAGE_SIZE = A4
 
     # 表紙の余白設定（変更しない）
-    COVER_TOP_MARGIN = 120  # 表紙の上余白（ポイント）
-    COVER_BOTTOM_MARGIN = 48  # 表紙の下余白（ポイント）
+    COVER_TOP_MARGIN = 100  # 表紙の上余白（ポイント）
+    COVER_BOTTOM_MARGIN = 58  # 表紙の下余白（ポイント）
     COVER_LEFT_MARGIN = 72  # 表紙の左余白（ポイント）
     COVER_RIGHT_MARGIN = 72  # 表紙の右余白（ポイント）
 

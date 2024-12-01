@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from reportlab.platypus import Table, TableStyle 
 from svglib.svglib import svg2rlg
-from reportlab.platypus import Paragraph, Spacer
+from reportlab.platypus import Paragraph, Spacer, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus.flowables import KeepInFrame
 from reportlab.graphics import renderPDF
@@ -40,10 +40,6 @@ def process_formula(object_key, s3_client, s3_bucket, styles):
         description = metadata.get('description', '')
         parameters = metadata.get('parameters', [])
 
-        # 数式の説明を追加
-        if description:
-            elements.append(Paragraph(description, styles['CaptionText']))
-
         # SVGを生成
         svg_buffer = generate_latex_svg(latex_code, parameters)
 
@@ -57,7 +53,18 @@ def process_formula(object_key, s3_client, s3_bucket, styles):
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ]))
-            elements.append(table)
+
+            if description:
+                keep_together_group = KeepTogether([
+                    Paragraph(description, styles['CaptionText']),
+                    table            
+                ])
+            else:
+                keep_together_group = KeepTogether([
+                    table            
+                ])
+            
+        elements.append(keep_together_group)
 
     except Exception as e:
         logger.exception(f"Failed to process formula {object_key}: {e}")

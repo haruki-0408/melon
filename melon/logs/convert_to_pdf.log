@@ -6,7 +6,7 @@ Building image.........................
 Using local image: samcli/lambda-python:3.12-x86_64-64f4c8ccdc89ca3b7297a82fb.
 
 Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/ConvertToPdf as /var/task:ro,delegated, inside runtime container
-START RequestId: ce2d4aa9-2e6c-4eda-80fc-86ac56602a40 Version: $LATEST
+START RequestId: d42f346c-b52f-4602-90cc-24d2fc251872 Version: $LATEST
 ------
 1
 古代ローマのWi-Fi技術と現代技術の進化比較
@@ -63,6 +63,6 @@ graph
 7
 古代技術の現代的応用可能性
 table
-END RequestId: 969676e0-65a6-4587-826a-efeb6d86a9ed
-REPORT RequestId: 969676e0-65a6-4587-826a-efeb6d86a9ed	Init Duration: 0.87 ms	Duration: 36402.31 ms	Billed Duration: 36403 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
+END RequestId: 8a9cfce8-952b-4ef1-9a25-7e8c5c34d68b
+REPORT RequestId: 8a9cfce8-952b-4ef1-9a25-7e8c5c34d68b	Init Duration: 1.21 ms	Duration: 39897.17 ms	Billed Duration: 39898 ms	Memory Size: 512 MB	Max Memory Used: 512 MB	
 
