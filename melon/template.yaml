@@ -2,63 +2,41 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 ################################
-###  共通レイヤーグローバル化
+###  マッピング
+################################
+# Mappings:
+#   # 定数
+#   Constants:
+#     # プロジェクト名を辞書型に修正
+    
+
+################################
+###  パラメータ
+################################
+Parameters:
+  # プロジェクト名
+  ProjectName:
+    Type: String
+    Default: melon
+
+  # デプロイ環境
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prd]
+
+################################
+###  グローバル
 ################################
 Globals:
   Function:
     Runtime: python3.12
+    Handler: app.lambda_handler
     Layers:
+      - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       - !Ref CommonLayer
 
 Resources:
-  ################################
-  ###  API Gateway
-  ###  HTTP API
-  ################################
-  FakeThesisHttpApiGateway:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      Name: "FakeThesisHttpApiGateway" # APIの名前
-      ProtocolType: "HTTP"
-  
-  ################################
-  ###  IAM Role
-  ###  ApiGateway用 IAM Role
-  ################################
-  ApiGatewayInvokeRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: "Allow"
-            Principal:
-              Service: "apigateway.amazonaws.com" # API Gatewayがこのロールを引き受ける
-            Action: "sts:AssumeRole"
-
-  ################################
-  ###  API Gateway
-  ###  ルート（エンドポイント)
-  ################################
-  ApiGatewayRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref FakeThesisHttpApiGateway # 作成したAPI GatewayのIDを参照
-      RouteKey: "GET /example" # HTTPメソッドとエンドポイント
-      Target: !Sub "integrations/${ApiGatewayStepFunctionsIntegration}" # Stepfunctions統合ターゲットを指定
-
-  ################################
-  ###  API Gateway
-  ###  Step Functionsとの統合リソース
-  ################################ 
-  ApiGatewayStepFunctionsIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref
-      IntegrationType: "AWS_PROXY" # LambdaまたはStep Functionsを直接呼び出す統合タイプ
-      # IntegrationUri: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${MyStepFunctionsStateMachine}"  # Step FunctionsのARNを指定
-      PayloadFormatVersion: "2.0"
-
   ################################
   ###  Lambda Layer
   ###  Lambda共通レイヤー
@@ -66,7 +44,7 @@ Resources:
   CommonLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      LayerName: fake_thesis_common_layer
+      LayerName: !Sub "${ProjectName}_${Environment}_fake_thesis_common_layer"
       Description: Common utilities and validators and etc
       ContentUri: layers/common/
       CompatibleRuntimes:
@@ -82,21 +60,18 @@ Resources:
   GetFakeThesisTitleCategoryFormat:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: get_fake_thesis_title_category_format
+      FunctionName: !Sub "${ProjectName}_${Environment}_get_fake_thesis_title_category_format"
       CodeUri: functions/get_fake_thesis_title_category_format/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "論文フォーマット取得関数" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
       Layers:
         - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
-        - arn:aws:lambda:ap-northeast-1:336392948345:layer:AWSSDKPandas-Python312:13 #AWS公式 Pandas
       Environment:
         Variables:
-          DYNAMO_DB_TABLE: value
-  
+          DYNAMO_DB_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_CATEGORY_MASTER_TABLE}}"
+
   ################################
   ###  Lambda
   ###  フォーマットからプロンプトを生成する関数
@@ -104,42 +79,34 @@ Resources:
   GeneratePromptParameters:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: generate_prompt_parameters
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_prompt_parameters"
       CodeUri: functions/generate_prompt_parameters/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "プロンプトパラメータ生成関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       Environment:
         Variables:
-          DYNAMO_DB_TABLE: value
+          DYNAMO_DB_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_CATEGORY_MASTER_TABLE}}"
 
   ################################
   ###  Lambda
-  ###  生成AI APIリクエスト関数
+  ###  論文データ・文章生成関数
   ################################ 
   RequestGenerativeAiModelApi:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: request_generative_ai_model_api
+      FunctionName: !Sub "${ProjectName}_${Environment}_request_generative_ai_model_api"
       CodeUri: functions/request_generative_ai_model_api/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "論文データ・文章生成関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       Environment:
         Variables:
-          ANTHROPIC_API_URL: value
-          ANTHROPIC_API_KEY: value
-          ANTHROPIC_API_MODEL: value
+          ANTHROPIC_API_URL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_URL}}"
+          ANTHROPIC_API_KEY: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_KEY}}"
+          ANTHROPIC_API_MODEL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_MODEL}}"
           
   ################################
   ###  Lambda
@@ -148,32 +115,26 @@ Resources:
   FakeThesisDataValidation:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: fake_thesis_data_validation
+      FunctionName: !Sub "${ProjectName}_${Environment}_fake_thesis_data_validation"
       CodeUri: functions/fake_thesis_data_validation/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "論文データのスキーマバリデーション関数" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
 
   ################################
   ###  Lambda
-  ###  論文データスキーマ修正関数
+  ###  論文データ修正関数
   ################################ 
   FixFakeThesisData:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: fix_fake_thesis_data
+      FunctionName: !Sub "${ProjectName}_${Environment}_fix_fake_thesis_data"
       CodeUri: functions/fix_fake_thesis_data/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "論文データ修正関数" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
 
   ################################
   ###  Lambda
@@ -182,19 +143,17 @@ Resources:
   GenerateFakeGraph:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: generate_fake_graph
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_graph"
       CodeUri: functions/generate_fake_graph/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "グラフデータの作成関数" 
       MemorySize: 1024 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
       Layers:
         - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 #Klayers numpy
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       Environment:
         Variables:
-          S3_BUCKET: value
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
   
   
   ################################
@@ -204,19 +163,15 @@ Resources:
   GenerateFakeTable:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: generate_fake_table
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_table"
       CodeUri: functions/generate_fake_table/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "表データ生成関数" #関数の説明
       MemorySize: 1024 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 #Klayers numpy
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       Environment:
         Variables:
-          S3_BUCKET: value
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
 
   
   ################################
@@ -226,19 +181,15 @@ Resources:
   GenerateFakeFormula:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: generate_fake_formula
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_formula"
       CodeUri: functions/generate_fake_formula/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "数式データ生成関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 #Klayers numpy
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       Environment:
         Variables:
-          S3_BUCKET: value
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
   
   
   ################################
@@ -248,40 +199,16 @@ Resources:
   ConvertToPdf:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: convert_to_pdf
+      FunctionName: !Sub "${ProjectName}_${Environment}_convert_to_pdf"
       CodeUri: functions/convert_to_pdf/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
+      Description: "PDF変換関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       Environment:
         Variables:
-          S3_BUCKET: value
-    
-  ################################
-  ###  Lambda
-  ###  テスト用関数
-  ################################ 
-  Test:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: test
-      CodeUri: functions/test/
-      Handler: app.lambda_handler
-      Description: "" #関数の説明
-      MemorySize: 1024 # メモリサイズ (MB)
-      Timeout: 900 # タイムアウト(秒)
-      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Layers:
-        # - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-Pillow:4 #Klayer Pillow
-        # - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p311-reportlab:6 #Klayer reportlab
-        - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
-      Environment:
-        Variables:
-          S3_BUCKET: value
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
+
 
   ################################
   ###  Lambdaで使用するIAMロールの作成
@@ -289,7 +216,7 @@ Resources:
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: fake_thesis_lambda_role # 明示的にロール名を指定
+      RoleName: !Sub "${ProjectName}_${Environment}_lambda_role"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -352,7 +279,8 @@ Resources:
   MasterFakeThesisCategoryFormatsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: master_fake_thesis_category_formats_table
+      TableName: !Sub "${ProjectName}_${Environment}_master_fake_thesis_category_formats_table"
+      # TableName: master_fake_thesis_category_formats_table
       AttributeDefinitions:
         - AttributeName: category_type_en
           AttributeType: S
@@ -391,7 +319,7 @@ Resources:
   WorkflowProgressManagementTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: workflow_progress_management_table
+      TableName: !Sub "${ProjectName}_${Environment}_workflow_progress_management_table"
       AttributeDefinitions:
         - AttributeName: workflow_id
           AttributeType: S
@@ -427,7 +355,6 @@ Resources:
         SSEEnabled: true
     DeletionPolicy: Retain
 
-  # 
   ################################
   ###  S3
   ###  論文データ保管用バケット
@@ -435,7 +362,7 @@ Resources:
   FakeThesisBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: "fake-thesis-bucket"
+      BucketName: !Sub "${ProjectName}-${Environment}-fake-thesis-bucket"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
