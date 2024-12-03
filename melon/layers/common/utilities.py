@@ -23,32 +23,6 @@ def configure_matplotlib_fonts():
     mpl.rcParams['axes.unicode_minus'] = False  # マイナス記号の表示対応
     
 
-# TemplateからgenresファイルのS3のパスを生成
-def generate_s3_prefix(datastore_id, file_type, year, month, day, filename):
-    
-    template = Template(
-        f"{datastore_id}/{file_type}" +
-        "${p_file_type}/year=${p_year}/month=${p_month}/day=${p_day}/${p_filename}"
-    )
-    return template.substitute(
-        p_file_type='', p_year=year, p_month=month, p_day=day, p_filename=filename
-    )
-
-# TemplateからgenreRankingのS3のパスを生成
-def generate_s3_genre_id_prefix(datastore_id, file_type, genre_id, year, month, day, filename):
-    
-    template = Template(
-        f"{datastore_id}/{file_type}" +
-        "${p_file_type}/genre_id=${p_genre_id}/year=${p_year}/month=${p_month}/day=${p_day}/${p_filename}"
-    )
-    return template.substitute(
-        p_file_type='', p_genre_id=genre_id, p_year=year, p_month=month, p_day=day, p_filename=filename
-    )
-
-# AWS Lambda PowertoolsのLoggerを初期化して返却"
-# def get_logger(service_name="default_service"):
-#     return Logger(service=service_name)
-
 # DynamoDBからアイテムを取得
 def get_dynamo_item(table_name, key, region='ap-northeast-1'):
     dynamodb = boto3.resource("dynamodb", region_name=region)
@@ -57,6 +31,13 @@ def get_dynamo_item(table_name, key, region='ap-northeast-1'):
     if 'Item' not in response:
         raise KeyError(f"アイテムが存在しません: {key}")
     return response['Item']
+
+# DynamoDBにアイテムを保存
+def put_item_to_dynamodb(table_name, item, region='ap-northeast-1'):
+    dynamodb = boto3.resource("dynamodb", region_name=region)
+    table = dynamodb.Table(table_name)
+    table.put_item(Item=item)
+
 
 # S3にオブジェクトをアップロードする関数
 def upload_to_s3(bucket_name, object_key, data, content_type="application/json"):
@@ -72,17 +53,6 @@ def upload_to_s3(bucket_name, object_key, data, content_type="application/json")
         
     except ClientError as e:
         raise
-
-# fullnameから分割
-def split_genres(genre_fullname):
-    # '>' で文字列を分割
-    parts = genre_fullname.split('>')
-    
-    # 長さが足りない場合は None で補完 (3要素になるように)
-    parts += [None] * (3 - len(parts))
-
-    # 各ジャンルを返却（genre_1, genre_2, genre_3）
-    return parts[0], parts[1], parts[2]
 
 # キャメルケースからスネークケースへの変換関数
 def camel_to_snake(name):

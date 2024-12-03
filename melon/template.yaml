@@ -61,7 +61,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_get_fake_thesis_title_category_format"
-      CodeUri: functions/get_fake_thesis_title_category_format/
+      CodeUri: functions/features/get_fake_thesis_title_category_format/
       Description: "論文フォーマット取得関数" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -80,7 +80,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_generate_prompt_parameters"
-      CodeUri: functions/generate_prompt_parameters/
+      CodeUri: functions/features/generate_prompt_parameters/
       Description: "プロンプトパラメータ生成関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -97,7 +97,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_request_generative_ai_model_api"
-      CodeUri: functions/request_generative_ai_model_api/
+      CodeUri: functions/features/request_generative_ai_model_api/
       Description: "論文データ・文章生成関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -116,7 +116,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_fake_thesis_data_validation"
-      CodeUri: functions/fake_thesis_data_validation/
+      CodeUri: functions/features/fake_thesis_data_validation/
       Description: "論文データのスキーマバリデーション関数" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -130,7 +130,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_fix_fake_thesis_data"
-      CodeUri: functions/fix_fake_thesis_data/
+      CodeUri: functions/features/fix_fake_thesis_data/
       Description: "論文データ修正関数" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -144,7 +144,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_graph"
-      CodeUri: functions/generate_fake_graph/
+      CodeUri: functions/features/generate_fake_graph/
       Description: "グラフデータの作成関数" 
       MemorySize: 1024 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -164,7 +164,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_table"
-      CodeUri: functions/generate_fake_table/
+      CodeUri: functions/features/generate_fake_table/
       Description: "表データ生成関数" #関数の説明
       MemorySize: 1024 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -182,7 +182,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_formula"
-      CodeUri: functions/generate_fake_formula/
+      CodeUri: functions/features/generate_fake_formula/
       Description: "数式データ生成関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -200,7 +200,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${ProjectName}_${Environment}_convert_to_pdf"
-      CodeUri: functions/convert_to_pdf/
+      CodeUri: functions/features/convert_to_pdf/
       Description: "PDF変換関数" #関数の説明
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
@@ -209,6 +209,36 @@ Resources:
         Variables:
           S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
 
+  ################################
+  ###  Lambda
+  ###  ワークフローコールバック関数
+  ################################ 
+  SendWorkflowCallback:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_send_workflow_callback"
+      CodeUri: functions/stepfunctions/send_workflow_callback/
+      Description: "サブワークフローの結果をコールバックする関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+  
+  ################################
+  ###  Lambda
+  ###  進捗更新関数
+  ################################ 
+  WorkflowProgressRecorder:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_workflow_progress_recorder"
+      CodeUri: functions/stepfunctions/workflow_progress_recorder/
+      Description: "各ステートの進捗を更新する関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          DYNAMO_DB_WORKFLOW_PROGRESS_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_WORKFLOW_PROGRESS_TABLE}}"
 
   ################################
   ###  Lambdaで使用するIAMロールの作成
@@ -257,10 +287,6 @@ Resources:
                   - dynamodb:UpdateItem
                   - dynamodb:DeleteItem
                 Resource:
-                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table"
-                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table"
-                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/master_thesis_category_format_table/*"
-                  # - !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/workflow_progress_management_table/*"
                   - !GetAtt MasterFakeThesisCategoryFormatsTable.Arn
                   - !GetAtt WorkflowProgressManagementTable.Arn
 
@@ -323,19 +349,19 @@ Resources:
       AttributeDefinitions:
         - AttributeName: workflow_id
           AttributeType: S
-        - AttributeName: task_id
+        - AttributeName: state_name#timestamp
           AttributeType: S
-        - AttributeName: status
+        - AttributeName: execution_id
           AttributeType: S
       KeySchema:
         - AttributeName: workflow_id
           KeyType: HASH
-        - AttributeName: task_id
+        - AttributeName: state_name#timestamp
           KeyType: RANGE
       GlobalSecondaryIndexes:
-        - IndexName: "status_index_gsi"
+        - IndexName: "execution_id_index_gsi"
           KeySchema:
-            - AttributeName: "status"
+            - AttributeName: "execution_id"
               KeyType: "HASH"
           Projection:
             ProjectionType: ALL
