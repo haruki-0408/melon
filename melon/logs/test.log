@@ -1,0 +1,12 @@
+Invoking app.lambda_handler (python3.12)
+arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 is already cached. Skipping download
+CommonLayer is a local Layer in the template
+Local image is up-to-date
+Building image.........................
+Using local image: samcli/lambda-python:3.12-x86_64-1f123908df0fde5a4eb11d277.
+
+Mounting /Users/haru48/Desktop/portfolio/melon/melon/.aws-sam/build/Test as /var/task:ro,delegated, inside runtime container
+START RequestId: 5c7dc3ca-0ec6-4b6a-a440-07cc40846aab Version: $LATEST
+END RequestId: a1b22a8d-fb37-457a-a039-cea2274bfb14
+REPORT RequestId: a1b22a8d-fb37-457a-a039-cea2274bfb14	Init Duration: 1.06 ms	Duration: 2501.41 ms	Billed Duration: 2502 ms	Memory Size: 256 MB	Max Memory Used: 256 MB	
+

@@ -1,5 +1,4 @@
 import json
-import re
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.validation import validate, SchemaValidationError
 from utilities import upload_to_s3
@@ -52,18 +51,22 @@ def lambda_handler(event, context):
         validate(event={"tables": response_tables}, schema=table_schema_json)
     except SchemaValidationError as e:
         logger.exception(e)
-        raise Exception({
-            "workflow_id" : workflow_id,
-            "title" : title,
-            "abstract" : abstract,
-            "serctions_format" : sections_format,
-            "errors" : e,
-        })
+        raise e
+    except Exception as e:
+        error = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "payload": event
+        }
+        logger.exception(error)
+
+        raise e
+    
 
     # 仮S3データ保存
-    upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
-    upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_tables.json",data=json.dumps(response_tables, ensure_ascii=False))
-    upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_formulas.json",data=json.dumps(response_formulas, ensure_ascii=False))
+    # upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
+    # upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_tables.json",data=json.dumps(response_tables, ensure_ascii=False))
+    # upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_formulas.json",data=json.dumps(response_formulas, ensure_ascii=False))
 
     return {
         'statusCode': 200,

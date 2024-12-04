@@ -1,5 +1,4 @@
 import json
-import anthropic
 from aws_lambda_powertools import Logger
 from anthropic_client import AnthropicClient
 from utilities import upload_to_s3
@@ -101,11 +100,11 @@ def lambda_handler(event, context):
         abstract_response = client.call_message_request(system_prompt=abstract_prompt, messages=messages)
         
         # 分かりやすいようにS3に保存
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses.json",data=json.dumps({
-            "title" : title,
-            "abstract" : abstract_response,
-            "sections_format" : response_format
-        }, ensure_ascii=False))
+        # upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses.json",data=json.dumps({
+        #     "title" : title,
+        #     "abstract" : abstract_response,
+        #     "sections_format" : response_format
+        # }, ensure_ascii=False))
 
     # except anthropic.APIConnectionError as e:
     #     logger.exception("The server could not be reached")
@@ -128,10 +127,8 @@ def lambda_handler(event, context):
             "payload": event
         }
         logger.exception(error)
-        return {
-            'statusCode': 500,
-            'body': error
-        }
+
+        raise e
 
     return {
         'statusCode': 200,
@@ -139,6 +136,6 @@ def lambda_handler(event, context):
             "workflow_id" : workflow_id,
             "title" : title,
             "abstract" : abstract_response,
-            "section_formats" : response_format
+            "sections_format" : response_format
         }
     }

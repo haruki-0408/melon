@@ -241,6 +241,23 @@ Resources:
           DYNAMO_DB_WORKFLOW_PROGRESS_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_WORKFLOW_PROGRESS_TABLE}}"
 
   ################################
+  ###  Lambda
+  ###  テスト
+  ################################ 
+  Test:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "test"
+      CodeUri: functions/test/
+      Description: "各ステートの進捗を更新する関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          SQS_QUEUE_URL: "value"
+
+  ################################
   ### IAM Role 
   ### Lambda実行ロール
   ################################ 
@@ -427,7 +444,7 @@ Resources:
       Target: !Ref SubWorkflowStateMachine
       TargetParameters:
         StepFunctionStateMachineParameters:
-          InvocationType: REQUEST_RESPONSE
+          InvocationType: FIRE_AND_FORGET
         InputTemplate: '{"task_token": <$.body.task_token>, "payload": <$.body.payload>}'
 
   
@@ -473,9 +490,17 @@ Resources:
       Name: !Sub "${ProjectName}_${Environment}_sub_workflow_state_machine"
       Role: !GetAtt StepFunctionsExecutionRole.Arn 
       Definition:
-        StartAt: InitializeRetryCountPass
+        StartAt: InitializeExtractFirstItemPass
         States:
-          InitializeRetryCountPass:
+          InitializeExtractFirstItemPass:
+            Type: Pass
+            Parameters:
+              "task_token.$": "$[0].task_token"
+              "payload.$": "$[0].payload"
+            ResultPath: "$"
+            Next: RetryCountPass
+
+          RetryCountPass:
             Type: Pass
             Result:
               retry_count: 0
@@ -492,6 +517,11 @@ Resources:
                 "title.$": "$.payload.title"
                 "system_prompt.$": "$.payload.system_prompt"
                 "sections_format.$": "$.payload.sections_format"
+            ResultSelector: 
+              "workflow_id.$" : "$.Payload.body.workflow_id"
+              "title.$" : "$.Payload.body.title"
+              "abstract.$" : "$.Payload.body.abstract"
+              "sections_format.$" : "$.Payload.body.sections_format"
             ResultPath: "$.payload"
             Next: FakeThesisDataValidationTask
             Catch:
@@ -510,6 +540,10 @@ Resources:
                 "title.$": "$.payload.title"
                 "abstract.$": "$.payload.abstract"
                 "sections_format.$": "$.payload.sections_format"
+            ResultSelector: 
+              "graphs.$" : "$.Payload.body.graphs"
+              "tables.$" : "$.Payload.body.tables"
+              "formulas.$" : "$.Payload.body.formulas"
             ResultPath: "$.payload.data"
             Next: SendSuccessCallbackTask
             Catch:
@@ -533,6 +567,11 @@ Resources:
                 "abstract.$": "$.payload.abstract"
                 "sections_format.$": "$.payload.sections_format"
                 "errors.$": "$.payload.errors"
+            ResultSelector: 
+              "workflow_id.$" : "$.Payload.body.workflow_id"
+              "title.$" : "$.Payload.body.title"
+              "abstract.$" : "$.Payload.body.abstract"
+              "sections_format.$" : "$.Payload.body.sections_format"
             ResultPath: "$.payload"
             Next: IncrementRetryCountPass
             Catch:

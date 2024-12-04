@@ -20,6 +20,8 @@ def lambda_handler(event, context):
     sections_format = event.get("sections_format")
     errors = event.get("errors")
 
+    logger.info(errors)
+
     # 修正リクエストと処理を行う    
 
     return {

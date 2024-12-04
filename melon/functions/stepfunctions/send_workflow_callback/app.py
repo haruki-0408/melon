@@ -45,21 +45,12 @@ def lambda_handler(event, context):
             'body': json.dumps({'message': 'Callback sent successfully'})
         }
 
-    except KeyError as e:
-        logger.exception(f"Missing required key in event: {str(e)}")
-        return {
-            'status_code': 400,
-            'body': json.dumps({'error': f"Missing required key: {str(e)}"})
-        }
-    except ClientError as e:
-        logger.exception(f"Failed to send callback to Step Functions: {e.response['Error']['Message']}")
-        return {
-            'status_code': 500,
-            'body': json.dumps({'error': e.response['Error']['Message']})
-        }
     except Exception as e:
-        logger.exception(f"Unexpected error: {str(e)}")
-        return {
-            'status_code': 500,
-            'body': json.dumps({'error': str(e)})
+        error = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "payload": event
         }
+        logger.exception(error)
+
+        raise e
