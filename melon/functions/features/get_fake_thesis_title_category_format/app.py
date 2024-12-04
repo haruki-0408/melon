@@ -44,6 +44,6 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': {
             'title': fake_thesis_title,
-            'format': format
+            'sections_format': format
         }
     }

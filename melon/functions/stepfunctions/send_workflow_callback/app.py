@@ -17,23 +17,23 @@ def lambda_handler(event, context):
         # Eventから必要な情報を取得
         task_token = event['task_token']  # コールバック用トークン
         status = event['status']         # 成功/失敗のステータス ("SUCCEEDED" or "FAILED")
-        result = event.get('result', {}) # 結果データ (成功時)
-        error_details = event.get('error_details', {}) # エラー詳細 (失敗時)
+        payload = event.get('payload', {}) # 結果データ (成功時)
+        error = event.get('error', {}) # エラー詳細 (失敗時)
 
         if status.upper() == "SUCCEEDED":
             # 成功時に親ワークフローに結果を送信
-            logger.info(f"Sending success to parent workflow: {result}")
+            logger.info(f"Sending success to parent workflow: {payload}")
             response = sfn_client.send_task_success(
                 taskToken=task_token,
-                output=json.dumps(result) # 必ずJSON形式で送信
+                output=json.dumps(payload) # 必ずJSON形式で送信
             )
         elif status.upper() == "FAILED":
             # 失敗時に親ワークフローにエラーを送信
-            logger.info(f"Sending failure to parent workflow: {error_details}")
+            logger.info(f"Sending failure to parent workflow: {error}")
             response = sfn_client.send_task_failure(
                 taskToken=task_token,
-                error=error_details.get('error', 'UnknownError'),
-                cause=error_details.get('cause', 'No cause provided')
+                error=error.get('error', 'UnknownError'),
+                cause=error.get('cause', 'No cause provided')
             )
         else:
             raise ValueError("Invalid status. Must be 'SUCCEEDED' or 'FAILED'.")

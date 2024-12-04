@@ -27,9 +27,9 @@ def lambda_handler(event, context):
         # タイトルとフォーマットを取得
         workflow_id = event["workflow_id"]
         title = event.get('title', '')
-        format_data = event.get('format', {})
-        sections = format_data.get('sections', [])
-        category_type_jp = format_data["category_type_jp"]
+        sections_format = event.get('sections_format', {})
+        sections = sections_format.get('sections', [])
+        category_type_jp = sections_format["category_type_jp"]
 
         # スキーマファイルを読み込む
         with open(FORMULAS_SCHEMA, 'r', encoding='utf-8') as f:
@@ -38,11 +38,6 @@ def lambda_handler(event, context):
             graphs_schema_json = f.read()
         with open(TABLES_SCHEMA, 'r', encoding='utf-8') as f:
             table_schema_json = f.read()
-    
-        # SQSキューのURLを取得（環境変数から取得する場合）
-        # sqs_queue_url = os.environ.get('SQS_QUEUE_URL')
-        # if not sqs_queue_url:
-        #     raise ValueError('SQS_QUEUE_URL環境変数が設定されていません')
     
         section_formats = []
     
@@ -61,28 +56,17 @@ def lambda_handler(event, context):
             
             # プロンプトを配列に追加
             section_formats.append(section)
-            
-        # SQSにメッセージを送信
-        # sqs.send_message(
-        #     QueueUrl=sqs_queue_url,
-        #     MessageBody=json.dumps({
-        #         'title': title,
-        #         'prompt': prompts
-        #     })
-        # )
-
-        prompt_parameters = {
-            "title" : title,
-            "workflow_id": workflow_id,
-            "system_prompt" : system_prompt,
-            "section_formats" : section_formats
-        } 
         
-        upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/prompt_parameters.json",data=json.dumps(prompt_parameters, ensure_ascii=False))
+        # upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/prompt_parameters.json",data=json.dumps(prompt_parameters, ensure_ascii=False))
 
         return {
             'statusCode': 200,
-            'body': prompt_parameters
+            'body': {
+                "title" : title,
+                "workflow_id": workflow_id,
+                "system_prompt" : system_prompt,
+                "section_formats" : section_formats
+            }
         }
     
     except Exception as e:

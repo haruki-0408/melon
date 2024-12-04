@@ -25,8 +25,10 @@ def lambda_handler(event, context):
     Returns:
     - dict: バリデーション成功データ。
     """
+    title = event.get("title")
+    abstract = event.get("abstract")
     workflow_id = event.get("workflow_id")
-    sections_format = event["sections_format"]
+    sections_format = event.get("sections_format")
 
     response_graphs, response_tables, response_formulas = [], [], []
 
@@ -49,8 +51,14 @@ def lambda_handler(event, context):
         validate(event={"graphs": response_graphs}, schema=graphs_schema_json)
         validate(event={"tables": response_tables}, schema=table_schema_json)
     except SchemaValidationError as e:
-        logger.exception()
-        raise Exception(f"Schema validation failed: {str(e)}")
+        logger.exception(e)
+        raise Exception({
+            "workflow_id" : workflow_id,
+            "title" : title,
+            "abstract" : abstract,
+            "serctions_format" : sections_format,
+            "errors" : e,
+        })
 
     # 仮S3データ保存
     upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/responses_graphs.json",data=json.dumps(response_graphs, ensure_ascii=False))
@@ -65,41 +73,3 @@ def lambda_handler(event, context):
             "formulas": response_formulas
         }
     }
-
-# def extract_schemas(system_prompt):
-#     """
-#     システムプロンプトからFormulas Schema、Graphs Schema、Tables Schemaを抽出し、
-#     JSON形式でパースして返す関数。
-
-#     Parameters:
-#     - system_prompt (str): システムプロンプトの文字列
-
-#     Returns:
-#     - tuple: (formulas_schema, graphs_schema, tables_schema)
-#       各スキーマをJSON形式でパースしたオブジェクトを返す
-#     """
-#     # 正規表現パターン
-#     schema_patterns = {
-#         "formulas_schema": r"#### Formulas Schema\s*({.*?})\s*(?=####|$)",
-#         "graphs_schema": r"#### Graphs Schema\s*({.*?})\s*(?=####|$)",
-#         "tables_schema": r"#### Tables Schema\s*({.*?})\s*(?=####|$)",
-#     }
-
-#     # 抽出とパース
-#     extracted_schemas = {}
-#     for key, pattern in schema_patterns.items():
-#         match = re.search(pattern, system_prompt, re.DOTALL)
-#         if match:
-#             schema_str = match.group(1).strip()  # マッチしたスキーマ部分を取得
-            
-#             # 改行や余分な空白を1つのスペースに変換
-#             cleaned_text = re.sub(r"\s+", " ", schema_str.strip())  # 改行や余分な空白を1つのスペースに変換
-#             extracted_schemas[key] = json.loads(cleaned_text)
-#         else:
-#             raise ValueError(f"{key} not found in the system prompt")
-
-#     return (
-#         extracted_schemas.get("formulas_schema"),
-#         extracted_schemas.get("graphs_schema"),
-#         extracted_schemas.get("tables_schema"),
-#     )

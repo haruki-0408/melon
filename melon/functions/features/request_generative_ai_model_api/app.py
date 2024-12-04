@@ -16,19 +16,19 @@ def lambda_handler(event, context):
         workflow_id = event.get("workflow_id")
         title = event.get("title")  
         system_prompt = event.get("system_prompt")  
-        section_formats = event.get("section_formats")
+        sections_format = event.get("sections_format")
 
         # 生成AIからのレスポンスを保持するリスト
         response_format = []
 
         # 会話のやり取りを保持するリスト
         messages = []
-        for idx, section_format in enumerate(section_formats):
+        for idx, section_format in enumerate(sections_format):
             section_title = section_format["title_name"]
             print(f"====== セクション: {section_title} ======")
 
             # 最後のセクションかどうかを判定
-            is_last = (idx == len(section_formats) - 1)
+            is_last = (idx == len(sections_format) - 1)
 
             # 各セクションのプロンプトを準備
             content_text = json.dumps(section_format, ensure_ascii=False)
@@ -107,20 +107,20 @@ def lambda_handler(event, context):
             "sections_format" : response_format
         }, ensure_ascii=False))
 
-    except anthropic.APIConnectionError as e:
-        logger.exception("The server could not be reached")
+    # except anthropic.APIConnectionError as e:
+    #     logger.exception("The server could not be reached")
 
-        return {
-            'statusCode': 500,
-            'body': e   
-        }
-    except anthropic.RateLimitError as e:
-        logger.exception("A 429 status code was received; we should back off a bit.")
+    #     return {
+    #         'statusCode': 500,
+    #         'body': e   
+    #     }
+    # except anthropic.RateLimitError as e:
+    #     logger.exception("A 429 status code was received; we should back off a bit.")
 
-        return {
-            'statusCode': 429,
-            'body': e
-        }
+    #     return {
+    #         'statusCode': 429,
+    #         'body': e
+    #     }
     except Exception as e:
         error = {
             "error_type": type(e).__name__,
@@ -136,8 +136,9 @@ def lambda_handler(event, context):
     return {
         'statusCode': 200,
         'body': {
+            "workflow_id" : workflow_id,
             "title" : title,
             "abstract" : abstract_response,
-            "sections_format" : response_format
+            "section_formats" : response_format
         }
     }

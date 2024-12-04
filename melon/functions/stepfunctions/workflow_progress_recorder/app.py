@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from utilities import put_item_to_dynamodb
 
 # envパラメータ
-DYNAMO_DB_TABLE = os.environ["DYNAMO_DB_WORKFLOW_PROGRESS_TABLE"]
+DYNAMO_DB_WORKFLOW_PROGRESS_TABLE = os.environ["DYNAMO_DB_WORKFLOW_PROGRESS_TABLE"]
 
 logger = Logger(service_name="workflow_progress_recorder")
 
@@ -20,9 +20,10 @@ def lambda_handler(event, context):
         workflow_id = event['workflow_id']  # ワークフローID
         state_name = event['state_name']    # ステート名
         status = event['status']           # 成功/失敗 ("SUCCEEDED" or "FAILED")
-        start_time = event.get('start_time', None)  # ステートの開始時間
-        end_time = event.get('end_time', None)      # ステートの終了時間
-        duration = event.get('duration', 0)        # 実行時間 (ミリ秒)
+        execution_id = event['execution_id']           # 成功/失敗 ("SUCCEEDED" or "FAILED")
+        # start_time = event.get('start_time', None)  # ステートの開始時間
+        # end_time = event.get('end_time', None)      # ステートの終了時間
+        # duration = event.get('duration', 0)        # 実行時間 (ミリ秒)
         error_details = event.get('error_details', {})  # エラー詳細（失敗時）
 
         # 現在時刻をISO 8601形式で記録
@@ -32,10 +33,11 @@ def lambda_handler(event, context):
         item = {
             'workflow_id': workflow_id,
             'state_name#timestamp': f"{state_name}#{timestamp}",
+            "execution_id" : execution_id,
             'status': status,
-            'start_time': start_time,
-            'end_time': end_time,
-            'duration': duration,
+            # 'start_time': start_time,
+            # 'end_time': end_time,
+            # 'duration': duration,
             'error_details': error_details
         }
 
@@ -43,7 +45,7 @@ def lambda_handler(event, context):
         item = {k: v for k, v in item.items() if v is not None}
 
         # DynamoDBに値を保存
-        put_item_to_dynamodb(DYNAMO_DB_TABLE, item)
+        put_item_to_dynamodb(DYNAMO_DB_WORKFLOW_PROGRESS_TABLE, item)
 
         return {
             'status_code': 200,

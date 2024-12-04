@@ -241,7 +241,8 @@ Resources:
           DYNAMO_DB_WORKFLOW_PROGRESS_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_WORKFLOW_PROGRESS_TABLE}}"
 
   ################################
-  ###  Lambdaで使用するIAMロールの作成
+  ### IAM Role 
+  ### Lambda実行ロール
   ################################ 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -296,7 +297,8 @@ Resources:
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
-                Resource: "arn:aws:sqs:*:*:*"
+                Resource: 
+                  - !GetAtt WorkflowCallbackTriggerQueue.Arn
 
   ################################
   ###  DynamoDB
@@ -398,3 +400,210 @@ Resources:
         Status: "Suspended" # バージョニングなし設定
     DeletionPolicy: Retain # バケットを削除せず保持
     UpdateReplacePolicy: Retain
+
+  ################################
+  ###  SQS
+  ###  ワークフロー間バッファ標準キュー
+  ################################ 
+  WorkflowCallbackTriggerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ProjectName}_${Environment}_workflow_callback_trigger_queue"
+
+  
+  ################################
+  ###  EventBridge Pipes
+  ###  サブワークフローPipes
+  ################################ 
+  SqsToStepFunctionsPipe:
+    Type: AWS::Pipes::Pipe
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_sqs_to_stepfunctions_pipe"
+      RoleArn: !GetAtt EventBridgePipesRole.Arn
+      Source: !GetAtt WorkflowCallbackTriggerQueue.Arn
+      SourceParameters:
+        SqsQueueParameters:
+          BatchSize: 1
+      Target: !Ref SubWorkflowStateMachine
+      TargetParameters:
+        StepFunctionStateMachineParameters:
+          InvocationType: REQUEST_RESPONSE
+        InputTemplate: '{"task_token": <$.body.task_token>, "payload": <$.body.payload>}'
+
+  
+  ################################
+  ### IAM Role 
+  ### EventBridgePipesRole
+  ################################ 
+  EventBridgePipesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_eventbridge_pipes_role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: pipes.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub "${ProjectName}_${Environment}_eventbridge_pipes_policy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt WorkflowCallbackTriggerQueue.Arn
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource: !GetAtt SubWorkflowStateMachine.Arn
+
+  ################################
+  ### Stepfunctions 
+  ### サブワークフロー
+  ################################ 
+  SubWorkflowStateMachine:
+    Type: AWS::Serverless::StateMachine
+    DependsOn: StepFunctionsExecutionRole 
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_sub_workflow_state_machine"
+      Role: !GetAtt StepFunctionsExecutionRole.Arn 
+      Definition:
+        StartAt: InitializeRetryCountPass
+        States:
+          InitializeRetryCountPass:
+            Type: Pass
+            Result:
+              retry_count: 0
+            ResultPath: "$.retry_count"
+            Next: RequestGenerativeAiModelApiTask
+
+          RequestGenerativeAiModelApiTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref RequestGenerativeAiModelApi
+              Payload:
+                "workflow_id.$": "$.payload.workflow_id"
+                "title.$": "$.payload.title"
+                "system_prompt.$": "$.payload.system_prompt"
+                "sections_format.$": "$.payload.sections_format"
+            ResultPath: "$.payload"
+            Next: FakeThesisDataValidationTask
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.error"
+                Next: SendFailureCallbackTask
+
+          FakeThesisDataValidationTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref FakeThesisDataValidation
+              Payload:
+                "workflow_id.$": "$.payload.workflow_id"
+                "title.$": "$.payload.title"
+                "abstract.$": "$.payload.abstract"
+                "sections_format.$": "$.payload.sections_format"
+            ResultPath: "$.payload.data"
+            Next: SendSuccessCallbackTask
+            Catch:
+              - ErrorEquals:
+                  - "SchemaValidationError"
+                ResultPath: "$.payload.errors"
+                Next: FixFakeThesisDataTask
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.error"
+                Next: SendFailureCallbackTask
+
+          FixFakeThesisDataTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref FixFakeThesisData
+              Payload:
+                "workflow_id.$": "$.payload.workflow_id"
+                "title.$": "$.payload.title"
+                "abstract.$": "$.payload.abstract"
+                "sections_format.$": "$.payload.sections_format"
+                "errors.$": "$.payload.errors"
+            ResultPath: "$.payload"
+            Next: IncrementRetryCountPass
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.error"
+                Next: SendFailureCallbackTask
+
+          IncrementRetryCountPass:
+            Type: Pass
+            Parameters:
+              "retry_count.$": "States.MathAdd($.retry_count, 1)"
+            ResultPath: "$.retry_count"
+            Next: CheckRetryCountChoice
+
+          CheckRetryCountChoice:
+            Type: Choice
+            Choices:
+              - Variable: "$.retry_count"
+                NumericLessThanEquals: 3
+                Next: FakeThesisDataValidationTask
+            Default: SendFailureCallbackTask
+
+          SendSuccessCallbackTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref SendWorkflowCallback
+              Payload:
+                "task_token.$": "$.task_token"
+                "status": "SUCCESS"
+                "payload.$": "$.payload"
+            End: true
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.error"
+                Next: SendFailureCallbackTask
+
+          SendFailureCallbackTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref SendWorkflowCallback
+              Payload:
+                "task_token.$": "$.task_token"
+                "status": "FAILED"
+                "error.$": "$.error"
+            End: true
+
+  ################################
+  ### IAM Role 
+  ### StepfunctionsExecutionRole
+  ################################ 
+  StepFunctionsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_stepfunctions_execution_role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub "${ProjectName}_${Environment}_stepfunctions_execution_policy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: "*"

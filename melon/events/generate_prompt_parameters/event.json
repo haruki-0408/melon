@@ -1,7 +1,7 @@
 {
     "workflow_id": "sample_historical_analysis",
     "title": "ローマ帝国はWi-Fiを発明していた:失われた通信ネットワークの再評価",
-    "format": {
+    "sections_format": {
         "category_type_jp": "歴史的解析",
         "category_type_en": "historical_analysis",
         "sections": [
