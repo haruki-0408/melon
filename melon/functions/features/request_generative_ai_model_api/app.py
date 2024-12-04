@@ -16,21 +16,22 @@ def lambda_handler(event, context):
         title = event.get("title")  
         system_prompt = event.get("system_prompt")  
         sections_format = event.get("sections_format")
+        sections = sections_format.get("sections")
 
         # 生成AIからのレスポンスを保持するリスト
         response_format = []
 
         # 会話のやり取りを保持するリスト
         messages = []
-        for idx, section_format in enumerate(sections_format):
-            section_title = section_format["title_name"]
+        for idx, section in enumerate(sections):
+            section_title = section["title_name"]
             print(f"====== セクション: {section_title} ======")
 
             # 最後のセクションかどうかを判定
             is_last = (idx == len(sections_format) - 1)
 
             # 各セクションのプロンプトを準備
-            content_text = json.dumps(section_format, ensure_ascii=False)
+            content_text = json.dumps(section, ensure_ascii=False)
 
             # 最終セクションの場合、締めくくりの言葉を追加
             if is_last:

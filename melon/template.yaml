@@ -70,7 +70,7 @@ Resources:
         - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
       Environment:
         Variables:
-          DYNAMO_DB_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_CATEGORY_MASTER_TABLE}}"
+          DYNAMO_DB_CATEGORY_MASTER_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_CATEGORY_MASTER_TABLE}}"
 
   ################################
   ###  Lambda
@@ -85,9 +85,6 @@ Resources:
       MemorySize: 512 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Environment:
-        Variables:
-          DYNAMO_DB_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_CATEGORY_MASTER_TABLE}}"
 
   ################################
   ###  Lambda
@@ -247,7 +244,7 @@ Resources:
   Test:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "test"
+      FunctionName: !Sub "${ProjectName}_${Environment}_test"
       CodeUri: functions/test/
       Description: "各ステートの進捗を更新する関数" #関数の説明
       MemorySize: 256 # メモリサイズ (MB)
@@ -313,9 +310,15 @@ Resources:
                   - sqs:SendMessage
                   - sqs:ReceiveMessage
                   - sqs:DeleteMessage
-                  - sqs:GetQueueAttributes
+                  - sqs:GetQueueAttributess
                 Resource: 
                   - !GetAtt WorkflowCallbackTriggerQueue.Arn
+              
+              - Effect: Allow
+                Action:
+                  - states:SendTaskSuccess
+                  - states:SendTaskFailure
+                Resource: "*"
 
   ################################
   ###  DynamoDB
@@ -325,7 +328,6 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${ProjectName}_${Environment}_master_fake_thesis_category_formats_table"
-      # TableName: master_fake_thesis_category_formats_table
       AttributeDefinitions:
         - AttributeName: category_type_en
           AttributeType: S
@@ -481,6 +483,131 @@ Resources:
 
   ################################
   ### Stepfunctions 
+  ### メインワークフロー
+  ################################ 
+  MainWorkflowStateMachine:
+    Type: AWS::Serverless::StateMachine
+    DependsOn: StepFunctionsExecutionRole 
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_main_workflow_state_machine"
+      Role: !GetAtt StepFunctionsExecutionRole.Arn 
+      Definition: 
+        StartAt: GetFakeThesisTitleCategoryFormatTask
+        States:
+          GetFakeThesisTitleCategoryFormatTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref GetFakeThesisTitleCategoryFormat
+              Payload:
+                "category.$": "$.category"
+            ResultSelector:
+              sections_format.$: "$.Payload.body.sections_format"
+            ResultPath: "$.raw_format"
+            Next: GeneratePromptParametersTask
+
+          GeneratePromptParametersTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref GeneratePromptParameters
+              Payload:
+                "title.$": "$.title"
+                "sections_format.$": "$.raw_format.sections_format"
+            ResultSelector:
+              system_prompt.$: "$.Payload.body.system_prompt"
+            ResultPath: "$.prompt"
+            Next: StartSubWorkflowAndWaitForCallback
+
+          StartSubWorkflowAndWaitForCallback:
+            Type: Task
+            Resource: "arn:aws:states:::sqs:sendMessage.waitForTaskToken"
+            Parameters:
+              QueueUrl: !Ref WorkflowCallbackTriggerQueue
+              MessageBody:
+                task_token.$: "$$.Task.Token"
+                payload:
+                  workflow_id.$: "$.workflow_id"
+                  title.$: "$.title"
+                  system_prompt.$: "$.prompt.system_prompt"
+                  sections_format.$: "$.raw_format.sections_format"
+            ResultPath: "$.sub_workflow_result"
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.sub_workflow_error"
+                Next: FailState
+            Next: ParallelProcessingState
+
+          ParallelProcessingState:
+            Type: Parallel
+            Branches:
+              - StartAt: GenerateFakeGraphTask
+                States:
+                  GenerateFakeGraphTask:
+                    Type: Task
+                    Resource: "arn:aws:states:::lambda:invoke"
+                    InputPath: "$.sub_workflow_result"
+                    Parameters:
+                      FunctionName: !Ref GenerateFakeGraph
+                      Payload:
+                        "workflow_id.$": "$.workflow_id"
+                        "graphs.$": "$.data.graphs"
+                    ResultPath: null
+                    End: true
+
+              - StartAt: GenerateFakeTableTask
+                States:
+                  GenerateFakeTableTask:
+                    Type: Task
+                    Resource: "arn:aws:states:::lambda:invoke"
+                    InputPath: "$.sub_workflow_result"
+                    Parameters:
+                      FunctionName: !Ref GenerateFakeTable
+                      Payload:
+                        "workflow_id.$": "$.workflow_id"
+                        "tables.$": "$.data.tables"
+                    ResultPath: null
+                    End: true
+
+              - StartAt: GenerateFakeFormulaTask
+                States:
+                  GenerateFakeFormulaTask:
+                    Type: Task
+                    Resource: "arn:aws:states:::lambda:invoke"
+                    InputPath: "$.sub_workflow_result"
+                    Parameters:
+                      FunctionName: !Ref GenerateFakeFormula
+                      Payload:
+                        "workflow_id.$": "$.workflow_id"
+                        "formulas.$": "$.data.formulas"
+                      
+                    ResultPath: null
+                    End: true
+            Next: ConvertToPdfTask
+
+          ConvertToPdfTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            
+            Parameters:
+              FunctionName: !Ref ConvertToPdf
+              Payload:
+                "workflow_id.$": "$.workflow_id"
+                "title.$": "$.title"
+                "abstract.$": "$.sub_workflow_result.abstract"
+                "section_formats.$": "$.sub_workflow_result.sections_format"
+            ResultPath: null
+            End: true
+
+          FailState:
+            Type: Fail
+            Cause: "SubWorkflow Failed"
+
+
+
+  ################################
+  ### Stepfunctions 
   ### サブワークフロー
   ################################ 
   SubWorkflowStateMachine:
@@ -602,7 +729,7 @@ Resources:
               FunctionName: !Ref SendWorkflowCallback
               Payload:
                 "task_token.$": "$.task_token"
-                "status": "SUCCESS"
+                "status": "SUCCEEDED"
                 "payload.$": "$.payload"
             End: true
             Catch:
@@ -646,3 +773,9 @@ Resources:
                 Action:
                   - lambda:InvokeFunction
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource:  
+                  - !GetAtt WorkflowCallbackTriggerQueue.Arn
+  

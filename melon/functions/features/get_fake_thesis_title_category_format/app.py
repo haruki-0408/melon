@@ -6,7 +6,7 @@ from utilities import get_dynamo_item
 import schemas
 
 # envパラメータ
-DYNAMO_DB_TABLE = os.environ["DYNAMO_DB_TABLE"]
+DYNAMO_DB_CATEGORY_MASTER_TABLE = os.environ["DYNAMO_DB_CATEGORY_MASTER_TABLE"]
 
 LOGGER_SERVICE = "get_fake_thesis_title_category_format"
 logger = Logger(service=LOGGER_SERVICE)
@@ -15,18 +15,14 @@ logger = Logger(service=LOGGER_SERVICE)
 @validator(inbound_schema=schemas.INPUT)
 def lambda_handler(event, context):
     # eventパラメータ
-    fake_thesis_title = event.get('title')
     fake_thesis_category_en =  event.get('category')
     
     try:
-        format = get_dynamo_item(table_name=DYNAMO_DB_TABLE, key={"category_type_en": fake_thesis_category_en})
+        format = get_dynamo_item(table_name=DYNAMO_DB_CATEGORY_MASTER_TABLE, key={"category_type_en": fake_thesis_category_en})
 
     except SchemaValidationError as e:
         logger.exception(f"Schema validation failed: {e}")
-        return {
-            "statusCode": 400,
-            "body": {"error": str(e)}
-        }
+        raise e
     except Exception as e:
         error = {
             "error_type": type(e).__name__,
@@ -34,16 +30,12 @@ def lambda_handler(event, context):
             "payload": event
         }
         logger.exception(error)
-        return {
-            'statusCode': 500,
-            'body': error
-        }    
+        raise e
 
     # ユーザーに返却するレスポンス
     return {
         'statusCode': 200,
         'body': {
-            'title': fake_thesis_title,
             'sections_format': format
         }
     }

@@ -1,18 +1,11 @@
-import json
 from aws_lambda_powertools import Logger
-import boto3
 from aws_lambda_powertools.utilities.validation import validator
-from aws_lambda_powertools.utilities.validation import SchemaValidationError
-from utilities import upload_to_s3
 import event_schemas as event_schemas
 
 # スキーマファイルのパスを設定
 FORMULAS_SCHEMA = '/opt/python/schemas/formulas_schema.json'
 GRAPHS_SCHEMA = '/opt/python/schemas/graphs_schema.json'
 TABLES_SCHEMA = '/opt/python/schemas/tables_schema.json'
-
-# SQSクライアントを初期化
-sqs = boto3.client('sqs')
 
 LOGGER_SERVICE = "generate_prompt_parameters"
 logger = Logger(service=LOGGER_SERVICE)
@@ -22,13 +15,12 @@ logger = Logger(service=LOGGER_SERVICE)
 def lambda_handler(event, context):
     """
     各セクションごとに生成AIに送るプロンプト文章を作成し、SQSキューに送信するLambda関数
+    TODO: 各セクション毎にシステムプロンプトを変えてもよいかもしれないキャッシュが聞かないことだけ注意
     """
     try:
         # タイトルとフォーマットを取得
-        workflow_id = event["workflow_id"]
         title = event.get('title', '')
         sections_format = event.get('sections_format', {})
-        sections = sections_format.get('sections', [])
         category_type_jp = sections_format["category_type_jp"]
 
         # スキーマファイルを読み込む
@@ -39,7 +31,7 @@ def lambda_handler(event, context):
         with open(TABLES_SCHEMA, 'r', encoding='utf-8') as f:
             table_schema_json = f.read()
     
-        section_formats = []
+        sections_format = []
     
         # システムプロンプト文章を生成
         system_prompt = generate_system_prompt(
@@ -49,23 +41,11 @@ def lambda_handler(event, context):
             graphs_schema=graphs_schema_json,
             tables_schema=table_schema_json
         )
-        
-        for section in sections:
-            section_title = section.get('title_name', '')
-            print(section_title)
-            
-            # プロンプトを配列に追加
-            section_formats.append(section)
-        
-        # upload_to_s3(bucket_name="fake-thesis-bucket",object_key=f"{workflow_id}/prompt_parameters.json",data=json.dumps(prompt_parameters, ensure_ascii=False))
 
         return {
             'statusCode': 200,
             'body': {
-                "title" : title,
-                "workflow_id": workflow_id,
                 "system_prompt" : system_prompt,
-                "section_formats" : section_formats
             }
         }
     
@@ -76,10 +56,7 @@ def lambda_handler(event, context):
             "payload": event
         }
         logger.error(error)
-        return {
-            'statusCode': 500,
-            'body': error
-        }
+        raise e
 
 def generate_system_prompt(title, category_type_jp, formulas_schema, graphs_schema, tables_schema):
     """
