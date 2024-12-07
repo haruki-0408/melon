@@ -1,32 +1,28 @@
 import json
 import boto3
+from aws_lambda_powertools import Logger
 import os
 
 S3_BUCKET = os.environ.get("S3_BUCKET")
 s3 = boto3.client('s3')
 
+logger = Logger(service="generate_fake_formula")
+
+@logger.inject_lambda_context(log_event=False)
 def lambda_handler(event, context):
     """
     イベントで渡されたLaTeX数式とその説明をS3に保存するLambda関数
     """
-    
-    if not S3_BUCKET:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': 'S3_BUCKET environment variable not set'})
-        }
-
-
-    # イベントから数式の配列を取得
-    workflow_id = event.get('workflow_id')
-    formulas = event.get('formulas', [])
-    if not formulas:
-        return {
-            'statusCode': 400,
-            'body': json.dumps({'error': 'No formulas provided in event'})
-        }
-
     try:
+        # イベントから数式の配列を取得
+        workflow_id = event.get('workflow_id')
+        formulas = event.get('formulas')
+        
+        if not formulas:
+            raise Exception("No formulas data provided in event")
+        if not S3_BUCKET:
+            raise Exception("No S3 Bucket provided in the environ.")
+
         metadata_keys = []
         for eq in formulas:
             id = eq.get('id')
@@ -59,7 +55,10 @@ def lambda_handler(event, context):
         }
 
     except Exception as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': str(e)})
+        error = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "payload": event
         }
+        logger.exception(error)
+        raise e

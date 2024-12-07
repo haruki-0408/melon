@@ -58,11 +58,17 @@ def upload_to_s3(bucket_name, object_key, data, content_type="application/json")
 def camel_to_snake(name):
     return ''.join(['_' + c.lower() if c.isupper() else c for c in name]).lstrip('_')
 
-# jsonファイルにかきこみ
-def write_to_tmp(filepath, data):
-    """取得したデータをJSONファイルに保存する"""
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+# FakeThesisデータスキーマjsonファイル読み込み
+def read_schema_jsons():
+    with open('/opt/python/schemas/formulas_schema.json', 'r', encoding='utf-8') as f:
+        formulas_schema_json = json.load(f)
+    with open('/opt/python/schemas/graphs_schema.json', 'r', encoding='utf-8') as f:
+        graphs_schema_json = json.load(f)
+    with open('/opt/python/schemas/tables_schema.json', 'r', encoding='utf-8') as f:
+        tables_schema_json = json.load(f)
+
+    return formulas_schema_json, tables_schema_json, graphs_schema_json
+
     
 # s3のバケットとプレフィクスを指定してファイルが存在するか確認する
 def check_folder_exists(bucket_name, folder_prefix):

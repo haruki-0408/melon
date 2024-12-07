@@ -24,13 +24,13 @@ def lambda_handler(event, context):
     try:
         # イベントからgraphsプロパティを取得
         workflow_id = event.get('workflow_id')
-        graphs = event.get('graphs', [])
+        graphs = event.get('graphs')
 
         if not graphs:
-            return {
-                'statusCode': 400,
-                'body': 'No graph data provided in the event.'
-            }
+            raise Exception("No graph data provided in the event.")
+    
+        if not S3_BUCKET: 
+            raise Exception("No S3 Bucket provided in the environ.")
 
         # フォント読み込み
         configure_matplotlib_fonts()
@@ -48,27 +48,21 @@ def lambda_handler(event, context):
                 'title': graph_data['title']  # タイトルを保持
             })
 
-        # S3_BUCKETが設定されている場合はS3にアップロード
-        if S3_BUCKET:
-            non_trailing_slash_prefix = f"{workflow_id}/graphs"
-            upload_to_s3(non_trailing_slash_prefix, graph_images)
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'message': 'Graphs uploaded to S3 successfully.'})
-            }
-        else:
-            # S3バケットが設定されていない場合は、Base64エンコードされた画像データを返す
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'graph_images': graph_images})
-            }
+        non_trailing_slash_prefix = f"{workflow_id}/graphs"
+        object_keys = upload_to_s3(non_trailing_slash_prefix, graph_images)
+        return {
+            'statusCode': 200,
+            'body': object_keys
+        }
 
     except Exception as e:
-        logger.exception(e)
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': str(e)})
+        error = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "payload": event
         }
+        logger.exception(error)
+        raise e
 
 def create_graph_image(graph_data):
     """
@@ -317,15 +311,16 @@ def upload_to_s3(non_trailing_slash_prefix, graphs):
     Base64エンコードされた画像データをS3にアップロードするヘルパー関数
     """
     s3 = boto3.resource('s3')
+    object_keys = []
     for graph in graphs:
         # 一意のキーを作成
-        key = f"{non_trailing_slash_prefix}/{graph['id']}.svg"
+        object_key = f"{non_trailing_slash_prefix}/{graph['id']}.svg"
         image_binary = base64.b64decode(graph['image_data'])
 
         # 日本語タイトルをBase64エンコード
         encoded_title = base64.b64encode(graph['title'].encode('utf-8')).decode('utf-8')
 
-        s3.Object(S3_BUCKET, key).put(
+        s3.Object(S3_BUCKET, object_key).put(
             Body=image_binary,
             ContentType='image/svg+xml',
             Metadata={
@@ -334,4 +329,6 @@ def upload_to_s3(non_trailing_slash_prefix, graphs):
                 'title': encoded_title
             }
         )
-        # s3.Object(S3_BUCKET, key).put(Body=image_binary, ContentType='image/png')
+        object_keys.append(object_key)
+
+    return object_keys

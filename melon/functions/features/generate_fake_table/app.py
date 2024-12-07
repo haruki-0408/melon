@@ -21,13 +21,13 @@ def lambda_handler(event, context):
     try:
         # イベントからtablesプロパティを取得
         workflow_id = event.get('workflow_id')
-        tables = event.get('tables', [])
+        tables = event.get('tables')
 
         if not tables:
-            return {
-                'statusCode': 400,
-                'body': 'No table data provided in the event.'
-            }
+            raise Exception("No table data provided in the event.")
+    
+        if not S3_BUCKET: 
+            raise Exception("No S3 Bucket provided in the environ.")
 
         # フォント読み込み
         configure_matplotlib_fonts()
@@ -44,27 +44,22 @@ def lambda_handler(event, context):
                 'title': table_data['title']  # タイトルを保持
             })
 
-        # S3_BUCKETが設定されている場合はS3にアップロード
-        if S3_BUCKET:
-            non_trailing_slash_prefix = f"{workflow_id}/tables"
-            upload_to_s3(non_trailing_slash_prefix, table_images)
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'message': 'Tables uploaded to S3 successfully.'})
-            }
-        else:
-            # S3バケットが設定されていない場合は、Base64エンコードされた画像データを返す
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'table_images': table_images})
-            }
+        non_trailing_slash_prefix = f"{workflow_id}/tables"
+        object_keys = upload_to_s3(non_trailing_slash_prefix, table_images)
+        return {
+            'statusCode': 200,
+            'body': object_keys
+        }
 
     except Exception as e:
-        logger.exception(e)
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'error': str(e)})
+        error = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "payload": event
         }
+        logger.exception(error)
+        raise e
+    
 def create_table_image(table_data):
     """
     単一のテーブル定義オブジェクトからテーブルを作成し、Base64エンコードされたSVGデータを返す関数。

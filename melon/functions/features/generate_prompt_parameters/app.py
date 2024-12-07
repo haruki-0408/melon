@@ -1,11 +1,7 @@
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.validation import validator
 import event_schemas as event_schemas
-
-# スキーマファイルのパスを設定
-FORMULAS_SCHEMA = '/opt/python/schemas/formulas_schema.json'
-GRAPHS_SCHEMA = '/opt/python/schemas/graphs_schema.json'
-TABLES_SCHEMA = '/opt/python/schemas/tables_schema.json'
+from utilities import read_schema_jsons
 
 LOGGER_SERVICE = "generate_prompt_parameters"
 logger = Logger(service=LOGGER_SERVICE)
@@ -23,13 +19,8 @@ def lambda_handler(event, context):
         sections_format = event.get('sections_format', {})
         category_type_jp = sections_format["category_type_jp"]
 
-        # スキーマファイルを読み込む
-        with open(FORMULAS_SCHEMA, 'r', encoding='utf-8') as f:
-            formulas_schema_json = f.read()
-        with open(GRAPHS_SCHEMA, 'r', encoding='utf-8') as f:
-            graphs_schema_json = f.read()
-        with open(TABLES_SCHEMA, 'r', encoding='utf-8') as f:
-            table_schema_json = f.read()
+        # スキーマファイルを読み込み
+        formulas_schema_json, tables_schema_json, graphs_schema_json = read_schema_jsons()
     
         sections_format = []
     
@@ -39,7 +30,7 @@ def lambda_handler(event, context):
             category_type_jp=category_type_jp,
             formulas_schema=formulas_schema_json,
             graphs_schema=graphs_schema_json,
-            tables_schema=table_schema_json
+            tables_schema=tables_schema_json
         )
 
         return {

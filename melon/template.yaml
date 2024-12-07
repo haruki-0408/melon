@@ -532,6 +532,8 @@ Resources:
                   system_prompt.$: "$.prompt.system_prompt"
                   sections_format.$: "$.raw_format.sections_format"
             ResultPath: "$.sub_workflow_result"
+            OutputPath: "$.sub_workflow_result"
+            TimeoutSeconds: 300 #タイムアウト5分
             Catch:
               - ErrorEquals:
                   - "States.ALL"
@@ -541,19 +543,19 @@ Resources:
 
           ParallelProcessingState:
             Type: Parallel
+            ResultPath: "$.data_result"
             Branches:
               - StartAt: GenerateFakeGraphTask
                 States:
                   GenerateFakeGraphTask:
                     Type: Task
                     Resource: "arn:aws:states:::lambda:invoke"
-                    InputPath: "$.sub_workflow_result"
                     Parameters:
                       FunctionName: !Ref GenerateFakeGraph
                       Payload:
                         "workflow_id.$": "$.workflow_id"
                         "graphs.$": "$.data.graphs"
-                    ResultPath: null
+                    OutputPath: "$.Payload.body"
                     End: true
 
               - StartAt: GenerateFakeTableTask
@@ -561,13 +563,12 @@ Resources:
                   GenerateFakeTableTask:
                     Type: Task
                     Resource: "arn:aws:states:::lambda:invoke"
-                    InputPath: "$.sub_workflow_result"
                     Parameters:
                       FunctionName: !Ref GenerateFakeTable
                       Payload:
                         "workflow_id.$": "$.workflow_id"
                         "tables.$": "$.data.tables"
-                    ResultPath: null
+                    OutputPath: "$.Payload.body"
                     End: true
 
               - StartAt: GenerateFakeFormulaTask
@@ -575,14 +576,12 @@ Resources:
                   GenerateFakeFormulaTask:
                     Type: Task
                     Resource: "arn:aws:states:::lambda:invoke"
-                    InputPath: "$.sub_workflow_result"
                     Parameters:
                       FunctionName: !Ref GenerateFakeFormula
                       Payload:
                         "workflow_id.$": "$.workflow_id"
                         "formulas.$": "$.data.formulas"
-                      
-                    ResultPath: null
+                    OutputPath: "$.Payload.body"
                     End: true
             Next: ConvertToPdfTask
 
@@ -595,14 +594,15 @@ Resources:
               Payload:
                 "workflow_id.$": "$.workflow_id"
                 "title.$": "$.title"
-                "abstract.$": "$.sub_workflow_result.abstract"
-                "section_formats.$": "$.sub_workflow_result.sections_format"
+                "abstract.$": "$.abstract"
+                "sections_format.$": "$.sections_format"
             ResultPath: null
             End: true
 
           FailState:
             Type: Fail
-            Cause: "SubWorkflow Failed"
+            CausePath: "$.sub_workflow_error.Cause"
+            ErrorPath: "$.sub_workflow_error.Error"
 
 
 
@@ -619,6 +619,7 @@ Resources:
       Definition:
         StartAt: InitializeExtractFirstItemPass
         States:
+          # SQSメッセージ配列の１つ目のみ入手
           InitializeExtractFirstItemPass:
             Type: Pass
             Parameters:
@@ -627,13 +628,16 @@ Resources:
             ResultPath: "$"
             Next: RetryCountPass
 
+          # バリデーションリトライカウント変数用意
           RetryCountPass:
             Type: Pass
-            Result:
-              retry_count: 0
-            ResultPath: "$.retry_count"
+            # Result: 0
+            # ResultPath: "$.retry_count"
+            Assign:
+              "retry_count" : 0
             Next: RequestGenerativeAiModelApiTask
 
+          # 生成AI APIリクエスト関数実行
           RequestGenerativeAiModelApiTask:
             Type: Task
             Resource: "arn:aws:states:::lambda:invoke"
@@ -654,18 +658,16 @@ Resources:
             Catch:
               - ErrorEquals:
                   - "States.ALL"
-                ResultPath: "$.error"
+                ResultPath: "$.payload.error"
                 Next: SendFailureCallbackTask
 
+          # 生成データのバリデーション関数実行
           FakeThesisDataValidationTask:
             Type: Task
             Resource: "arn:aws:states:::lambda:invoke"
             Parameters:
               FunctionName: !Ref FakeThesisDataValidation
               Payload:
-                "workflow_id.$": "$.payload.workflow_id"
-                "title.$": "$.payload.title"
-                "abstract.$": "$.payload.abstract"
                 "sections_format.$": "$.payload.sections_format"
             ResultSelector: 
               "graphs.$" : "$.Payload.body.graphs"
@@ -676,13 +678,33 @@ Resources:
             Catch:
               - ErrorEquals:
                   - "SchemaValidationError"
-                ResultPath: "$.payload.errors"
-                Next: FixFakeThesisDataTask
+                ResultPath: "$.payload.error"
+                Next: IncrementRetryCountPass
               - ErrorEquals:
                   - "States.ALL"
-                ResultPath: "$.error"
+                ResultPath: "$.payload.error"
                 Next: SendFailureCallbackTask
 
+          # リトライカウントをインクリメント
+          IncrementRetryCountPass:
+            Type: Pass
+            # Parameters:
+            #   "retry_count.$": "States.MathAdd($retry_count, 1)"
+            # ResultPath: "$.retry_count"
+            Assign:
+              "retry_count.$": "States.MathAdd($retry_count, 1)"
+            Next: CheckRetryCountChoice
+
+          # リトライカウントが3回を上回っているかチェック
+          CheckRetryCountChoice:
+            Type: Choice
+            Choices:
+              - Variable: "$retry_count"
+                NumericGreaterThanEquals: 3
+                Next: MaxValidationRetryAttemptsExceededPass
+            Default: FixFakeThesisDataTask
+
+          # バリデーションエラーを修正するリクエスト関数実行
           FixFakeThesisDataTask:
             Type: Task
             Resource: "arn:aws:states:::lambda:invoke"
@@ -693,35 +715,30 @@ Resources:
                 "title.$": "$.payload.title"
                 "abstract.$": "$.payload.abstract"
                 "sections_format.$": "$.payload.sections_format"
-                "errors.$": "$.payload.errors"
+                "validation_error.$": "$.payload.error"
             ResultSelector: 
               "workflow_id.$" : "$.Payload.body.workflow_id"
               "title.$" : "$.Payload.body.title"
               "abstract.$" : "$.Payload.body.abstract"
               "sections_format.$" : "$.Payload.body.sections_format"
             ResultPath: "$.payload"
-            Next: IncrementRetryCountPass
+            Next: FakeThesisDataValidationTask
             Catch:
               - ErrorEquals:
                   - "States.ALL"
-                ResultPath: "$.error"
+                ResultPath: "$.payload.error"
                 Next: SendFailureCallbackTask
-
-          IncrementRetryCountPass:
+          
+          # バリデーション最大試行回数超過
+          MaxValidationRetryAttemptsExceededPass:
             Type: Pass
             Parameters:
-              "retry_count.$": "States.MathAdd($.retry_count, 1)"
-            ResultPath: "$.retry_count"
-            Next: CheckRetryCountChoice
+              "Error": "MaxValidationRetryAttemptsExceededError" #エラー内容の上書き
+              "Cause.$": "$.payload.error.Cause"
+            ResultPath: "$.payload.error"
+            Next: SendFailureCallbackTask
 
-          CheckRetryCountChoice:
-            Type: Choice
-            Choices:
-              - Variable: "$.retry_count"
-                NumericLessThanEquals: 3
-                Next: FakeThesisDataValidationTask
-            Default: SendFailureCallbackTask
-
+          # メインワークフローにTaskTokenと成功をコールバックする
           SendSuccessCallbackTask:
             Type: Task
             Resource: "arn:aws:states:::lambda:invoke"
@@ -735,9 +752,10 @@ Resources:
             Catch:
               - ErrorEquals:
                   - "States.ALL"
-                ResultPath: "$.error"
+                ResultPath: "$.payload.error"
                 Next: SendFailureCallbackTask
 
+          # メインワークフローにTaskTokenと失敗をコールバックする
           SendFailureCallbackTask:
             Type: Task
             Resource: "arn:aws:states:::lambda:invoke"
@@ -746,7 +764,7 @@ Resources:
               Payload:
                 "task_token.$": "$.task_token"
                 "status": "FAILED"
-                "error.$": "$.error"
+                "error.$": "$.payload.error"
             End: true
 
   ################################

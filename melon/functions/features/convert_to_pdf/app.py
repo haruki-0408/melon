@@ -10,7 +10,6 @@ logger = Logger(service=LOGGER_SERVICE)
 # 環境変数からS3バケット名を取得
 S3_BUCKET = os.environ["S3_BUCKET"]
 
-
 @logger.inject_lambda_context(log_event=False)
 def lambda_handler(event, context):
     try:
@@ -40,7 +39,4 @@ def lambda_handler(event, context):
             "payload": event
         }
         logger.error(error)
-        return {
-            'statusCode': 500,
-            'body': error
-        }
+        raise e

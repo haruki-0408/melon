@@ -32,8 +32,8 @@ def lambda_handler(event, context):
             logger.info(f"Sending failure to parent workflow: {error}")
             response = sfn_client.send_task_failure(
                 taskToken=task_token,
-                error=error.get('error', 'UnknownError'),
-                cause=error.get('cause', 'No cause provided')
+                error=error.get('Error'),
+                cause=error.get('Cause')
             )
         else:
             raise ValueError("Invalid status. Must be 'SUCCEEDED' or 'FAILED'.")
