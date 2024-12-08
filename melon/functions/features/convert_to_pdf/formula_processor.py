@@ -7,11 +7,9 @@ from svglib.svglib import svg2rlg
 from reportlab.platypus import Paragraph, KeepTogether
 from aws_lambda_powertools import Logger
 
-LOGGER_SERVICE = "convert_to_pdf"
-logger = Logger(service=LOGGER_SERVICE)
+logger = Logger()
 
 FONT_PATH = '/opt/python/fonts/ipaexm.ttf'  # フォントパスを設定
-
 
 def process_formula(object_key, s3_client, s3_bucket, styles):
     """
@@ -83,7 +81,6 @@ def generate_latex_svg(latex_code, parameters):
         font_prop = FontProperties(fname=FONT_PATH)
         fontsize_formula = 9
 
-        # Matplotlibの初期設定
         fig, ax = plt.subplots()
         fig.set_dpi(72)
         ax.axis('off')  # 軸を非表示

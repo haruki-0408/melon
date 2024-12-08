@@ -3,18 +3,18 @@ import io
 from io import BytesIO
 from aws_lambda_powertools import Logger
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import (BaseDocTemplate, Paragraph, Spacer, PageBreak,Frame, PageTemplate, NextPageTemplate, KeepTogether)
+from reportlab.platypus import (
+    BaseDocTemplate, Paragraph, Spacer, PageBreak,Frame, PageTemplate, 
+    NextPageTemplate, KeepTogether, Table, TableStyle)
 from reportlab.lib.units import mm
 from fonts import register_fonts #　フォントファイル
 from styles import get_pdf_styles, get_table_style #　スタイルファイル
-from formula_processor import process_formula # 数式処理
 import boto3
 from svglib.svglib import svg2rlg
 import re
 from reportlab.platypus import Table
 
-LOGGER_SERVICE = "convert_to_pdf"
-logger = Logger(service=LOGGER_SERVICE)
+logger = Logger()
 
 def create_pdf_document(workflow_id, title, abstract, sections_format, s3_bucket):
     """
@@ -222,8 +222,8 @@ def process_text(workflow_id, text, styles, s3_client, s3_bucket):
             # 挿入識別子の処理
             if insert_id.startswith('FORMULA'):
                 # 数式メタデータの処理
-                object_key = f"{workflow_id}/formulas/{insert_id}_metadata.json"
-                formula_elements = process_formula(object_key, s3_client, s3_bucket, styles)
+                object_key = f"{workflow_id}/formulas/{insert_id}.svg"
+                formula_elements = insert_image(object_key, styles, s3_client, s3_bucket)
                 elements.extend(formula_elements)
             elif insert_id.startswith('GRAPH'):
                 # グラフ画像の処理
@@ -263,74 +263,92 @@ def insert_image(object_key, styles, s3_client, s3_bucket):
     - elements (list): タイトルと画像（またはSVGを変換したDrawingオブジェクト）を含むリスト。
     """
     elements = []
-    try:
-        # S3から画像をダウンロード
-        response = s3_client.get_object(Bucket=s3_bucket, Key=object_key)
-        image_data = response['Body'].read()
+    
+    # S3から画像をダウンロード
+    response = s3_client.get_object(Bucket=s3_bucket, Key=object_key)
+    image_data = response['Body'].read()
 
-        # メタデータを取得してデコード
-        metadata = response['Metadata']
-        number = metadata.get('number', '')  # デフォルト値を設定
+    # メタデータを取得してデコード
+    metadata = response['Metadata']
+    number = metadata.get('number', '')  # デフォルト値を設定
+    content_type = metadata.get('type')
+
+    if content_type == 'graph':
         title_base64 = metadata.get('title')
-        content_type = metadata.get('type')
-
         title = base64.b64decode(title_base64).decode('utf-8') if title_base64 else 'Untitled'
-        print('------')
-        print(number)
-        print(title)
-        print(content_type)
+        # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
+        svg_file_obj = io.BytesIO(image_data)
+        drawing = svg2rlg(svg_file_obj)
+        drawing.hAlign = 'CENTER'
 
-        if content_type == 'graph':
-            # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
-            svg_file_obj = io.BytesIO(image_data)
-            drawing = svg2rlg(svg_file_obj)
-            drawing.hAlign = 'CENTER'
+        # サイズスケール
+        drawing.width = drawing.width / 1.6
+        drawing.height = drawing.height / 1.6
+        drawing.scale(0.625, 0.625)
 
-            # サイズスケール
-            drawing.width = drawing.width / 1.6
-            drawing.height = drawing.height / 1.6
-            drawing.scale(0.625, 0.625)
+        # 描画オブジェクトをelementsに追加
+        reportlab_image = drawing
 
-            # 描画オブジェクトをelementsに追加
-            reportlab_image = drawing
+        # 図のタイトルを画像の下に追加
+        keep_together_group = KeepTogether([
+            Spacer(1, 24), # 画像前のスペースを追加
+            reportlab_image,
+            Spacer(1, 3), # 画像とタイトルの間にスペースを追加
+            Paragraph(f"図{number}. {title}", styles['CaptionText']),
+            Spacer(1, 24), # 画像後のスペースを追加
+        ])
 
-            # 図のタイトルを画像の下に追加
+    elif content_type == 'table':
+        title_base64 = metadata.get('title')
+        title = base64.b64decode(title_base64).decode('utf-8') if title_base64 else 'Untitled'
+        # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
+        svg_file_obj = io.BytesIO(image_data)
+        drawing = svg2rlg(svg_file_obj)
+        drawing.hAlign = 'CENTER'
+
+        # サイズスケール
+        drawing.width = drawing.width / 1.6
+        drawing.height = drawing.height / 1.6
+        drawing.scale(0.625, 0.625)
+
+        # 描画オブジェクトをelementsに追加
+        reportlab_image = drawing
+
+        # 表のタイトルを画像の上に追加
+        keep_together_group = KeepTogether([
+            Spacer(1, 24), # 画像前のスペースを追加
+            Paragraph(f"表{number}. {title}", styles['CaptionText']),
+            Spacer(1, 3), # 画像とタイトルの間にスペースを追加
+            reportlab_image,
+            Spacer(1, 24), # 画像後のスペースを追加
+        ])
+    
+    elif content_type == 'formula':
+        description_base64 = metadata.get('description')
+        description = base64.b64decode(description_base64).decode('utf-8') if description_base64 else 'UnDescription'
+        
+        # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
+        svg_file_obj = io.BytesIO(image_data)
+        drawing = svg2rlg(svg_file_obj)
+
+        # 中央寄せするためにテーブルでラッピング
+        table = Table([[drawing]], colWidths=[400])
+        table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+
+        if description:
             keep_together_group = KeepTogether([
-                Spacer(1, 24), # 画像前のスペースを追加
-                reportlab_image,
-                Spacer(1, 3), # 画像とタイトルの間にスペースを追加
-                Paragraph(f"図{number}. {title}", styles['CaptionText']),
-                Spacer(1, 24), # 画像後のスペースを追加
+                Paragraph(description, styles['CaptionText']),
+                table            
             ])
-            elements.append(keep_together_group)
-
-        elif content_type == 'table':
-            # SVGファイルの場合、svglibを使用してDrawingオブジェクトを作成
-            svg_file_obj = io.BytesIO(image_data)
-            drawing = svg2rlg(svg_file_obj)
-            drawing.hAlign = 'CENTER'
-
-            # サイズスケール
-            drawing.width = drawing.width / 1.6
-            drawing.height = drawing.height / 1.6
-            drawing.scale(0.625, 0.625)
-
-            # 描画オブジェクトをelementsに追加
-            reportlab_image = drawing
-
-            # 表のタイトルを画像の上に追加
+        else:
             keep_together_group = KeepTogether([
-                Spacer(1, 24), # 画像前のスペースを追加
-                Paragraph(f"表{number}. {title}", styles['CaptionText']),
-                Spacer(1, 3), # 画像とタイトルの間にスペースを追加
-                reportlab_image,
-                Spacer(1, 24), # 画像後のスペースを追加
+                table            
             ])
-            elements.append(keep_together_group)
-            
-
-    except Exception as e:
-        logger.exception(f"Failed to insert image {object_key}: {str(e)}")
+    
+    elements.append(keep_together_group)
 
     return elements
 
