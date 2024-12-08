@@ -1,16 +1,18 @@
 import json
 import os
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 from pdf_generator import create_pdf_document
 from utilities import upload_to_s3
-
-LOGGER_SERVICE = "convert_to_pdf"
-logger = Logger(service=LOGGER_SERVICE)
 
 # 環境変数からS3バケット名を取得
 S3_BUCKET = os.environ["S3_BUCKET"]
 
-@logger.inject_lambda_context(log_event=False)
+logger = Logger()
+
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     try:
         # 入力データの取得
@@ -38,5 +40,5 @@ def lambda_handler(event, context):
             "error_message": str(e),
             "payload": event
         }
-        logger.error(error)
+        logger.exception(error)
         raise e

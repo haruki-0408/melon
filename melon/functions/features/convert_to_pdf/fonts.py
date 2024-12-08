@@ -1,4 +1,3 @@
-import os
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.rl_config import canvas_basefontname as _canvas_basefontname

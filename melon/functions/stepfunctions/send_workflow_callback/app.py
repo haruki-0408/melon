@@ -1,14 +1,16 @@
 import json
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 import boto3
-from botocore.exceptions import ClientError
-
-logger = Logger(service_name="send_workflow_callback")
 
 # Step Functions クライアント
 sfn_client = boto3.client('stepfunctions')
 
-@logger.inject_lambda_context(log_event=False)
+logger = Logger()
+
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     子ワークフローの結果を親ワークフローに返すLambda関数（スネークケース対応）

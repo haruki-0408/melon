@@ -2,15 +2,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 ################################
-###  マッピング
-################################
-# Mappings:
-#   # 定数
-#   Constants:
-#     # プロジェクト名を辞書型に修正
-    
-
-################################
 ###  パラメータ
 ################################
 Parameters:
@@ -32,9 +23,13 @@ Globals:
   Function:
     Runtime: python3.12
     Handler: app.lambda_handler
+    Tracing: Active
     Layers:
       - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
       - !Ref CommonLayer
+    Environment:
+      Variables:
+        POWERTOOLS_SERVICE_NAME: !Sub "${ProjectName}"
 
 Resources:
   ################################
@@ -325,6 +320,12 @@ Resources:
                   - states:SendTaskFailure
                 Resource: "*"
 
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+
   ################################
   ###  DynamoDB
   ###  論文フォーマットマスターテーブル
@@ -496,6 +497,8 @@ Resources:
     Properties:
       Name: !Sub "${ProjectName}_${Environment}_main_workflow_state_machine"
       Role: !GetAtt StepFunctionsExecutionRole.Arn 
+      Tracing:
+        Enabled: True  # X-Ray トレーシングを有効化
       Definition: 
         StartAt: GetFakeThesisTitleCategoryFormatTask
         States:
@@ -621,6 +624,8 @@ Resources:
     Properties:
       Name: !Sub "${ProjectName}_${Environment}_sub_workflow_state_machine"
       Role: !GetAtt StepFunctionsExecutionRole.Arn 
+      Tracing:
+        Enabled: True  # X-Ray トレーシングを有効化
       Definition:
         StartAt: InitializeExtractFirstItemPass
         States:
@@ -802,4 +807,9 @@ Resources:
                   - sqs:SendMessage
                 Resource:  
                   - !GetAtt WorkflowCallbackTriggerQueue.Arn
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
   

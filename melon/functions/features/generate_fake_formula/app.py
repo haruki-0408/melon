@@ -1,14 +1,16 @@
 import json
-import boto3
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 import os
+from utilities import upload_to_s3
 
 S3_BUCKET = os.environ.get("S3_BUCKET")
-s3 = boto3.client('s3')
 
-logger = Logger(service="generate_fake_formula")
+logger = Logger()
 
-@logger.inject_lambda_context(log_event=False)
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     イベントで渡されたLaTeX数式とその説明をS3に保存するLambda関数
@@ -42,12 +44,14 @@ def lambda_handler(event, context):
                 'parameters': parameters,
                 'latex_code': latex_code
             }
-            s3.put_object(
-                Bucket=S3_BUCKET,
-                Key=metadata_key,
-                Body=json.dumps(metadata, ensure_ascii=False),
-                ContentType='application/json'
-            )
+
+            upload_to_s3(S3_BUCKET, metadata_key,json.dumps(metadata, ensure_ascii=False))
+            # s3.put_object(
+            #     Bucket=S3_BUCKET,
+            #     Key=metadata_key,
+            #     Body=json.dumps(metadata, ensure_ascii=False),
+            #     ContentType='application/json'
+            # )
 
         return {
             'statusCode': 200,

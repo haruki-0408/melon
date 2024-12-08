@@ -1,14 +1,10 @@
-import os
 import json
 from io import BytesIO
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from reportlab.platypus import Table, TableStyle 
 from svglib.svglib import svg2rlg
-from reportlab.platypus import Paragraph, Spacer, KeepTogether
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus.flowables import KeepInFrame
-from reportlab.graphics import renderPDF
+from reportlab.platypus import Paragraph, KeepTogether
 from aws_lambda_powertools import Logger
 
 LOGGER_SERVICE = "convert_to_pdf"

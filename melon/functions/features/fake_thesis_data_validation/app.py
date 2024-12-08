@@ -1,12 +1,13 @@
-import json
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.utilities.validation import validate, SchemaValidationError
-from utilities import read_schema_jsons, upload_to_s3
+from utilities import read_schema_jsons
 
-LOGGER_SERVICE = "fake_thesis_data_validation"
-logger = Logger(service=LOGGER_SERVICE)
+logger = Logger()
 
-@logger.inject_lambda_context(log_event=False)
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     スキーマバリデーションを実行するLambda関数。

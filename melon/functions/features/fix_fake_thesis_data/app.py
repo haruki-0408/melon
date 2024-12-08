@@ -1,14 +1,17 @@
 import json
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 from anthropic_client import AnthropicClient
 from utilities import read_schema_jsons
-
-logger = Logger(service_name="fix_fake_thesis_data")
 
 # 生成AI リクエストインスタンス生成
 client = AnthropicClient()
 
-@logger.inject_lambda_context(log_event=False)
+logger = Logger()
+
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     修正を促す生成AIリクエストを実行するLambda関数。

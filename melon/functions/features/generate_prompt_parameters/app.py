@@ -1,13 +1,15 @@
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.utilities.validation import validator
 import event_schemas as event_schemas
 from utilities import read_schema_jsons
 
-LOGGER_SERVICE = "generate_prompt_parameters"
-logger = Logger(service=LOGGER_SERVICE)
+logger = Logger()
+
+tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
 @validator(inbound_schema=event_schemas.INPUT)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     各セクションごとに生成AIに送るプロンプト文章を作成し、SQSキューに送信するLambda関数

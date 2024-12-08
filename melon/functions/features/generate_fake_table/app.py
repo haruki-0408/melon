@@ -1,19 +1,22 @@
 import json
 import io
 import os
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 import boto3
 import base64
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from utilities import configure_matplotlib_fonts
 
-logger = Logger(service="generate_fake_table")
-
 # S3のアップロード先情報
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
 
-@logger.inject_lambda_context(log_event=False)
+logger = Logger()
+
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     イベントオブジェクトから表データの配列を受け取り、それぞれのテーブルを画像化して返すLambda関数。

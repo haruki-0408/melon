@@ -1,4 +1,4 @@
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 import os
 import json
 from datetime import datetime, timezone
@@ -8,9 +8,12 @@ from utilities import put_item_to_dynamodb
 # envパラメータ
 DYNAMO_DB_WORKFLOW_PROGRESS_TABLE = os.environ["DYNAMO_DB_WORKFLOW_PROGRESS_TABLE"]
 
-logger = Logger(service_name="workflow_progress_recorder")
+logger = Logger()
 
-@logger.inject_lambda_context(log_event=False)
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     Step Functionsのステート結果をDynamoDB進捗管理テーブルに追加する汎用的なLambda関数

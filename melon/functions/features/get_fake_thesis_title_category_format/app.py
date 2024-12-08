@@ -2,17 +2,20 @@ import os
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.validation import validator
 from aws_lambda_powertools.utilities.validation import SchemaValidationError
+from aws_lambda_powertools import Tracer
 from utilities import get_dynamo_item
 import schemas
 
 # envパラメータ
 DYNAMO_DB_CATEGORY_MASTER_TABLE = os.environ["DYNAMO_DB_CATEGORY_MASTER_TABLE"]
 
-LOGGER_SERVICE = "get_fake_thesis_title_category_format"
-logger = Logger(service=LOGGER_SERVICE)
+logger = Logger()
+
+tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
 @validator(inbound_schema=schemas.INPUT)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     # eventパラメータ
     fake_thesis_category_en =  event.get('category')

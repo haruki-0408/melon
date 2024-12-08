@@ -1,4 +1,4 @@
-from aws_lambda_powertools import Logger
+from aws_lambda_powertools import Logger, Tracer
 import matplotlib.pyplot as plt
 import io
 import os
@@ -10,12 +10,15 @@ import sympy as sp
 from matplotlib.patches import Ellipse
 from utilities import configure_matplotlib_fonts
 
-logger = Logger(service="generate_fake_graph")
-
 # S3のアップロード先情報
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
 
-@logger.inject_lambda_context(log_event=False)
+logger = Logger()
+
+tracer = Tracer()
+
+@logger.inject_lambda_context(log_event=True)
+@tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
     イベントオブジェクトからグラフデータを受け取り、動的にグラフを生成してS3にアップロードまたは
