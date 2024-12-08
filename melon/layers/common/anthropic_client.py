@@ -43,7 +43,8 @@ class AnthropicClient:
             ],
             messages=messages
         )
-        logger.info(f"Response Usage: {response.usage}")
+        print("==== Response Usage ====")
+        logger.info(response.usage)
         return response.content[0].text
 
     def generate_batch_request(self, prompt, max_tokens=4096, temperature=0.1):

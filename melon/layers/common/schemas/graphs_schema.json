@@ -13,14 +13,6 @@
             "type": "string",
             "description": "GRAPH_{重複を許さない大文字英数字}の形式で{text}内の挿入識別子と合わせる"
           },
-          "figure_width": {
-            "type": "number",
-            "description": "描画するグラフ全体の横幅（インチ単位）でA4サイズの横幅に収まるサイズ。"
-          },
-          "figure_height": {
-            "type": "number",
-            "description": "描画するグラフ全体の高さ（インチ単位）。A4サイズの横幅に収まるサイズ"
-          },
           "title": {
             "type": "string",
             "description": "図全体のタイトル。"
@@ -43,7 +35,7 @@
           },
           "charts": {
             "type": "array",
-            "description": "表示する複数のグラフの設定の配列。",
+            "description": "表示する複数のグラフの設定の配列。ただし円グラフは単体で使うこと",
             "minItems": 1,
             "maxItems": 2,
             "items": {
@@ -82,7 +74,8 @@
                           },
                           "color": {
                             "type": "string",
-                            "description": "折れ線の色（例: 'blue'）。"
+                            "description": "折れ線の色。名前付き色または16進数形式。",
+                            "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
                           },
                           "linestyle": {
                             "type": "string",
@@ -137,10 +130,11 @@
                     },
                     "colors": {
                       "type": "array",
+                      "description": "面の塗りつぶしに使用する色。名前付き色または16進数形式。",
                       "items": {
-                        "type": "string"
-                      },
-                      "description": "面の塗りつぶしに使用する色の配列。"
+                        "type": "string",
+                        "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                      }
                     },
                     "alphas": {
                       "type": "array",
@@ -183,10 +177,11 @@
                     },
                     "colors": {
                       "type": "array",
+                      "description": "各棒の色を示す配列。名前付き色または16進数形式。",
                       "items": {
-                        "type": "string"
-                      },
-                      "description": "各棒の色を示す配列。"
+                        "type": "string",
+                        "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                      }
                     }
                   },
                   "required": ["chart_type", "categories", "values", "colors"]
@@ -226,10 +221,11 @@
                     },
                     "colors": {
                       "type": "array",
+                      "description": "各積み上げ部分の色を示す配列。名前付き色または16進数形式。",
                       "items": {
-                        "type": "string"
-                      },
-                      "description": "各積み上げ部分の色を示す配列。"
+                        "type": "string",
+                        "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                      }
                     }
                   },
                   "required": [
@@ -261,7 +257,8 @@
                     },
                     "color": {
                       "type": "string",
-                      "description": "ヒストグラムのバーの色。"
+                      "description": "ヒストグラムのバーの色。名前付き色または16進数形式。",
+                      "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
                     },
                     "alpha": {
                       "type": "number",
@@ -441,11 +438,13 @@
                     },
                     "edgecolor": {
                       "type": "string",
-                      "description": "楕円の境界線の色。"
+                      "description": "楕円の境界線の色。名前付き色または16進数形式。",
+                      "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
                     },
                     "facecolor": {
                       "type": "string",
-                      "description": "楕円の塗りつぶし色。"
+                      "description": "楕円の塗りつぶし色。名前付き色または16進数形式。",
+                      "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
                     },
                     "alpha": {
                       "type": "number",
@@ -503,7 +502,8 @@
                     },
                     "color": {
                       "type": "string",
-                      "description": "曲線の色を示す文字列（例: 'red'）。"
+                      "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$",
+                      "description": "曲線の色を示す文字列。名前付き色または16進数形式。"
                     },
                     "linestyle": {
                       "type": "string",
@@ -564,8 +564,6 @@
         },
         "required": [
           "id",
-          "figure_width",
-          "figure_height",
           "title",
           "xlabel",
           "ylabel",

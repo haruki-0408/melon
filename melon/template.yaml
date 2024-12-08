@@ -132,6 +132,11 @@ Resources:
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          ANTHROPIC_API_URL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_URL}}"
+          ANTHROPIC_API_KEY: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_KEY}}"
+          ANTHROPIC_API_MODEL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_MODEL}}"
 
   ################################
   ###  Lambda
@@ -711,6 +716,7 @@ Resources:
             Parameters:
               FunctionName: !Ref FixFakeThesisData
               Payload:
+                "retry_count.$": "$retry_count"
                 "workflow_id.$": "$.payload.workflow_id"
                 "title.$": "$.payload.title"
                 "abstract.$": "$.payload.abstract"

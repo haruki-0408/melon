@@ -15,14 +15,6 @@
                 "type": "string",
                 "description": "TABLE_{重複を許さない大文字英数字}の形式で{text}内の挿入識別子と合わせる"
               },
-              "figure_width": {
-                "type": "number",
-                "description": "描画する表全体の横幅（インチ単位）でA4サイズの横幅に収まるサイズ。"
-              },
-              "figure_height": {
-                "type": "number",
-                "description": "描画する表全体の高さ（インチ単位）。でA4サイズの横幅に収まるサイズ"
-              },
               "table_type": {
                 "type": "string",
                 "enum": ["basic"],
@@ -51,17 +43,40 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
-                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
-                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
-                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
-                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
+                  "header_bg_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "header_font_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_bg_color": {
+                    "type": "string",
+                    "description": "データセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_font_color": {
+                    "type": "string",
+                    "description": "データセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_color": {
+                    "type": "string",
+                    "description": "テーブル境界線の色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_width": {
+                    "type": "number",
+                    "description": "テーブル境界線の幅。"
+                  }
                 },
                 "additionalProperties": false
               }
             },
-            "required": ["id","table_type", "title", "columns", "rows"],
+            "required": ["id", "table_type", "title", "columns", "rows"],
             "description": "基本的なデータテーブルを定義するオブジェクト。"
           },
           {
@@ -101,12 +116,35 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
-                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
-                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
-                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
-                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
+                  "header_bg_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "header_font_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_bg_color": {
+                    "type": "string",
+                    "description": "データセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_font_color": {
+                    "type": "string",
+                    "description": "データセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_color": {
+                    "type": "string",
+                    "description": "テーブル境界線の色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_width": {
+                    "type": "number",
+                    "description": "テーブル境界線の幅。"
+                  }
                 },
                 "additionalProperties": false
               }
@@ -160,12 +198,35 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
-                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
-                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
-                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
-                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
+                  "header_bg_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "header_font_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_bg_color": {
+                    "type": "string",
+                    "description": "データセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_font_color": {
+                    "type": "string",
+                    "description": "データセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_color": {
+                    "type": "string",
+                    "description": "テーブル境界線の色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_width": {
+                    "type": "number",
+                    "description": "テーブル境界線の幅。"
+                  }
                 },
                 "additionalProperties": false
               }
@@ -206,12 +267,35 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
-                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
-                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
-                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
-                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
+                  "header_bg_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "header_font_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_bg_color": {
+                    "type": "string",
+                    "description": "データセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_font_color": {
+                    "type": "string",
+                    "description": "データセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_color": {
+                    "type": "string",
+                    "description": "テーブル境界線の色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_width": {
+                    "type": "number",
+                    "description": "テーブル境界線の幅。"
+                  }
                 },
                 "additionalProperties": false
               }
@@ -255,17 +339,40 @@
                 "type": "object",
                 "description": "表の表示スタイルを定義するオブジェクト。",
                 "properties": {
-                  "header_bg_color": { "type": "string", "description": "ヘッダーセルの背景色。" },
-                  "header_font_color": { "type": "string", "description": "ヘッダーセルの文字色。" },
-                  "cell_bg_color": { "type": "string", "description": "データセルの背景色。" },
-                  "cell_font_color": { "type": "string", "description": "データセルの文字色。" },
-                  "border_color": { "type": "string", "description": "テーブル境界線の色。" },
-                  "border_width": { "type": "number", "description": "テーブル境界線の幅。" }
+                  "header_bg_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "header_font_color": {
+                    "type": "string",
+                    "description": "ヘッダーセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_bg_color": {
+                    "type": "string",
+                    "description": "データセルの背景色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "cell_font_color": {
+                    "type": "string",
+                    "description": "データセルの文字色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_color": {
+                    "type": "string",
+                    "description": "テーブル境界線の色。名前付き色または16進数形式。",
+                    "pattern": "^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|[a-zA-Z]+)$"
+                  },
+                  "border_width": {
+                    "type": "number",
+                    "description": "テーブル境界線の幅。"
+                  }
                 },
                 "additionalProperties": false
               }
             },
-            "required": ["id","table_type", "title", "comparison_data"],
+            "required": ["id", "table_type", "title", "comparison_data"],
             "description": "データ比較表を定義するオブジェクト。"
           }
         ]
