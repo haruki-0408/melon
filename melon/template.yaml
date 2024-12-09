@@ -236,6 +236,16 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_WORKFLOW_PROGRESS_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_WORKFLOW_PROGRESS_TABLE}}"
+      Events:
+        DynamoDBStreamEvent:
+          Type: DynamoDB
+          Properties:
+            BatchSize: 1
+            FilterCriteria:
+              Filters:
+                - Pattern: '{"eventName": ["INSERT"]}'  # INSERT イベントのみをトリガー
+            Stream: !GetAtt WorkflowProgressManagementTable.StreamArn
+            StartingPosition: LATEST #最新レコードのみ処理
 
   ################################
   ###  Lambda
@@ -304,6 +314,15 @@ Resources:
                 Resource:
                   - !GetAtt MasterFakeThesisCategoryFormatsTable.Arn
                   - !GetAtt WorkflowProgressManagementTable.Arn
+              
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeStream
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:ListStreams
+                Resource: 
+                  - !GetAtt WorkflowProgressManagementTable.StreamArn
 
               - Effect: Allow
                 Action:
@@ -373,6 +392,8 @@ Resources:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${ProjectName}_${Environment}_workflow_progress_management_table"
+      StreamSpecification:
+        StreamViewType: "NEW_AND_OLD_IMAGES"
       AttributeDefinitions:
         - AttributeName: workflow_id
           AttributeType: S
