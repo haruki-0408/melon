@@ -236,6 +236,7 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_WORKFLOW_PROGRESS_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_WORKFLOW_PROGRESS_TABLE}}"
+          NEXTJS_API_ENDPOINT: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/NEXTJS_API_ENDPOINT}}"
       Events:
         DynamoDBStreamEvent:
           Type: DynamoDB
