@@ -315,6 +315,7 @@ Resources:
                 Resource:
                   - !GetAtt MasterFakeThesisCategoryFormatsTable.Arn
                   - !GetAtt WorkflowProgressManagementTable.Arn
+                  - !GetAtt WorkflowHistoriesTable.Arn
               
               - Effect: Allow
                 Action:
@@ -384,6 +385,34 @@ Resources:
       SSESpecification:
         SSEEnabled: true
     DeletionPolicy: Retain
+  
+  ################################
+  ###  DynamoDB
+  ###  ワークフロー履歴テーブル
+  ################################ 
+  WorkflowHistoriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${ProjectName}_${Environment}_workflow_histories_table"
+      AttributeDefinitions:
+        - AttributeName: workflow_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: workflow_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      DeletionProtectionEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+    DeletionPolicy: Retain
+  
 
   ################################
   ###  DynamoDB
