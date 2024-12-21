@@ -427,19 +427,19 @@ Resources:
       AttributeDefinitions:
         - AttributeName: workflow_id
           AttributeType: S
-        - AttributeName: state_name#timestamp
+        - AttributeName: timestamp#order
           AttributeType: S
-        - AttributeName: execution_id
+        - AttributeName: state_name
           AttributeType: S
       KeySchema:
         - AttributeName: workflow_id
           KeyType: HASH
-        - AttributeName: state_name#timestamp
+        - AttributeName: timestamp#order
           KeyType: RANGE
       GlobalSecondaryIndexes:
-        - IndexName: "execution_id_index_gsi"
+        - IndexName: "state_name_index_gsi"
           KeySchema:
-            - AttributeName: "execution_id"
+            - AttributeName: "state_name"
               KeyType: "HASH"
           Projection:
             ProjectionType: ALL
@@ -447,10 +447,6 @@ Resources:
             ReadCapacityUnits: 1
             WriteCapacityUnits: 1
       BillingMode: PROVISIONED
-      # BillingMode: PAY_PER_REQUEST
-      # OnDemandThroughput:
-      #   MaxReadRequestUnits: 1000
-      #   MaxWriteRequestUnits: 1000
       ProvisionedThroughput:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1

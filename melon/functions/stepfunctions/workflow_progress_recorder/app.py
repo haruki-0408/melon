@@ -28,7 +28,8 @@ def lambda_handler(event, context):
                 # DynamoDBのデータ形式を通常の辞書形式に変換
                 item = {
                     'workflow_id': new_image['workflow_id']['S'],
-                    'state_name#timestamp': new_image['state_name#timestamp']['S'],
+                    'timestamp#order': new_image['timestamp#order']['S'],
+                    'state_name': new_image['state_name']['S'],
                     'execution_id': new_image['execution_id']['S'],
                     'status': new_image['status']['S']
                 }

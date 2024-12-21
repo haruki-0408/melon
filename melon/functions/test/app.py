@@ -19,7 +19,8 @@ def lambda_handler(event, context):
     try:
         item = {
             "workflow_id": "z4bszm09",
-            "state_name#timestamp": "convert_to_pdf#2024-12-04T01:30:27.375296+00:00",
+            "timestamp#order": "2024-12-04T00:00:00Z#1",
+            "state_name": "api-gateway",
             "status": "success",
             "error_details": None,
             "execution_id": "test",
