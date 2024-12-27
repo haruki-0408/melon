@@ -2,6 +2,14 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 ################################
+#  注意点  
+#   API Gateway CloudWatch Logs用ロールについて
+#   CloudwatchログのロールARNはアカウント内全体の問題なので本プロジェクトでは管理しない
+#   本プロジェクトではAPI GatewayのCloudWatch Logsのロギング設定を行っているので適用する場合は
+#   アカウント内のAPIGateway CloudWatch LogsのロールARNを設定しておく必要がある
+################################
+
+################################
 ###  パラメータ
 ################################
 Parameters:
@@ -15,6 +23,14 @@ Parameters:
     Type: String
     Default: dev
     AllowedValues: [dev, prd]
+
+################################
+###  Conditions
+################################
+Conditions:
+  IsProd: !Equals 
+    - !Ref Environment
+    - prd
 
 ################################
 ###  グローバル
@@ -32,6 +48,308 @@ Globals:
         POWERTOOLS_SERVICE_NAME: !Sub "${ProjectName}"
 
 Resources:
+  ################################
+  ###  API Gateway
+  ###  論文生成ワークフロー実行API
+  ################################ 
+  FakeThesisGeneratorApi:
+    Type: AWS::Serverless::Api
+    DependsOn:
+      - ApiGatewayRole
+    Properties:
+      StageName: !Ref Environment
+      TracingEnabled: true    # X-Ray トレーシングを有効化
+      MethodSettings:
+        - LoggingLevel: INFO  # CloudWatch Logsを有効化
+          ResourcePath: "/*"  # 全てのリソースパス
+          HttpMethod: "*"     # 全てのHTTPメソッド
+          MetricsEnabled: false
+          DataTraceEnabled: false
+      Auth:
+        ApiKeyRequired: true
+        UsagePlan:
+          UsagePlanName: !Sub "${ProjectName}_${Environment}_usage_plan"
+          CreateUsagePlan: PER_API
+          Description: !Sub "Usage plan for fake thesis generator API (${Environment})"
+          Quota:
+            Limit: !If 
+              - IsProd
+              - 10000    # 本番環境の制限
+              - 1000     # 開発環境の制限
+            Period: MONTH
+          Throttle:
+            BurstLimit: !If 
+              - IsProd
+              - 20       # 本番環境の制限
+              - 10       # 開発環境の制限
+            RateLimit: !If 
+              - IsProd
+              - 10       # 本番環境の制限
+              - 5        # 開発環境の制限
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: !Sub "Fake Thesis Generator API (${Environment})"
+          version: "1.0.0"
+        securityDefinitions:
+          api_key:
+            type: apiKey
+            name: x-api-key
+            in: header
+        paths:
+          /workflow:
+            post:
+              summary: "論文生成ワークフローを開始"
+              responses:
+                "200":
+                  description: "Successful operation"
+                  schema:
+                    type: object
+                    properties:
+                      executionArn:
+                        type: string
+                      startDate:
+                        type: string
+                "400":
+                  description: "Bad request" 
+                  schema:
+                    type: object
+                    properties:
+                      error:
+                        type: string
+                      cause:
+                        type: string
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt ApiGatewayRole.Arn
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:events:action/PutEvents
+                httpMethod: POST
+                type: aws
+                passthroughBehavior: NEVER
+                requestTemplates:
+                  application/json: 
+                    Fn::Sub: |
+                      {
+                        "Entries": [
+                          {
+                            "Source": "start.main.workflow",
+                            "DetailType": "StartMainWorkflow",
+                            "EventBusName": "${WorkflowEventBus}",
+                            "Detail": {
+                              "request_id": "$context.requestId",
+                              "body": {
+                                "workflow_id": "$input.json('$.workflow_id')",
+                                "title": "$input.json('$.title')",
+                                "category": "$input.json('$.category')",
+                                "order": 1,
+                                "status": "success",
+                                "state_name": "api-gateway"
+                              }
+                            }
+                          }
+                        ]
+                      }
+                responses:
+                  "200":
+                    statusCode: "200"
+                    responseTemplates:
+                      application/json: 
+                        Fn::Sub: |
+                          {
+                            "message": "Workflow started successfully",
+                            "workflow_id": "$input.json('$.workflow_id')"
+                          }
+              security:
+                - api_key: []
+
+  ################################
+  ###  IAM Role
+  ###  API Gateway用実行ロール
+  ################################ 
+  ApiGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_api_gateway_role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ApiGatewayExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # EventBridge権限
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource: !GetAtt WorkflowEventBus.Arn
+
+              # X-Ray権限
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                  - xray:GetSamplingStatisticSummaries
+                Resource: "*"
+  
+  ################################
+  ###  IAM Role
+  ###  EventBridge用実行ロール
+  ################################ 
+  EventBridgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_event_bridge_role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EventBridgeExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # StepFunctions実行権限
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource: 
+                  - !GetAtt MainWorkflowStateMachine.Arn
+                  - !GetAtt SubWorkflowStateMachine.Arn
+              
+              # Lambda実行権限
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt WorkflowProgressRecorder.Arn
+
+  ################################
+  ###  EventBridge Bus
+  ###  ワークフロー実行用バス
+  ################################ 
+  WorkflowEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_workflow_event_bus"
+  
+  ################################
+  ###  EventBridge Rule
+  ###  メインワークフロー実行用ルール
+  ################################ 
+  StartMainWorkflowEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_start_main_workflow_event_rule"
+      EventBusName: !Ref WorkflowEventBus
+      EventPattern:
+        source:
+          - "start.main.workflow" # メインワークフロー実行
+        detail-type:
+          - "StartMainWorkflow"
+      Targets:
+        - Arn: !GetAtt MainWorkflowStateMachine.Arn
+          Id: "StartMainWorkflowTarget"
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          InputTransformer:
+            InputPathsMap: # Stepfunctionsへの入力パラメータ
+              workflow_id: $.detail.body.workflow_id
+              title: $.detail.body.title
+              category: $.detail.body.category
+            InputTemplate: |
+              {
+                "workflow_id": <workflow_id>,
+                "title": <title>,
+                "category": <category>
+              }
+  
+  ################################
+  ###  EventBridge Rule
+  ###  サブワークフロー実行用ルール
+  ################################
+  StartSubWorkflowEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_start_sub_workflow_event_rule"
+      EventBusName: !Ref WorkflowEventBus
+      EventPattern:
+        source:
+          - "start.sub.workflow" # サブワークフロー実行
+        detail-type:
+          - "StartSubWorkflow"
+      Targets:
+        - Arn: !GetAtt SubWorkflowStateMachine.Arn
+          Id: "StartSubWorkflowTarget"
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          InputTransformer:  # コメントアウトされているが必要
+            InputPathsMap:
+              task_token: $.detail.task_token
+              payload: $.detail.payload
+            InputTemplate: |
+              {
+                "task_token": <task_token>,
+                "payload": <payload>
+              }
+            
+  
+  ################################
+  ###  EventBridge Rule
+  ###  API Gatewayからのワークフロー進捗更新用ルール
+  ################################ 
+  ApigatewayWorkflowProgressRecordEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_apigateway_workflow_progress_record_event_rule"
+      State: ENABLED
+      EventBusName: !Ref WorkflowEventBus
+      EventPattern:
+        source:
+          - "start.main.workflow" # メインワークフロー開始時の進捗更新
+          - "start.sub.workflow" # サブワークフローの開始時の進捗更新
+        detail-type:
+          - "StartMainWorkflow"
+          - "StartSubWorkflow"
+      Targets:
+        - Arn: !GetAtt WorkflowProgressRecorder.Arn
+          Id: "ApigatewayWorkflowProgressRecordTarget"
+          InputTransformer:
+            InputPathsMap: # 進捗更新関数への入力パラメータ
+              workflow_id: $.detail.body.workflow_id
+              request_id: $.detail.request_id
+              order: $.detail.body.order
+              status: $.detail.body.status
+              state_name: $.detail.body.state_name
+            InputTemplate: |
+              {
+                "workflow_id": <workflow_id>,
+                "request_id": <request_id>,
+                "order": <order>,
+                "status": <status>,
+                "state_name": <state_name>
+              }
+
+  #################################
+  ###  Lambda Permission
+  ###  イベントからLambdaを呼び出す権限
+  #################################
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: WorkflowProgressRecorder
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt ApigatewayWorkflowProgressRecordEventRule.Arn
+
+
   ################################
   ###  Lambda Layer
   ###  Lambda共通レイヤー
@@ -116,7 +434,7 @@ Resources:
 
   ################################
   ###  Lambda
-  ###  論文データ修正関数
+  ###  論文データ修正関��
   ################################ 
   FixFakeThesisData:
     Type: AWS::Serverless::Function
@@ -236,6 +554,22 @@ Resources:
       Environment:
         Variables:
           DYNAMO_DB_WORKFLOW_PROGRESS_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_WORKFLOW_PROGRESS_TABLE}}"
+  
+  ################################
+  ###  Lambda
+  ###  進捗通知関数
+  ################################ 
+  WorkflowProgressNotifier:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_workflow_progress_notifier"
+      CodeUri: functions/stepfunctions/workflow_progress_notifier/
+      Description: "各ステートの進捗を通知する関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
           NEXTJS_API_ENDPOINT: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/NEXTJS_API_ENDPOINT}}"
       Events:
         DynamoDBStreamEvent:
@@ -482,7 +816,7 @@ Resources:
     Properties:
       QueueName: !Sub "${ProjectName}_${Environment}_workflow_callback_trigger_queue"
 
-  
+
   ################################
   ###  EventBridge Pipes
   ###  サブワークフローPipes
@@ -496,11 +830,21 @@ Resources:
       SourceParameters:
         SqsQueueParameters:
           BatchSize: 1
-      Target: !Ref SubWorkflowStateMachine
+      # Target: !Ref SubWorkflowStateMachine
+      # TargetParameters:
+      #   StepFunctionStateMachineParameters:
+      #     InvocationType: FIRE_AND_FORGET
+      #   InputTemplate: '{"task_token": <$.body.task_token>, "payload": <$.body.payload>}'
+      Target: !GetAtt WorkflowEventBus.Arn
       TargetParameters:
-        StepFunctionStateMachineParameters:
-          InvocationType: FIRE_AND_FORGET
-        InputTemplate: '{"task_token": <$.body.task_token>, "payload": <$.body.payload>}'
+        EventBridgeEventBusParameters:
+          DetailType: "StartSubWorkflow"
+          Source: "start.sub.workflow"
+        InputTemplate: |
+          {
+            "task_token": <$.body.task_token>,
+            "payload": <$.body.payload>
+          }
 
   
   ################################
@@ -529,10 +873,11 @@ Resources:
                   - sqs:DeleteMessage
                   - sqs:GetQueueAttributes
                 Resource: !GetAtt WorkflowCallbackTriggerQueue.Arn
+              
               - Effect: Allow
                 Action:
-                  - states:StartExecution
-                Resource: !GetAtt SubWorkflowStateMachine.Arn
+                  - events:PutEvents  # EventBusへのPutEvents権限が必要
+                Resource: !GetAtt WorkflowEventBus.Arn
 
   ################################
   ### Stepfunctions 

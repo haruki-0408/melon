@@ -1,6 +1,7 @@
 {
     "workflow_id": "test",
-    "execution_id" : "test_execution_id",
-    "status" : "success",
-    "state_name" : "conversion_to_pdf"
+    "request_id": "test_request_id",
+    "order": 1,
+    "status": "success",
+    "state_name": "api-gateway"
 }
