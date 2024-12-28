@@ -46,7 +46,7 @@ Globals:
     Environment:
       Variables:
         POWERTOOLS_SERVICE_NAME: !Sub "${ProjectName}"
-
+        WORKFLOW_EVENT_BUS_NAME: !Ref WorkflowEventBus
 Resources:
   ################################
   ###  API Gateway
@@ -306,7 +306,7 @@ Resources:
   
   ################################
   ###  EventBridge Rule
-  ###  ApiGateway & SQSからのワークフロー進捗更新用ルール
+  ###  進捗更新用ルール
   ################################ 
   WorkflowProgressRecordEventRule:
     Type: AWS::Events::Rule
@@ -318,9 +318,11 @@ Resources:
         source:
           - "start.main.workflow" # メインワークフロー開始時の進捗更新
           - "start.sub.workflow" # サブワークフローの開始時の進捗更新
+          - "workflow.progress" # 進捗更新
         detail-type:
           - "StartMainWorkflow"
           - "StartSubWorkflow"
+          - "WorkflowProgress"
       Targets:
         - Arn: !GetAtt WorkflowProgressRecorder.Arn
           Id: "WorkflowProgressRecordTarget"
@@ -625,6 +627,7 @@ Resources:
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
+              # CloudWatch Logs権限
               - Effect: Allow
                 Action:
                   - logs:CreateLogGroup
@@ -632,6 +635,7 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "arn:aws:logs:*:*:*"
 
+              # S3権限
               - Effect: Allow
                 Action:
                   - s3:GetObject
@@ -642,6 +646,7 @@ Resources:
                   - !Sub arn:aws:s3:::${FakeThesisBucket}  
                   - !Sub arn:aws:s3:::${FakeThesisBucket}/*  
 
+              # DynamoDB権限  
               - Effect: Allow
                 Action:
                   - dynamodb:Query
@@ -656,7 +661,8 @@ Resources:
                   - !GetAtt MasterFakeThesisCategoryFormatsTable.Arn
                   - !GetAtt WorkflowProgressManagementTable.Arn
                   - !GetAtt WorkflowHistoriesTable.Arn
-              
+
+              # DynamoDB Stream権限
               - Effect: Allow
                 Action:
                   - dynamodb:DescribeStream
@@ -666,6 +672,7 @@ Resources:
                 Resource: 
                   - !GetAtt WorkflowProgressManagementTable.StreamArn
 
+              # SQS権限
               - Effect: Allow
                 Action:
                   - sqs:SendMessage
@@ -675,12 +682,20 @@ Resources:
                 Resource: 
                   - !GetAtt WorkflowCallbackTriggerQueue.Arn
               
+              # StepFunctions権限
               - Effect: Allow
                 Action:
                   - states:SendTaskSuccess
                   - states:SendTaskFailure
                 Resource: "*"
+              
+              # EventBridge権限
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource: !GetAtt WorkflowEventBus.Arn
 
+              # X-Ray権限
               - Effect: Allow
                 Action:
                   - xray:PutTraceSegments
@@ -913,6 +928,7 @@ Resources:
             Parameters:
               FunctionName: !Ref GetFakeThesisTitleCategoryFormat
               Payload:
+                "workflow_id.$": "$.workflow_id"
                 "category.$": "$.category"
             ResultSelector:
               sections_format.$: "$.Payload.body.sections_format"
@@ -925,6 +941,7 @@ Resources:
             Parameters:
               FunctionName: !Ref GeneratePromptParameters
               Payload:
+                "workflow_id.$": "$.workflow_id"
                 "title.$": "$.title"
                 "sections_format.$": "$.raw_format.sections_format"
             ResultSelector:
@@ -1083,6 +1100,7 @@ Resources:
             Parameters:
               FunctionName: !Ref FakeThesisDataValidation
               Payload:
+                "workflow_id.$": "$.payload.workflow_id"
                 "sections_format.$": "$.payload.sections_format"
             ResultSelector: 
               "graphs.$" : "$.Payload.body.graphs"

@@ -1,10 +1,16 @@
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.utilities.validation import validator
+from aws_lambda_powertools.utilities.validation import SchemaValidationError
 import event_schemas as event_schemas
-from utilities import read_schema_jsons
+import os
+from utilities import read_schema_jsons, record_workflow_progress_event
+
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
+
+STATE_NAME = "prompt-lambda"
+STATE_ORDER = 3
 
 logger = Logger()
-
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
@@ -13,8 +19,14 @@ tracer = Tracer()
 def lambda_handler(event, context):
     """
     各セクションごとに生成AIに送るプロンプト文章を作成し、SQSキューに送信するLambda関数
-    TODO: 各セクション毎にシステムプロンプトを変えてもよいかもしれないキャッシュが聞かないことだけ注意
     """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+
+    # デフォルトは成功
+    error = None
+
     try:
         # タイトルとフォーマットを取得
         title = event.get('title', '')
@@ -41,15 +53,36 @@ def lambda_handler(event, context):
                 "system_prompt" : system_prompt,
             }
         }
-    
+    except SchemaValidationError as e:
+        error = {
+            "error_type": "SchemaValidationError",
+            "error_message": str(e),
+            "payload": event
+        }
     except Exception as e:
         error = {
             "error_type": type(e).__name__,
             "error_message": str(e),
             "payload": event
         }
-        logger.error(error)
-        raise e
+    
+    finally:
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )
+
+        if error:
+            logger.exception(error)
+            if error.get("error_type") == "SchemaValidationError":
+                raise SchemaValidationError(error)
+            else:
+                raise Exception(error)
 
 def generate_system_prompt(title, category_type_jp, formulas_schema, graphs_schema, tables_schema):
     """

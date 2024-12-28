@@ -122,43 +122,41 @@ def generate_execution_url(execution_arn: str) -> str:
     region = "ap-northeast-1"
     return f"https://{region}.console.aws.amazon.com/states/home?region={region}#/executions/details/{execution_arn}"
 
-def record_workflow_progress(
-    table_name: str,
+def record_workflow_progress_event(
     workflow_id: str,
     request_id: str,
     order: int,
     status: str,
-    state_name: str
-) -> Dict[str, Any]:
+    state_name: str,
+    event_bus_name: str
+) -> None:
     """
-    ワークフローの進捗をDynamoDBに記録する
+    ワークフローの進捗イベントをEventBridgeに送信する
     
     Args:
-        table_name (str): DynamoDBテーブル名
         workflow_id (str): ワークフローID
         request_id (str): リクエストID
         order (int): 進捗順序
         status (str): ステータス
         state_name (str): ステート名
-    
-    Returns:
-        Dict[str, Any]: 保存したアイテム
+        event_bus_name (str): EventBusの名前
     """
-    # UTCのタイムスタンプをISO 8601形式で取得
-    timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
-    
-    item = {
-        'workflow_id': workflow_id,
-        'timestamp#order': f"{timestamp}#{order}",
-        'state_name': state_name,
-        'status': status,
-        'request_id': request_id
-    }
-    
-    # DynamoDBに保存
-    put_item_to_dynamodb(
-        table_name=table_name,
-        item=item
+    events_client = boto3.client('events')
+    events_client.put_events(
+        Entries=[
+            {
+                'Source': 'workflow.progress',
+                'DetailType': 'WorkflowProgress',
+                'EventBusName': event_bus_name,
+                'Detail': json.dumps({
+                    'request_id': request_id,
+                    'body': {
+                        'workflow_id': workflow_id,
+                        'order': order,
+                        'status': status,
+                        'state_name': state_name
+                    }
+                })
+            }
+        ]
     )
-    
-    return item

@@ -1,9 +1,15 @@
+import os
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.utilities.validation import validate, SchemaValidationError
-from utilities import read_schema_jsons
+from utilities import read_schema_jsons, record_workflow_progress_event
+
+# envパラメータ
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
+
+STATE_NAME = "validation-lambda"
+STATE_ORDER = 6
 
 logger = Logger()
-
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
@@ -13,6 +19,12 @@ def lambda_handler(event, context):
     スキーマバリデーションを実行するLambda関数。
     すべてのバリデーションエラーを収集し、最後にまとめてエラーとしてスローする。
     """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+    
+    # デフォルトは成功
+    error = None
 
     try:
         sections_format = event.get("sections_format")
@@ -40,19 +52,14 @@ def lambda_handler(event, context):
             logger.error(validation_errors)
             raise SchemaValidationError(validation_errors)
 
-        # バリデーション成功時のレスポンス
-        return {
-            'statusCode': 200,
-            'body': {
-                "graphs": response_graphs,
-                "tables": response_tables,
-                "formulas": response_formulas
-            }
-        }
-
     except SchemaValidationError:
         # ここでは既に上で適切なエラーログを出しているため、再度の処理は不要
-        raise
+        # raise
+        error = {
+            "error_type": "SchemaValidationError",
+            "error_message": str(e),
+            "payload": event
+        }
     except Exception as e:
         # 予期せぬ例外
         error = {
@@ -60,8 +67,34 @@ def lambda_handler(event, context):
             "error_message": str(e),
             "payload": event
         }
-        logger.exception(error)
-        raise
+
+    finally:
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )
+
+        if error:
+            logger.exception(error)
+            if error.get("error_type") == "SchemaValidationError":
+                raise SchemaValidationError(error)
+            else:
+                raise Exception(error)
+
+    # ユーザーに返却するレスポンス
+    return {
+        'statusCode': 200,
+        'body': {
+            'graphs': response_graphs,
+            'tables': response_tables,
+            'formulas': response_formulas
+        }
+    }
 
 def validate_responses(response_formulas, response_graphs, response_tables, 
                        formulas_schema_json, graphs_schema_json, tables_schema_json):

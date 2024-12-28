@@ -1,20 +1,36 @@
 import json
+import os
 from aws_lambda_powertools import Logger, Tracer
 from anthropic_client import AnthropicClient
+from utilities import record_workflow_progress_event
+
+# envパラメータ
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
+
+STATE_NAME = "ai-request-lambda"
+STATE_ORDER = 5
 
 # 生成AI リクエストインスタンス生成
 client = AnthropicClient()  
 
 logger = Logger()
-
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
+    """
+    生成AIモデルAPIにリクエストを送信するLambda関数
+    """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+    
+    # デフォルトは成功
+    error = None
+
     try:
         # eventパラメータ
-        workflow_id = event.get("workflow_id")
         title = event.get("title")  
         system_prompt = event.get("system_prompt")  
         sections_format = event.get("sections_format")
@@ -114,9 +130,21 @@ def lambda_handler(event, context):
             "error_message": str(e),
             "payload": event
         }
-        logger.exception(error)
 
-        raise e
+    finally:
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )
+
+        if error:
+            logger.exception(error)
+            raise Exception(error)
 
     return {
         'statusCode': 200,
