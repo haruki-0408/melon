@@ -29,16 +29,9 @@ def lambda_handler(event, context):
                     'workflow_id': new_image['workflow_id']['S'],
                     'timestamp#order': new_image['timestamp#order']['S'],
                     'state_name': new_image['state_name']['S'],
-                    'execution_id': new_image['execution_id']['S'],
+                    'request_id': new_image.get('request_id', {}).get('S', None),
                     'status': new_image['status']['S']
                 }
-                
-                # error_detailsが存在する場合のみ追加
-                # if 'error_details' in new_image:
-                #     item['error_details'] = json.loads(new_image['error_details']['S'])
-
-                # workflow_id
-                workflow_id = item['workflow_id']
 
                 # Next.jsのSSEエンドポイントにPOSTリクエストを送信
                 sse_endpoint = f"{NEXTJS_API_ENDPOINT}/api/notify"

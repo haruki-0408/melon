@@ -101,23 +101,23 @@ Resources:
             post:
               summary: "論文生成ワークフローを開始"
               responses:
-                "200":
-                  description: "Successful operation"
+                "202":
+                  description: "Workflow request accepted"
                   schema:
                     type: object
                     properties:
-                      executionArn:
+                      message:
                         type: string
-                      startDate:
+                      event_id:
                         type: string
                 "400":
-                  description: "Bad request" 
+                  description: "Bad request"
                   schema:
                     type: object
                     properties:
                       error:
                         type: string
-                      cause:
+                      message:
                         type: string
               x-amazon-apigateway-integration:
                 credentials: !GetAtt ApiGatewayRole.Arn
@@ -125,39 +125,43 @@ Resources:
                 httpMethod: POST
                 type: aws
                 passthroughBehavior: NEVER
+                requestParameters:
+                  integration.request.header.X-Amz-Target: "'AWSEvents.PutEvents'"
+                  integration.request.header.Content-Type: "'application/x-amz-json-1.1'"
                 requestTemplates:
                   application/json: 
-                    Fn::Sub: |
+                    Fn::Sub: | 
+                      #set($inputRoot = $input.path('$'))
                       {
                         "Entries": [
                           {
                             "Source": "start.main.workflow",
                             "DetailType": "StartMainWorkflow",
                             "EventBusName": "${WorkflowEventBus}",
-                            "Detail": {
-                              "request_id": "$context.requestId",
-                              "body": {
-                                "workflow_id": "$input.json('$.workflow_id')",
-                                "title": "$input.json('$.title')",
-                                "category": "$input.json('$.category')",
-                                "order": 1,
-                                "status": "success",
-                                "state_name": "api-gateway"
-                              }
-                            }
+                            "Detail": "{\"request_id\":\"$context.requestId\",\"body\":{\"workflow_id\":\"$inputRoot.workflow_id\",\"title\":\"$inputRoot.title\",\"category\":\"$inputRoot.category\",\"order\":1,\"status\":\"success\",\"state_name\":\"api-gateway\"}}"
                           }
                         ]
                       }
                 responses:
                   "200":
-                    statusCode: "200"
+                    statusCode: "202"
                     responseTemplates:
-                      application/json: 
-                        Fn::Sub: |
-                          {
-                            "message": "Workflow started successfully",
-                            "workflow_id": "$input.json('$.workflow_id')"
-                          }
+                      application/json: |
+                        #set($inputRoot = $input.path('$'))
+                        {
+                          "message": "Workflow started successfully",
+                          "event_id": "$inputRoot.Entries[0].EventId"
+                        }
+                  "400":
+                    statusCode: "400"
+                    selectionPattern: ".*Error.*"
+                    responseTemplates:
+                      application/json: |
+                        #set($inputRoot = $input.path('$'))
+                        {
+                          "error": "$inputRoot.Entries[0].ErrorCode",
+                          "message": "$inputRoot.Entries[0].ErrorMessage"
+                        }
               security:
                 - api_key: []
 
@@ -291,8 +295,8 @@ Resources:
           RoleArn: !GetAtt EventBridgeRole.Arn
           InputTransformer:  # コメントアウトされているが必要
             InputPathsMap:
-              task_token: $.detail.task_token
-              payload: $.detail.payload
+              task_token: $.detail.body.task_token
+              payload: $.detail.body.payload
             InputTemplate: |
               {
                 "task_token": <task_token>,
@@ -302,12 +306,12 @@ Resources:
   
   ################################
   ###  EventBridge Rule
-  ###  API Gatewayからのワークフロー進捗更新用ルール
+  ###  ApiGateway & SQSからのワークフロー進捗更新用ルール
   ################################ 
-  ApigatewayWorkflowProgressRecordEventRule:
+  WorkflowProgressRecordEventRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: !Sub "${ProjectName}_${Environment}_apigateway_workflow_progress_record_event_rule"
+      Name: !Sub "${ProjectName}_${Environment}_workflow_progress_record_event_rule"
       State: ENABLED
       EventBusName: !Ref WorkflowEventBus
       EventPattern:
@@ -319,7 +323,7 @@ Resources:
           - "StartSubWorkflow"
       Targets:
         - Arn: !GetAtt WorkflowProgressRecorder.Arn
-          Id: "ApigatewayWorkflowProgressRecordTarget"
+          Id: "WorkflowProgressRecordTarget"
           InputTransformer:
             InputPathsMap: # 進捗更新関数への入力パラメータ
               workflow_id: $.detail.body.workflow_id
@@ -347,7 +351,7 @@ Resources:
         Ref: WorkflowProgressRecorder
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
-      SourceArn: !GetAtt ApigatewayWorkflowProgressRecordEventRule.Arn
+      SourceArn: !GetAtt WorkflowProgressRecordEventRule.Arn
 
 
   ################################
@@ -568,6 +572,8 @@ Resources:
       MemorySize: 256 # メモリサイズ (MB)
       Timeout: 900 # タイムアウト(秒)
       Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
       Environment:
         Variables:
           NEXTJS_API_ENDPOINT: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/NEXTJS_API_ENDPOINT}}"
@@ -842,8 +848,15 @@ Resources:
           Source: "start.sub.workflow"
         InputTemplate: |
           {
-            "task_token": <$.body.task_token>,
-            "payload": <$.body.payload>
+            "request_id": null,
+            "body": {
+              "workflow_id": "<$.body.payload.workflow_id>",
+              "order": 4,
+              "status": "success",
+              "state_name": "callback-queue",
+              "task_token": <$.body.task_token>,
+              "payload": <$.body.payload>
+            }
           }
 
   
@@ -1025,8 +1038,8 @@ Resources:
           InitializeExtractFirstItemPass:
             Type: Pass
             Parameters:
-              "task_token.$": "$[0].task_token"
-              "payload.$": "$[0].payload"
+              "task_token.$": "$.task_token"
+              "payload.$": "$.payload"
             ResultPath: "$"
             Next: RetryCountPass
 

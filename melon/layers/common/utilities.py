@@ -7,6 +7,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
 from string import Template
+from datetime import datetime
+from typing import Dict, Any
 
 # Matplotlib フォントの読み込みと設定関数
 def configure_matplotlib_fonts():
@@ -119,3 +121,44 @@ def check_record_exists_usequery(table_name, pk_name, pk_value, region='ap-north
 def generate_execution_url(execution_arn: str) -> str:
     region = "ap-northeast-1"
     return f"https://{region}.console.aws.amazon.com/states/home?region={region}#/executions/details/{execution_arn}"
+
+def record_workflow_progress(
+    table_name: str,
+    workflow_id: str,
+    request_id: str,
+    order: int,
+    status: str,
+    state_name: str
+) -> Dict[str, Any]:
+    """
+    ワークフローの進捗をDynamoDBに記録する
+    
+    Args:
+        table_name (str): DynamoDBテーブル名
+        workflow_id (str): ワークフローID
+        request_id (str): リクエストID
+        order (int): 進捗順序
+        status (str): ステータス
+        state_name (str): ステート名
+    
+    Returns:
+        Dict[str, Any]: 保存したアイテム
+    """
+    # UTCのタイムスタンプをISO 8601形式で取得
+    timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    item = {
+        'workflow_id': workflow_id,
+        'timestamp#order': f"{timestamp}#{order}",
+        'state_name': state_name,
+        'status': status,
+        'request_id': request_id
+    }
+    
+    # DynamoDBに保存
+    put_item_to_dynamodb(
+        table_name=table_name,
+        item=item
+    )
+    
+    return item
