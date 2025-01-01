@@ -37,15 +37,15 @@ def lambda_handler(event, context):
     except SchemaValidationError as e:
         error = {
             "error_type": "SchemaValidationError",
-            "error_message": str(e),
-            "payload": event
+            "error_message": str(e)
         }
+        logger.exception(str(e))
     except Exception as e:
         error = {
             "error_type": type(e).__name__,
-            "error_message": str(e),
-            "payload": event
+            "error_message": str(e)
         }
+        logger.exception(str(e))
 
     finally:
         # EventBridgeに進捗イベントを送信
@@ -59,7 +59,6 @@ def lambda_handler(event, context):
         )
 
         if error:
-            logger.exception(error)
             if error.get("error_type") == "SchemaValidationError":
                 raise SchemaValidationError(error)
             else:

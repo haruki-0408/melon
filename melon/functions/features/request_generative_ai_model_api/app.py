@@ -127,9 +127,9 @@ def lambda_handler(event, context):
     except Exception as e:
         error = {
             "error_type": type(e).__name__,
-            "error_message": str(e),
-            "payload": event
+            "error_message": str(e)
         }
+        logger.exception(str(e))
 
     finally:
         # EventBridgeに進捗イベントを送信
@@ -143,7 +143,6 @@ def lambda_handler(event, context):
         )
 
         if error:
-            logger.exception(error)
             raise Exception(error)
 
     return {

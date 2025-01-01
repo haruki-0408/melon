@@ -324,6 +324,7 @@ Resources:
           - "StartSubWorkflow"
           - "WorkflowProgress"
       Targets:
+        # 進捗更新関数へのターゲット
         - Arn: !GetAtt WorkflowProgressRecorder.Arn
           Id: "WorkflowProgressRecordTarget"
           InputTransformer:
@@ -342,8 +343,12 @@ Resources:
                 "state_name": <state_name>
               }
 
+        # CloudWatch Logsのロググループにログを送信するためのターゲット
+        - Arn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/events/${ProjectName}_${Environment}_workflow_progress_event"
+          Id: "WorkflowProgressEventLogTarget"
+
   #################################
-  ###  Lambda Permission
+  ###  Lambda パーミッション
   ###  イベントからLambdaを呼び出す権限
   #################################
   PermissionForEventsToInvokeLambda:
@@ -354,7 +359,16 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceArn: !GetAtt WorkflowProgressRecordEventRule.Arn
-
+  
+  #################################
+  ###  CloudWatch リソースベースポリシー
+  ###  イベントからLambdaを呼び出す権限
+  #################################
+  LogsResourcePolicyForEventsToStoreLogEvents:
+    Type: AWS::Logs::ResourcePolicy
+    Properties:
+      PolicyName: !Sub "${ProjectName}_${Environment}_logs_resource_policy_for_events_to_store_log_events"
+      PolicyDocument: !Sub "{ \"Version\": \"2012-10-17\", \"Statement\": [ { \"Sid\": \"TrustEventsToStoreLogEvent\", \"Effect\": \"Allow\", \"Principal\": { \"Service\": \"events.amazonaws.com\" }, \"Action\": [ \"logs:CreateLogStream\", \"logs:PutLogEvents\" ], \"Resource\": \"arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*\" } ] }"
 
   ################################
   ###  Lambda Layer
@@ -851,6 +865,37 @@ Resources:
       SourceParameters:
         SqsQueueParameters:
           BatchSize: 1
+        FilterCriteria:
+          Filters:
+            - Pattern: |
+               {
+                  "body": {
+                    "task_token": [{
+                      "exists": true
+                    }],
+                    "payload": {
+                      "sections_format": {
+                        "category_type_jp": [{
+                          "exists": true
+                        }],
+                        "category_type_en": [{
+                          "exists": true
+                        }]
+                      },
+                      "system_prompt": [{
+                        "exists": true
+                      }],
+                      "title": [{
+                        "exists": true
+                      }],
+                      "workflow_id": [{
+                        "exists": true
+                      }]
+                    }
+                  }
+                }
+
+
       # Target: !Ref SubWorkflowStateMachine
       # TargetParameters:
       #   StepFunctionStateMachineParameters:
