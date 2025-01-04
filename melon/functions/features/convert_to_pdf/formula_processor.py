@@ -8,7 +8,6 @@ from reportlab.platypus import Paragraph, KeepTogether
 from aws_lambda_powertools import Logger
 
 logger = Logger()
-
 FONT_PATH = '/opt/python/fonts/ipaexm.ttf'  # フォントパスを設定
 
 def process_formula(object_key, s3_client, s3_bucket, styles):

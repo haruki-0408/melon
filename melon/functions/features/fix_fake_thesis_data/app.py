@@ -1,13 +1,18 @@
 import json
+import os
 from aws_lambda_powertools import Logger, Tracer
 from anthropic_client import AnthropicClient
-from utilities import read_schema_jsons
+from utilities import read_schema_jsons, record_workflow_progress_event
+
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
 
 # 生成AI リクエストインスタンス生成
 client = AnthropicClient()
 
-logger = Logger()
+STATE_NAME = "data-fix-lambda"
+STATE_ORDER = 7
 
+logger = Logger()
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
@@ -16,6 +21,13 @@ def lambda_handler(event, context):
     """
     修正を促す生成AIリクエストを実行するLambda関数。
     """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+    
+    # デフォルトは成功
+    error = None
+
     try:
         # イベント情報の取得
         retry_count = event.get("retry_count") #リトライ回数取得(表示用)
@@ -68,8 +80,28 @@ def lambda_handler(event, context):
 
         fixed_sections_format = update_sections_format(sections_format, fixed_data)
 
-        # 最終結果を返却
-        return {
+    except Exception as e:
+        error = {
+            "error_type": type(e).__name__,
+            "error_message": str(e)
+        }
+        logger.exception(str(e))
+
+    finally:
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )
+
+        if error:
+            raise Exception(error)
+
+    return {
             'statusCode': 200,
             'body': {
                 "workflow_id": workflow_id,
@@ -78,16 +110,6 @@ def lambda_handler(event, context):
                 "sections_format": fixed_sections_format,
             }
         }
-
-    except Exception as e:
-        error = {
-            "error_type": type(e).__name__,
-            "error_message": str(e),
-            "payload": event
-        }
-        logger.exception(error)
-        raise e
-
 
 def extract_target_data(sections_format, data_type):
     """

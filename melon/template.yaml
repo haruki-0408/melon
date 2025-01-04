@@ -1108,8 +1108,6 @@ Resources:
           # バリデーションリトライカウント変数用意
           RetryCountPass:
             Type: Pass
-            # Result: 0
-            # ResultPath: "$.retry_count"
             Assign:
               "retry_count" : 0
             Next: RequestGenerativeAiModelApiTask
@@ -1166,9 +1164,6 @@ Resources:
           # リトライカウントをインクリメント
           IncrementRetryCountPass:
             Type: Pass
-            # Parameters:
-            #   "retry_count.$": "States.MathAdd($retry_count, 1)"
-            # ResultPath: "$.retry_count"
             Assign:
               "retry_count.$": "States.MathAdd($retry_count, 1)"
             Next: CheckRetryCountChoice

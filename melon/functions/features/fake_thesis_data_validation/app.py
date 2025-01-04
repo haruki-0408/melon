@@ -2,7 +2,6 @@ import os
 from aws_lambda_powertools import Logger, Tracer
 from aws_lambda_powertools.utilities.validation import validate, SchemaValidationError
 from utilities import read_schema_jsons, record_workflow_progress_event
-import matplotlib.pyplot as plt
 from matplotlib.mathtext import MathTextParser
 
 # envパラメータ
@@ -27,6 +26,7 @@ def lambda_handler(event, context):
     
     # デフォルトは成功
     error = None
+    validation_error = False
 
     try:
         sections_format = event.get("sections_format")
@@ -60,6 +60,7 @@ def lambda_handler(event, context):
             "error_type": "SchemaValidationError",
             "error_message": str(e)
         }
+        validation_error = True
         logger.exception(str(e))
         
     except Exception as e:
@@ -76,7 +77,7 @@ def lambda_handler(event, context):
             workflow_id=workflow_id,
             request_id=context.aws_request_id,
             order=STATE_ORDER,
-            status="success" if error is None else "failed",
+            status="success" if error is None and not validation_error else "validation-failed" if error is not None and validation_error else "failed",
             state_name=STATE_NAME,
             event_bus_name=WORKFLOW_EVENT_BUS_NAME
         )

@@ -5,21 +5,31 @@ from aws_lambda_powertools import Logger, Tracer
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import os
-from utilities import upload_to_s3
+from utilities import upload_to_s3, record_workflow_progress_event  
 
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
 FONT_PATH = '/opt/python/fonts/ipaexm.ttf'  # フォントパスを設定
 S3_BUCKET = os.environ.get("S3_BUCKET")
 
-logger = Logger()
+STATE_NAME = "formula-gen-lambda"
+STATE_ORDER = 9
 
+logger = Logger()
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
-    イベントで渡されたLaTeX数式とその説明をS3に保存するLambda関数
+    イベントで渡されたLaTeX数式を画像としてS3に保存するLambda関数
     """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+    
+    # デフォルトは成功
+    error = None
+
     try:
         # イベントから数式の配列を取得
         workflow_id = event.get('workflow_id')
@@ -45,11 +55,6 @@ def lambda_handler(event, context):
         non_trailing_slash_prefix = f'{workflow_id}/formulas'
         object_keys = upload_to_s3(non_trailing_slash_prefix, formula_images)
 
-        return {
-            'statusCode': 200,
-            'body': object_keys
-        }
-
     except Exception as e:
         error = {
             "error_type": type(e).__name__,
@@ -57,7 +62,25 @@ def lambda_handler(event, context):
             "payload": event
         }
         logger.exception(error)
-        raise e
+
+    finally:
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )
+
+        if error:   
+            raise Exception(error)
+    
+    return {
+        'statusCode': 200,
+        'body': object_keys
+    }
 
 def create_formula_latex_image(formula_data):
     """
@@ -110,8 +133,6 @@ def create_formula_latex_image(formula_data):
     plt.close(fig)
 
     return base64.b64encode(buf.getvalue()).decode('utf-8')
-
-
 
 
 def sanitize_latex_code(latex_code):

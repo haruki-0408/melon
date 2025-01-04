@@ -6,21 +6,30 @@ import boto3
 import base64
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from utilities import configure_matplotlib_fonts
+from utilities import configure_matplotlib_fonts, upload_to_s3, record_workflow_progress_event
 
-# S3のアップロード先情報
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
 
-logger = Logger()
+STATE_NAME = "table-gen-lambda"
+STATE_ORDER = 10
 
+logger = Logger()
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
-    イベントオブジェクトから表データの配列を受け取り、それぞれのテーブルを画像化して返すLambda関数。
+    イベントで渡されたテーブルデータを画像としてS3に保存するLambda関数
     """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+    
+    # デフォルトは成功
+    error = None
+
     try:
         # イベントからtablesプロパティを取得
         workflow_id = event.get('workflow_id')
@@ -49,10 +58,6 @@ def lambda_handler(event, context):
 
         non_trailing_slash_prefix = f"{workflow_id}/tables"
         object_keys = upload_to_s3(non_trailing_slash_prefix, table_images)
-        return {
-            'statusCode': 200,
-            'body': object_keys
-        }
 
     except Exception as e:
         error = {
@@ -61,8 +66,26 @@ def lambda_handler(event, context):
             "payload": event
         }
         logger.exception(error)
-        raise e
     
+    finally:
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )
+
+        if error:
+            raise Exception(error)
+    
+    return {
+            'statusCode': 200,
+            'body': object_keys
+        }
+
 def create_table_image(table_data):
     """
     単一のテーブル定義オブジェクトからテーブルを作成し、Base64エンコードされたSVGデータを返す関数。
@@ -113,11 +136,6 @@ def create_table_image(table_data):
 
     # 軸と外枠を非表示
     ax.axis('off')
-
-    # テーブルの描画領域を取得
-    # fig.canvas.draw()
-    # renderer = fig.canvas.get_renderer()
-    # table_bbox = table_object.get_window_extent(renderer)
 
     adjust_figure_size(fig, cols, rows, max_cell_width, max_cell_height)
 

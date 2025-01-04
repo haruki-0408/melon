@@ -1,20 +1,33 @@
 import json
+import os
 from aws_lambda_powertools import Logger, Tracer
 import boto3
+from utilities import record_workflow_progress_event
+
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
 
 # Step Functions クライアント
 sfn_client = boto3.client('stepfunctions')
 
-logger = Logger()
+STATE_NAME = "callback-success-lambda"
+STATE_ORDER = 8
 
+logger = Logger()
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
-    子ワークフローの結果を親ワークフローに返すLambda関数（スネークケース対応）
+    子ワークフローの結果を親ワークフローに返すLambda関数
     """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+
+    # デフォルトは成功
+    error = None    
+
     try:
         # Eventから必要な情報を取得
         task_token = event['task_token']  # コールバック用トークン
@@ -42,10 +55,6 @@ def lambda_handler(event, context):
 
         # レスポンスをログに記録
         logger.info(f"Response from Step Functions: {response}")
-        return {
-            'status_code': 200,
-            'body': json.dumps({'message': 'Callback sent successfully'})
-        }
 
     except Exception as e:
         error = {
@@ -53,6 +62,23 @@ def lambda_handler(event, context):
             "error_message": str(e),
             "payload": event
         }
-        logger.exception(error)
+        logger.exception(str(e))
 
-        raise e
+    finally:
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )   
+
+        if error:   
+            raise Exception(error)
+        
+    return {
+        'statusCode': 200,
+        'body': json.dumps({'message': 'Callback sent successfully'})
+    }

@@ -1,14 +1,7 @@
 import json
 import boto3
-import os
 import matplotlib as mpl
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from aws_lambda_powertools import Logger
 from botocore.exceptions import ClientError
-from string import Template
-from datetime import datetime
-from typing import Dict, Any
 
 # Matplotlib フォントの読み込みと設定関数
 def configure_matplotlib_fonts():
@@ -24,7 +17,6 @@ def configure_matplotlib_fonts():
     mpl.rc('font', family='IPAexGothic')
     mpl.rcParams['axes.unicode_minus'] = False  # マイナス記号の表示対応
     
-
 # DynamoDBからアイテムを取得
 def get_dynamo_item(table_name, key, region='ap-northeast-1'):
     dynamodb = boto3.resource("dynamodb", region_name=region)
@@ -40,7 +32,6 @@ def put_item_to_dynamodb(table_name, item, region='ap-northeast-1'):
     table = dynamodb.Table(table_name)
     table.put_item(Item=item)
 
-
 # S3にオブジェクトをアップロードする関数
 def upload_to_s3(bucket_name, object_key, data, content_type="application/json"):
     s3_client = boto3.client('s3')
@@ -55,10 +46,6 @@ def upload_to_s3(bucket_name, object_key, data, content_type="application/json")
         
     except ClientError as e:
         raise
-
-# キャメルケースからスネークケースへの変換関数
-def camel_to_snake(name):
-    return ''.join(['_' + c.lower() if c.isupper() else c for c in name]).lstrip('_')
 
 # FakeThesisデータスキーマjsonファイル読み込み
 def read_schema_jsons():
@@ -89,38 +76,6 @@ def check_folder_exists(bucket_name, folder_prefix):
     except ClientError as e:
         # S3のエラーが発生した場合は例外を再スロー
         raise e
-
-# DynamoDBのテーブル名とkeyを指定してレコードが存在するか確認する
-def check_record_exists_usequery(table_name, pk_name, pk_value, region='ap-northeast-1'):
-    dynamodb = boto3.resource('dynamodb', region_name=region)
-    table = dynamodb.Table(table_name)
-
-    try:
-        # parent_execution_idに紐づくレコードをクエリ
-        response = table.query(
-            KeyConditionExpression=boto3.dynamodb.conditions.Key(pk_name).eq(pk_value),
-            Limit=1  # 1件のみ取得
-        )
-
-        items = response.get('Items', [])
-
-        # エラーレコードが1件でも存在している場合はリンクを生成
-        if items:
-            # テーブルのAWSコンソールリンクを生成
-            link = f"https://console.aws.amazon.com/dynamodb/home?region={region}#tables:selected={table_name};tab=overview"
-            return link
-        else:
-            return None
-
-    except ClientError as e:
-        # DynamoDBのエラーが発生した場合は例外を再スロー
-        raise e
-
-
-# stepfunctions実行内容リンク生成
-def generate_execution_url(execution_arn: str) -> str:
-    region = "ap-northeast-1"
-    return f"https://{region}.console.aws.amazon.com/states/home?region={region}#/executions/details/{execution_arn}"
 
 def record_workflow_progress_event(
     workflow_id: str,

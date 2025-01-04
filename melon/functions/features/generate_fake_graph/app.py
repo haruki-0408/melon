@@ -8,22 +8,30 @@ import numpy as np
 import json
 import sympy as sp
 from matplotlib.patches import Ellipse
-from utilities import configure_matplotlib_fonts
+from utilities import configure_matplotlib_fonts, upload_to_s3, record_workflow_progress_event
 
-# S3のアップロード先情報
+WORKFLOW_EVENT_BUS_NAME = os.environ["WORKFLOW_EVENT_BUS_NAME"]
 S3_BUCKET = os.environ.get("S3_BUCKET", None)
 
-logger = Logger()
+STATE_NAME = "graph-gen-lambda"
+STATE_ORDER = 11
 
+logger = Logger()
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
-    イベントオブジェクトからグラフデータを受け取り、動的にグラフを生成してS3にアップロードまたは
-    Base64エンコードされたPNGデータを返すメインのLambdaハンドラー関数。
+    イベントオブジェクトからグラフデータを受け取り、動的にグラフを生成してS3にアップロードするLambda関数。
     """
+
+    workflow_id = event.get('workflow_id')
+    print(f"WorkflowId: {workflow_id}")
+    
+    # デフォルトは成功
+    error = None
+
     try:
         # イベントからgraphsプロパティを取得
         workflow_id = event.get('workflow_id')
@@ -53,10 +61,6 @@ def lambda_handler(event, context):
 
         non_trailing_slash_prefix = f"{workflow_id}/graphs"
         object_keys = upload_to_s3(non_trailing_slash_prefix, graph_images)
-        return {
-            'statusCode': 200,
-            'body': object_keys
-        }
 
     except Exception as e:
         error = {
@@ -65,18 +69,32 @@ def lambda_handler(event, context):
             "payload": event
         }
         logger.exception(error)
-        raise e
+
+    finally:    
+        # EventBridgeに進捗イベントを送信
+        record_workflow_progress_event(
+            workflow_id=workflow_id,
+            request_id=context.aws_request_id,
+            order=STATE_ORDER,
+            status="success" if error is None else "failed",
+            state_name=STATE_NAME,
+            event_bus_name=WORKFLOW_EVENT_BUS_NAME
+        )
+
+        if error:
+            raise Exception(error)
+
+    return {
+        'statusCode': 200,
+        'body': object_keys
+    }
 
 def create_graph_image(graph_data):
     """
     単一のグラフ定義オブジェクトからグラフを作成し、Base64エンコードされたPNGデータを返す関数。
     graph_data は指定したスキーマに従います。
     """
-    # フィギュアと軸の作成
-    # fig, ax = plt.subplots(figsize=(graph_data['figure_width'], graph_data['figure_height']))
-    # グラフのサイズを動的に設定
-    # figure_width = graph_data.get('figure_width', 8)  # デフォルト値: 8インチ
-    # figure_height = graph_data.get('figure_height', 5)  # デフォルト値: 5インチ
+    
     figure_width = 8
     figure_height = 5
     fig, ax = plt.subplots(figsize=(figure_width, figure_height))
@@ -279,13 +297,6 @@ def plot_curve_chart(ax, chart):
 
     # x_rangeには [start, end, num_points] が含まれていると想定
     x_values = np.linspace(x_range[0], x_range[1], int(x_range[2]))
-    
-    # # equation_strを安全に評価（eval）するための準備
-    # equation = compile(equation_str, "<string>", "eval")
-    # print('y_values before')
-    # y_values = [eval(equation, {"__builtins__": None, "np": np, "x": x}) for x in x_values]
-    # print('y_values after')
-    # ax.plot(x_values, y_values, label=label, color=color, linestyle=linestyle)
 
     # sympyを使用して安全に数式を評価
     x = sp.symbols('x')
