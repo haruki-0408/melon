@@ -46,7 +46,7 @@ def lambda_handler(event, context):
             print(f"====== セクション: {section_title} ======")
 
             # 最後のセクションかどうかを判定
-            is_last = (idx == len(sections_format) - 1)
+            is_last = (idx == len(sections) - 1)
 
             # 各セクションのプロンプトを準備
             content_text = json.dumps(section, ensure_ascii=False)
@@ -54,7 +54,7 @@ def lambda_handler(event, context):
             # 最終セクションの場合、締めくくりの言葉を追加
             if is_last:
                 closing_statement = "フォーマット内のテキストの最終行にこの研究の結論をまとめるような締めの文章を作成してフォーマット内に挿入してほしいです。\n"
-                # closing_statement += "[優先事項]さらにあえてこのセクションではgraphs, tables, formulas データのスキーマバリデーションが引っかかるようにわざとデータをスキーマに合わないようにしてほしいです。回答レスポンスは必ずjsonのみでコメントなどは挿入しないでください"
+                closing_statement += "[優先事項]さらにあえてこのセクションではgraphs, tables, formulas データのスキーマバリデーションが引っかかるようにわざとデータをスキーマに合わないようにしてほしいです。回答レスポンスは必ずjsonのみでコメントなどは挿入しないでください"
                 content_text += f"\n\n{closing_statement}"
 
             # プロンプトを追加

@@ -33,7 +33,7 @@ def lambda_handler(event, context):
         task_token = event['task_token']  # コールバック用トークン
         status = event['status']         # 成功/失敗のステータス ("SUCCEEDED" or "FAILED")
         payload = event.get('payload', {}) # 結果データ (成功時)
-        error = event.get('error', {}) # エラー詳細 (失敗時)
+        error_detail = event.get('error', {}) # エラー詳細 (失敗時)
 
         if status.upper() == "SUCCEEDED":
             # 成功時に親ワークフローに結果を送信
@@ -44,11 +44,11 @@ def lambda_handler(event, context):
             )
         elif status.upper() == "FAILED":
             # 失敗時に親ワークフローにエラーを送信
-            logger.info(f"Sending failure to parent workflow: {error}")
+            logger.info(f"Sending failure to parent workflow: {error_detail}")
             response = sfn_client.send_task_failure(
                 taskToken=task_token,
-                error=error.get('Error'),
-                cause=error.get('Cause')
+                error=error_detail.get('Error'),
+                cause=error_detail.get('Cause')
             )
         else:
             raise ValueError("Invalid status. Must be 'SUCCEEDED' or 'FAILED'.")
@@ -65,15 +65,16 @@ def lambda_handler(event, context):
         logger.exception(str(e))
 
     finally:
-        # EventBridgeに進捗イベントを送信
-        record_workflow_progress_event(
-            workflow_id=workflow_id,
-            request_id=context.aws_request_id,
-            order=STATE_ORDER,
-            status="success" if error is None else "failed",
-            state_name=STATE_NAME,
-            event_bus_name=WORKFLOW_EVENT_BUS_NAME
-        )   
+        # EventBridgeに進捗イベントを送信 (ここまでのステータスが成功の場合のみEventBridgeに送信)
+        if status.upper() == "SUCCEEDED":
+            record_workflow_progress_event(
+                workflow_id=workflow_id,
+                request_id=context.aws_request_id,
+                order=STATE_ORDER,
+                status="success" if error is None else "failed",
+                state_name=STATE_NAME,
+                event_bus_name=WORKFLOW_EVENT_BUS_NAME
+            )   
 
         if error:   
             raise Exception(error)

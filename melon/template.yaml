@@ -1219,6 +1219,7 @@ Resources:
             Parameters:
               FunctionName: !Ref SendWorkflowCallback
               Payload:
+                "workflow_id.$": "$.payload.workflow_id"
                 "task_token.$": "$.task_token"
                 "status": "SUCCEEDED"
                 "payload.$": "$.payload"
@@ -1236,6 +1237,7 @@ Resources:
             Parameters:
               FunctionName: !Ref SendWorkflowCallback
               Payload:
+                "workflow_id.$": "$.payload.workflow_id"
                 "task_token.$": "$.task_token"
                 "status": "FAILED"
                 "error.$": "$.payload.error"
