@@ -27,6 +27,7 @@ def lambda_handler(event, context):
 
     # デフォルトは成功
     error = None    
+    response = None
 
     try:
         # Eventから必要な情報を取得
@@ -53,9 +54,6 @@ def lambda_handler(event, context):
         else:
             raise ValueError("Invalid status. Must be 'SUCCEEDED' or 'FAILED'.")
 
-        # レスポンスをログに記録
-        logger.info(f"Response from Step Functions: {response}")
-
     except Exception as e:
         error = {
             "error_type": type(e).__name__,
@@ -64,7 +62,18 @@ def lambda_handler(event, context):
         }
         logger.exception(str(e))
 
+        # 予期せぬエラーを親ワークフローに送信
+        if response is None:
+            response = sfn_client.send_task_failure(
+                taskToken=task_token,
+                error=error.get('error_type'),
+                cause=error.get('error_message')
+            )
+
     finally:
+        # レスポンスをログに記録
+        logger.info(f"Response from Step Functions: {response}")
+
         # EventBridgeに進捗イベントを送信 (ここまでのステータスが成功の場合のみEventBridgeに送信)
         if status.upper() == "SUCCEEDED":
             record_workflow_progress_event(
@@ -75,6 +84,17 @@ def lambda_handler(event, context):
                 state_name=STATE_NAME,
                 event_bus_name=WORKFLOW_EVENT_BUS_NAME
             )   
+            
+        # バリデーションエラーの最大回数を超えた場合
+        elif error_detail.get("Error") == "MaxValidationRetryAttemptsExceededError":
+            record_workflow_progress_event(
+                workflow_id=workflow_id,
+                request_id=context.aws_request_id,
+                order=STATE_ORDER,
+                status="failed",
+                state_name=STATE_NAME,
+                event_bus_name=WORKFLOW_EVENT_BUS_NAME
+            )
 
         if error:   
             raise Exception(error)
