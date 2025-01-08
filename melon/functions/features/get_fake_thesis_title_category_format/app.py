@@ -1,6 +1,6 @@
 import os
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.validation import validator
+from aws_lambda_powertools.utilities.validation import validate
 from aws_lambda_powertools.utilities.validation import SchemaValidationError
 from aws_lambda_powertools import Tracer
 from utilities import get_dynamo_item, record_workflow_progress_event
@@ -17,7 +17,6 @@ logger = Logger()
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
-@validator(inbound_schema=schemas.INPUT)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
@@ -31,6 +30,9 @@ def lambda_handler(event, context):
     error = None
     
     try:
+        # イベントバリデーション
+        validate(event=event, schema=schemas.INPUT)
+
         # eventパラメータ
         fake_thesis_category_en =  event.get('category')
         format_data = get_dynamo_item(table_name=DYNAMO_DB_CATEGORY_MASTER_TABLE, key={"category_type_en": fake_thesis_category_en})
@@ -46,7 +48,6 @@ def lambda_handler(event, context):
             "error_message": str(e)
         }
         logger.exception(str(e))
-
     finally:
         # EventBridgeに進捗イベントを送信
         record_workflow_progress_event(

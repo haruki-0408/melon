@@ -1,5 +1,5 @@
 from aws_lambda_powertools import Logger, Tracer
-from aws_lambda_powertools.utilities.validation import validator
+from aws_lambda_powertools.utilities.validation import validate
 from aws_lambda_powertools.utilities.validation import SchemaValidationError
 import event_schemas as event_schemas
 import os
@@ -14,7 +14,6 @@ logger = Logger()
 tracer = Tracer()
 
 @logger.inject_lambda_context(log_event=True)
-@validator(inbound_schema=event_schemas.INPUT)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
@@ -28,6 +27,9 @@ def lambda_handler(event, context):
     error = None
 
     try:
+        # イベントバリデーション
+        validate(event=event, schema=event_schemas.INPUT)
+
         # タイトルとフォーマットを取得
         title = event.get('title', '')
         sections_format = event.get('sections_format', {})
