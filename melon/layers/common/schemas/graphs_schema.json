@@ -385,7 +385,7 @@
                       "items": {
                         "type": "number"
                       },
-                      "description": "各点の色を決定する値の配列。"
+                      "description": "各点の色を決定する数値の配列。cmapと組み合わせて使用される。"
                     },
                     "sizes": {
                       "type": "array",

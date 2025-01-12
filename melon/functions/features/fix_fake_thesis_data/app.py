@@ -69,6 +69,9 @@ def lambda_handler(event, context):
         )
         messages = generate_messages(target_data)
 
+        print('====== fix system_prompt ========')
+        print(system_prompt)
+        
         # 生成AIに修正リクエスト
         assistant_response = client.call_message_request(system_prompt=system_prompt, messages=messages)
 
@@ -139,8 +142,8 @@ def generate_system_prompt(graphs_schema, tables_schema, formulas_schema, error_
         f"あなたはデータバリデーションの専門家です。以下のスキーマに基づきデータを修正してください。\n\n"
         + "\n".join(schemas)
         + f"\n次のバリデーションエラーが発生しました:\n{json.dumps(error_details, indent=2, ensure_ascii=False)}\n\n"
-        f"対象のデータをスキーマに適合するように修正してください。元のデータの内容を極力変更せず、バリデーションエラーを解消してください。\n"
-        f"注意: 回答は必ずJSON形式で、余計な文章を含めないでください。"
+        f"対象のデータをスキーマに適合するように修正してください。バリデーション違反を起こしているデータ以外の元のデータの内容は極力変更せず、バリデーションエラーの箇所を注意深く確実に解消してください。\n"
+        f"注意: 回答は必ずJSONパース可能な形式で、余計な文章を含めないでください。"
     )
 
 def generate_messages(target_data):
