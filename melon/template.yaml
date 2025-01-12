@@ -58,6 +58,7 @@ Resources:
       - ApiGatewayRole
     Properties:
       StageName: !Ref Environment
+      EndpointConfiguration: REGIONAL
       TracingEnabled: true    # X-Ray トレーシングを有効化
       MethodSettings:
         - LoggingLevel: INFO  # CloudWatch Logsを有効化
@@ -154,7 +155,7 @@ Resources:
                         }
                   "400":
                     statusCode: "400"
-                    selectionPattern: ".*Error.*"
+                    # selectionPattern: ".*Error.*"
                     responseTemplates:
                       application/json: |
                         #set($inputRoot = $input.path('$'))
