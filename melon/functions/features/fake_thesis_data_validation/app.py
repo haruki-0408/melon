@@ -13,7 +13,7 @@ STATE_ORDER = 6
 logger = Logger()
 tracer = Tracer()
 
-@logger.inject_lambda_context(log_event=False)
+@logger.inject_lambda_context(log_event=True)
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """

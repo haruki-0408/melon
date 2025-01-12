@@ -20,7 +20,7 @@ tracer = Tracer()
 @tracer.capture_lambda_handler
 def lambda_handler(event, context):
     """
-    カテゴリマスタからカテゴリのフォーマットを取得するLambda関数
+    カテゴリマスタから各カテゴリのフォーマットを取得するLambda関数
     """
 
     workflow_id = event.get('workflow_id')
