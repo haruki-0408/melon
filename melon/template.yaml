@@ -166,6 +166,47 @@ Resources:
                 - api_key: []
 
   ################################
+  ###  WAF WebACL
+  ###  本番環境用WAF
+  ################################
+  ApiGatewayWebACL:
+    Type: AWS::WAFv2::WebACL
+    Condition: IsProd
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_web_acl"
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub "${ProjectName}_${Environment}_web_acl_metric"
+      Rules:
+        - Name: AWS-AWSManagedRulesCommonRuleSet
+          Priority: 0
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedRulesCommonRuleSet
+
+  ################################
+  ###  WAF WebACL Association
+  ###  API GatewayとWAFの関連付け
+  ################################
+  ApiGatewayWebACLAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Condition: IsProd
+    Properties:
+      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${FakeThesisGeneratorApi}/stages/${Environment}"
+      WebACLArn: !GetAtt ApiGatewayWebACL.Arn
+
+  ################################
   ###  IAM Role
   ###  API Gateway用実行ロール
   ################################ 
@@ -454,7 +495,7 @@ Resources:
 
   ################################
   ###  Lambda
-  ###  論文データ修正関��
+  ###  論文データ修正関数
   ################################ 
   FixFakeThesisData:
     Type: AWS::Serverless::Function

@@ -1,130 +1,255 @@
-# melon
+# 嘘論文生成アプリケーション(サーバーサイド・インフラ)
 
-This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
+## 参考ドキュメント
+[Miro 構想資料](https://miro.com/app/board/uXjVLuyj9ss=/?share_link_id=568802384893)
 
-- hello_world - Code for the application's Lambda function.
-- events - Invocation events that you can use to invoke the function.
-- tests - Unit tests for the application code. 
-- template.yaml - A template that defines the application's AWS resources.
+## プロジェクトの目的
 
-The application uses several AWS resources, including Lambda functions and an API Gateway API. These resources are defined in the `template.yaml` file in this project. You can update the template to add AWS resources through the same deployment process that updates your application code.
+本プロジェクトは、以下の目的を掲げて開発しました。
 
-If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  
-The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started.
+1. **サーバーレスアーキテクチャの実践**
+   - イベント駆動型アーキテクチャによる疎結合なシステム設計
+   - AWS SAMを活用したInfrastructure as Codeの実現
+   - マイクロサービスアーキテクチャによる機能の分割と統合
+   - 複雑なワークフローのステートマシンによる制御
 
-* [CLion](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [GoLand](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [IntelliJ](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [WebStorm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [Rider](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [PhpStorm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [PyCharm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [RubyMine](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [DataGrip](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
-* [VS Code](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/welcome.html)
-* [Visual Studio](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/welcome.html)
+2. **アーキテクチャ設計能力・開発能力の表現**
+   - 複雑なワークフローの効率的な制御と管理
+   - 並列処理による処理速度の最適化
+   - エラーハンドリングと再試行ロジックの実装
+   - スケーラブルなシステム設計の実現
 
-## Deploy the sample application
+3. **運用・監視システムの確立**
+   - 包括的なロギングとモニタリングの実装
+   - リアルタイムな進捗管理システムの構築
+   - 分散トレーシングによる性能分析
+   - CloudWatchとX-Rayを活用した運用管理
 
-The Serverless Application Model Command Line Interface (SAM CLI) is an extension of the AWS CLI that adds functionality for building and testing Lambda applications. It uses Docker to run your functions in an Amazon Linux environment that matches Lambda. It can also emulate your application's build environment and API.
+4. **最新技術の統合と実験的試み**
+   - Anthropic Claude APIによる高度な自然言語処理
+   - EventBridgeとDynamoDB Streamsによる非同期処理
+   - Server-Sent Eventsによるリアルタイム通知
+   - 現段階の生成AIにおける架空論文生成能力の技術検証
 
-To use the SAM CLI, you need the following tools.
+## プロジェクト概要
 
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* [Python 3 installed](https://www.python.org/downloads/)
-* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
+本プロジェクトは、最新のクラウドテクノロジーと生成AIを組み合わせた架空の内容の嘘論文自動生成システムです。ユーモアのある面白い内容の嘘論文を生成することを目的としており虚構新聞からアイデアを着想しイメージしました。
 
-To build and deploy your application for the first time, run the following in your shell:
+- **生成AI活用**: Anthropic Claude APIを用いた高品質な論文コンテンツの生成
+- **マルチメディア生成**: グラフ、表、数式などの研究データの自動生成
+- **PDF出力**: LaTeX形式での論文フォーマット生成とPDF変換
+- **リアルタイム進捗管理**: 生成プロセスのリアルタイムモニタリング
 
+AWS SAMによるInfrastructure as Codeを採用し、高可用性と拡張性を実現。複雑な論文生成プロセスを、マイクロサービスアーキテクチャにより効率的に処理しています。
+
+## システムアーキテクチャ
+
+### メインアーキテクチャ
+
+![サーバーレスアーキテクチャ図](./image/architecture.jpg)
+
+
+本システムは、APIゲートウェイを入り口として、Step Functionsによるワークフロー管理、Lambda関数による処理の実行、DynamoDBによるデータ管理を組み合わせたサーバーレス&イベント駆動型アーキテクチャを採用しています。
+
+#### アーキテクチャの主要コンポーネント詳細
+
+1. **フロントエンド連携**
+   - API Gateway: RESTful APIエンドポイントを提供し、クライアントからのリクエストを受け付け
+   - EventBridge: イベントルーティングとワークフロートリガーを担当
+
+2. **ワークフロー制御**
+   - Step Functions: 複雑な論文生成プロセスを管理
+     - エラーハンドリングと再試行ロジック
+     - 並列処理の制御（グラフ、表、数式の生成）
+     - 状態管理とトランジション制御
+
+3. **コア機能（Lambda関数群）**
+   - 論文フォーマット取得: 論文カテゴリに応じた適切なフォーマットを決定
+   - プロンプト生成: AIモデルへの最適な指示を生成
+   - 生成AI API連携: Anthropic Claude APIとの通信を管理
+   - 論文データバリデーション: 生成AIの出力を定義したスキーマに沿うかチェック
+   - データ自動修正関数: データがスキーマに沿っていない場合、生成AIの出力を自動修正
+   - コンテンツ生成: グラフ、表、数式の並列生成処理
+   - PDF変換: 最終成果物の生成
+
+4. **データストレージと管理**
+   - S3: 生成された画像やPDFの保存
+   - DynamoDB: 進捗状況と中間データの管理
+   
+5. **進捗管理システム**
+   - DynamoDB Streams: データ更新のリアルタイム検知
+   - EventBridge: イベントのルーティングとトリガー
+   - SSE (Server-Sent Events): クライアントへのリアルタイム通知
+
+このアーキテクチャにより、スケーラブルで信頼性の高い論文生成システムを実現しています。各コンポーネントは疎結合に設計されており、将来の機能拡張や改善に対して柔軟に対応できます。
+
+### 進捗通知システムの詳細アーキテクチャ
+
+![SSE進捗通知システム](./image/sse.jpg)
+
+
+DynamoDBストリームとEventBridgeを活用した非同期の進捗通知システムによってStepfunctionsの進捗状態をフロントエンドへリアルタイムに通知しています。
+
+#### 進捗通知の仕組み
+
+1. **データ更新の検知**
+   - DynamoDB Streamsが論文生成の進捗状態の変更を検知
+   - 変更イベントをリアルタイムでキャプチャ
+
+2. **イベント変換とルーティング**
+   - EventBridge Pipesがストリームイベントを処理
+   - 必要な形式に変換し、適切な宛先にルーティング
+
+3. **通知処理**
+   - Lambda関数が通知ロジックを実行
+   - Next.js APIを介してクライアントにSSEで配信
+
+4. **クライアント側の更新**
+   - Server-Sent Events (SSE)による効率的な単方向通信
+   - クライアントのUIがリアルタイムで更新
+
+この設計により、クライアントは常に最新の進捗状況を把握でき、ユーザーエクスペリエンスが向上します。
+
+## 技術スタック
+
+### AWS クラウドサービス
+- **API Gateway**: RESTful APIのエンドポイント提供
+- **Lambda**: サーバーレスコンピューティング（Python 3.12）
+- **Step Functions**: ワークフローオーケストレーション
+- **SQS**: 非同期ジョブキュー
+- **EventBridge**: イベント駆動型アーキテクチャの実現
+- **DynamoDB**: NoSQLデータベース
+- **S3**: オブジェクトストレージ
+- **CloudWatch**: ログ管理
+- **X-Ray**: 分散トレーシング
+
+### 開発基盤
+- **AWS SAM**: インフラストラクチャのコード化（IaC）
+- **Python**: サーバーサイドロジックの実装
+- **AWS Lambda Powertools**: ロギング、トレーシング収集
+
+### 主要ライブラリ・フレームワーク
+- **Anthropic Claude SDK (anthropic==0.40.0)**
+  - 用途：高度な自然言語処理による論文本文の生成
+  - 特徴：学術的文章の生成に特化した高品質なAIモデル
+  - 活用：プロンプトエンジニアリングによる論理的な文章構造の制御
+
+- **SymPy (sympy==1.13.3)**
+  - 用途：数式の生成と処理
+  - 特徴：数学的表現の厳密な処理と LaTeX 形式への変換
+  - 活用：研究論文に不可欠な数式表現の自動生成
+
+- **Matplotlib (matplotlib==3.9.2)**
+  - 用途：研究データの可視化、グラフ生成
+  - 特徴：論文品質の図表作成、多様なグラフタイプのサポート
+  - 活用：実験結果や統計データの視覚化
+
+- **ReportLab (reportlab==4.2.5)**
+  - 用途：PDF文書の生成
+  - 特徴：プログラマティックなPDFレイアウト制御、日本語フォントサポート
+  - 活用：論文形式での最終出力、フォントやレイアウトの精密な制御
+
+- **SVGLib (svglib==1.5.1)**
+  - 用途：SVG画像のPDF変換
+  - 特徴：ベクター画像の高品質なPDF埋め込み
+  - 活用：生成されたグラフや図表のPDFへの統合
+
+## 技術的ハイライト
+
+### セキュリティ設計
+- API Keyによるアクセス制御
+- IAMロールとポリシーによる最小権限の原則の実践
+- 環境変数のSSMパラメータストア管理
+- 
+
+### パフォーマンスとスケーラビリティ
+- サーバーレスアーキテクチャによる自動スケーリング
+- DynamoDBのプロビジョニングされたキャパシティによる予測可能なパフォーマンス
+- 使用したワークロードベースの料金
+
+### イベント駆動型アーキテクチャ
+- EventBridgeによるイベントルーティングとトリガー
+- DynamoDB Streamsによるリアルタイムデータ更新検知
+- SQSによる非同期ジョブキュー
+
+### 可用性と信頼性
+- Step Functionsによるエラーハンドリングと再試行ロジック
+- DynamoDBのデータ保護（削除保護、バージョニング）
+- CloudWatch Logsによる包括的なロギング
+
+### 監視と運用管理
+- X-Rayによる分散トレーシング
+- CloudWatch Logsによるログ管理
+- EventBridgeによる進捗監視と通知
+
+## プロジェクト構造
+
+```
+melon/
+├── events/            # テスト用イベントJSON
+├── functions/           # Lambda関数
+│   ├── features/       # 機能別Lambda関数
+│   └── stepfunctions/  # Step Functions関連Lambda関数
+├── layers/             # 共通Lambda Layer
+├── tests/            # テストコード
+│   └── unit/        # ユニットテスト
+└── template.yaml    # SAMテンプレート
+```
+
+### ワークフロー詳細
+
+#### メインワークフロー
+1. 論文フォーマット取得
+2. プロンプトパラメータ生成
+3. サブワークフロー実行（論文本文生成）
+4. 並列処理
+   - グラフ生成
+   - 表生成
+   - 数式生成
+5. PDF変換・出力
+
+#### サブワークフロー（論文生成）
+1. 生成AI（Anthropic Claude）による論文本文生成
+2. 生成データのバリデーション
+3. エラー時の自動修正（最大3回の再試行）
+4. メインワークフローへのコールバック
+
+#### 進捗管理フロー
+- EventBridgeとDynamoDBによるリアルタイム進捗管理
+- WebフロントエンドへのWebhook通知
+- 詳細な実行ログの保存
+
+### 品質管理
+- ユニットテストの実装
+- AWS X-Rayによる性能モニタリング
+- CloudWatch Logsによるログ分析
+- EventBridgeによる進捗監視
+
+## セットアップガイド
+
+### ローカル開発環境
 ```bash
+# 環境変数ファイルのコピー
+cp env.sample.json env.json
+
+# 環境変数ファイルの編集
+vi env.json
+
+# SAMビルド
+sam build
+
+# ローカルでのLambda関数実行 例：GetFakeThesisTitleCategoryFormat
+sam local invoke GetFakeThesisTitleCategoryFormat --event events/get_fake_thesis_title_category_format/event.json --env-vars env.json 
+```
+
+### デプロイ手順
+```bash
+# SAMビルド
 sam build --use-container
-sam deploy --guided
+
+# デプロイ（開発環境）
+sam deploy --config-env dev
+
+# デプロイ（本番環境）
+sam deploy --config-env prd
 ```
-
-The first command will build the source of your application. The second command will package and deploy your application to AWS, with a series of prompts:
-
-* **Stack Name**: The name of the stack to deploy to CloudFormation. This should be unique to your account and region, and a good starting point would be something matching your project name.
-* **AWS Region**: The AWS region you want to deploy your app to.
-* **Confirm changes before deploy**: If set to yes, any change sets will be shown to you before execution for manual review. If set to no, the AWS SAM CLI will automatically deploy application changes.
-* **Allow SAM CLI IAM role creation**: Many AWS SAM templates, including this example, create AWS IAM roles required for the AWS Lambda function(s) included to access AWS services. By default, these are scoped down to minimum required permissions. To deploy an AWS CloudFormation stack which creates or modifies IAM roles, the `CAPABILITY_IAM` value for `capabilities` must be provided. If permission isn't provided through this prompt, to deploy this example you must explicitly pass `--capabilities CAPABILITY_IAM` to the `sam deploy` command.
-* **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
-
-You can find your API Gateway Endpoint URL in the output values displayed after deployment.
-
-## Use the SAM CLI to build and test locally
-
-Build your application with the `sam build --use-container` command.
-
-```bash
-melon$ sam build --use-container
-```
-
-The SAM CLI installs dependencies defined in `hello_world/requirements.txt`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
-
-Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
-
-Run functions locally and invoke them with the `sam local invoke` command.
-
-```bash
-melon$ sam local invoke HelloWorldFunction --event events/event.json
-```
-
-The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
-
-```bash
-melon$ sam local start-api
-melon$ curl http://localhost:3000/
-```
-
-The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
-
-```yaml
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /hello
-            Method: get
-```
-
-## Add a resource to your application
-The application template uses AWS Serverless Application Model (AWS SAM) to define application resources. AWS SAM is an extension of AWS CloudFormation with a simpler syntax for configuring common serverless application resources such as functions, triggers, and APIs. For resources not included in [the SAM specification](https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md), you can use standard [AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html) resource types.
-
-## Fetch, tail, and filter Lambda function logs
-
-To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs` lets you fetch logs generated by your deployed Lambda function from the command line. In addition to printing the logs on the terminal, this command has several nifty features to help you quickly find the bug.
-
-`NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
-
-```bash
-melon$ sam logs -n HelloWorldFunction --stack-name "melon" --tail
-```
-
-You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
-
-## Tests
-
-Tests are defined in the `tests` folder in this project. Use PIP to install the test dependencies and run tests.
-
-```bash
-melon$ pip install -r tests/requirements.txt --user
-# unit test
-melon$ python -m pytest tests/unit -v
-# integration test, requiring deploying the stack first.
-# Create the env variable AWS_SAM_STACK_NAME with the name of the stack we are testing
-melon$ AWS_SAM_STACK_NAME="melon" python -m pytest tests/integration -v
-```
-
-## Cleanup
-
-To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
-
-```bash
-sam delete --stack-name "melon"
-```
-
-## Resources
-
-See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
-
-Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
