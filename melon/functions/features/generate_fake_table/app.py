@@ -423,15 +423,17 @@ def upload_to_s3(non_trailing_slash_prefix, tables):
     Base64エンコードされた画像データをS3にアップロードするヘルパー関数
     """
     s3 = boto3.resource('s3')
+    object_keys = []
     for table in tables:
         # 一意のキーを作成（例: table_0.svg）
-        key = f"{non_trailing_slash_prefix}/{table['id']}.svg"
+        object_key = f"{non_trailing_slash_prefix}/{table['id']}.svg"
+        
         image_binary = base64.b64decode(table['image_data'])
 
         # 日本語タイトルをBase64エンコード
         encoded_title = base64.b64encode(table['title'].encode('utf-8')).decode('utf-8')
 
-        s3.Object(S3_BUCKET, key).put(
+        s3.Object(S3_BUCKET, object_key).put(
             Body=image_binary,
             ContentType='image/svg+xml',
             Metadata={
@@ -440,3 +442,6 @@ def upload_to_s3(non_trailing_slash_prefix, tables):
                 'title': encoded_title
             }
         )
+        object_keys.append(object_key)
+        
+    return object_keys

@@ -155,7 +155,6 @@ Resources:
                         }
                   "400":
                     statusCode: "400"
-                    # selectionPattern: ".*Error.*"
                     responseTemplates:
                       application/json: |
                         #set($inputRoot = $input.path('$'))
