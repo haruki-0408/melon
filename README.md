@@ -1,7 +1,15 @@
 # 嘘論文生成アプリケーション(サーバーサイド・インフラ)
 
 ## 参考ドキュメント
-[Miro 構想資料](https://miro.com/app/board/uXjVLuyj9ss=/?share_link_id=568802384893)
+- [Miro 構想資料](https://miro.com/app/board/uXjVLuyj9ss=/?share_link_id=568802384893)
+- [フロントエンド](https://github.com/k-k-k-k-k/fake-thesis-frontend)
+
+## はじめに
+本プロジェクトは、転職活動用に用意したAIを活用した嘘論文生成プロセスを可視化・制御するためのサーバーサイド・インフラに関する機能リポジトリです。 
+
+運用・監視・保守を考慮したアプリの構想 →　アーキテクチャ設計 → 開発・実装能力 → デプロイ　
+
+まで一貫した能力があることを表現するために作成しましたので、もしよろしければ[構想資料](https://miro.com/app/board/uXjVLuyj9ss=/?share_link_id=568802384893)の資料とフロントエンドのリポジトリも合わせてご覧くださいませ。
 
 ## プロジェクトの目的
 
