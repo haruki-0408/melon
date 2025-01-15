@@ -247,6 +247,10 @@ sam local invoke GetFakeThesisTitleCategoryFormat --event events/get_fake_thesis
 # SAMビルド
 sam build --use-container
 
+# SAM templateのチェック (dev, prd) 環境を指定してチェックしないとエラーなので注意
+sam validate --config-env dev  
+sam validate --config-env prd
+
 # デプロイ（開発環境）
 sam deploy --config-env dev
 

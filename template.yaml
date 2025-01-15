@@ -202,8 +202,15 @@ Resources:
   ApiGatewayWebACLAssociation:
     Type: AWS::WAFv2::WebACLAssociation
     Condition: IsProd
+    DependsOn:
+      - FakeThesisGeneratorApi
     Properties:
-      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${FakeThesisGeneratorApi}/stages/${Environment}"
+      ResourceArn: !Join
+        - ''
+        - - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/"
+          - !Ref FakeThesisGeneratorApi
+          - "/stages/"
+          - !Ref FakeThesisGeneratorApi.Stage
       WebACLArn: !GetAtt ApiGatewayWebACL.Arn
 
   ################################
@@ -644,23 +651,6 @@ Resources:
                 - Pattern: '{"eventName": ["INSERT"]}'  # INSERT イベントのみをトリガー
             Stream: !GetAtt WorkflowProgressManagementTable.StreamArn
             StartingPosition: LATEST #最新レコードのみ処理
-
-  ################################
-  ###  Lambda
-  ###  テスト
-  ################################ 
-  Test:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub "${ProjectName}_${Environment}_test"
-      CodeUri: functions/test/
-      Description: "各ステートの進捗を更新する関数" #関数の説明
-      MemorySize: 256 # メモリサイズ (MB)
-      Timeout: 900 # タイムアウト(秒)
-      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
-      Environment:
-        Variables:
-          SQS_QUEUE_URL: "value"
 
   ################################
   ### IAM Role 
