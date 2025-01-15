@@ -1,0 +1,79 @@
+# More information about the configuration file can be found here:
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html
+version = 0.1
+
+[default.global.parameters]
+stack_name = "melon"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.validate.parameters]
+lint = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_NAMED_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "melon"
+region = "ap-northeast-1"
+image_repositories = []
+disable_rollback = false
+tags = [
+  "Project=\"melon\""
+]
+
+[default.package.parameters]
+resolve_s3 = true
+
+[default.sync.parameters]
+watch = true
+
+[default.local_start_api.parameters]
+warm_containers = "EAGER"
+
+[default.local_start_lambda.parameters]
+warm_containers = "EAGER"
+
+################################
+###  開発環境設定
+################################ 
+[dev]
+[dev.global.parameters]
+stack_name = "melon-dev"
+
+[dev.deploy.parameters]
+parameter_overrides = "Environment=dev"
+capabilities = "CAPABILITY_NAMED_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "melon-dev"
+region = "ap-northeast-1"
+image_repositories = []
+disable_rollback = false
+tags = [
+  "Environment=\"dev\"",
+  "Project=\"melon\""
+]
+
+################################
+###  本番環境設定
+################################ 
+[prd]
+[prd.global.parameters]
+stack_name = "melon-prd"
+
+[prd.deploy.parameters]
+parameter_overrides = "Environment=prd"
+capabilities = "CAPABILITY_NAMED_IAM"
+confirm_changeset = true
+resolve_s3 = true
+s3_prefix = "melon-prd"
+region = "ap-northeast-1"
+image_repositories = []
+disable_rollback = false
+tags = [
+  "Environment=\"prd\"",
+  "Project=\"melon\""
+]

@@ -1,0 +1,1311 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+################################
+#  注意点  
+#   API Gateway CloudWatch Logs用ロールについて
+#   CloudwatchログのロールARNはアカウント内全体の問題なので本プロジェクトでは管理しない
+#   本プロジェクトではAPI GatewayのCloudWatch Logsのロギング設定を行っているので適用する場合は
+#   アカウント内のAPIGateway CloudWatch LogsのロールARNを設定しておく必要がある
+################################
+
+################################
+###  パラメータ
+################################
+Parameters:
+  # プロジェクト名
+  ProjectName:
+    Type: String
+    Default: melon
+
+  # デプロイ環境
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, prd]
+
+################################
+###  Conditions
+################################
+Conditions:
+  IsProd: !Equals 
+    - !Ref Environment
+    - prd
+
+################################
+###  グローバル
+################################
+Globals:
+  Function:
+    Runtime: python3.12
+    Handler: app.lambda_handler
+    Tracing: Active
+    Layers:
+      - arn:aws:lambda:ap-northeast-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:77 #AWS公式 LambdaPowertools
+      - !Ref CommonLayer
+    Environment:
+      Variables:
+        POWERTOOLS_SERVICE_NAME: !Sub "${ProjectName}"
+        WORKFLOW_EVENT_BUS_NAME: !Ref WorkflowEventBus
+Resources:
+  ################################
+  ###  API Gateway
+  ###  論文生成ワークフロー実行API
+  ################################ 
+  FakeThesisGeneratorApi:
+    Type: AWS::Serverless::Api
+    DependsOn:
+      - ApiGatewayRole
+    Properties:
+      StageName: !Ref Environment
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true    # X-Ray トレーシングを有効化
+      MethodSettings:
+        - LoggingLevel: INFO  # CloudWatch Logsを有効化
+          ResourcePath: "/*"  # 全てのリソースパス
+          HttpMethod: "*"     # 全てのHTTPメソッド
+          MetricsEnabled: false
+          DataTraceEnabled: false
+      Auth:
+        ApiKeyRequired: true
+        UsagePlan:
+          UsagePlanName: !Sub "${ProjectName}_${Environment}_usage_plan"
+          CreateUsagePlan: PER_API
+          Description: !Sub "Usage plan for fake thesis generator API (${Environment})"
+          Quota:
+            Limit: !If 
+              - IsProd
+              - 10000    # 本番環境の制限
+              - 1000     # 開発環境の制限
+            Period: MONTH
+          Throttle:
+            BurstLimit: !If 
+              - IsProd
+              - 20       # 本番環境の制限
+              - 10       # 開発環境の制限
+            RateLimit: !If 
+              - IsProd
+              - 10       # 本番環境の制限
+              - 5        # 開発環境の制限
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: !Sub "Fake Thesis Generator API (${Environment})"
+          version: "1.0.0"
+        securityDefinitions:
+          api_key:
+            type: apiKey
+            name: x-api-key
+            in: header
+        paths:
+          /workflow:
+            post:
+              summary: "論文生成ワークフローを開始"
+              responses:
+                "202":
+                  description: "Workflow request accepted"
+                  schema:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                      event_id:
+                        type: string
+                "400":
+                  description: "Bad request"
+                  schema:
+                    type: object
+                    properties:
+                      error:
+                        type: string
+                      message:
+                        type: string
+              x-amazon-apigateway-integration:
+                credentials: !GetAtt ApiGatewayRole.Arn
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:events:action/PutEvents
+                httpMethod: POST
+                type: aws
+                passthroughBehavior: NEVER
+                requestParameters:
+                  integration.request.header.X-Amz-Target: "'AWSEvents.PutEvents'"
+                  integration.request.header.Content-Type: "'application/x-amz-json-1.1'"
+                requestTemplates:
+                  application/json: 
+                    Fn::Sub: | 
+                      #set($inputRoot = $input.path('$'))
+                      {
+                        "Entries": [
+                          {
+                            "Source": "start.main.workflow",
+                            "DetailType": "StartMainWorkflow",
+                            "EventBusName": "${WorkflowEventBus}",
+                            "Detail": "{\"request_id\":\"$context.requestId\",\"body\":{\"workflow_id\":\"$inputRoot.workflow_id\",\"title\":\"$inputRoot.title\",\"category\":\"$inputRoot.category\",\"order\":1,\"status\":\"success\",\"state_name\":\"api-gateway\"}}"
+                          }
+                        ]
+                      }
+                responses:
+                  "200":
+                    statusCode: "202"
+                    responseTemplates:
+                      application/json: |
+                        #set($inputRoot = $input.path('$'))
+                        {
+                          "message": "Workflow started successfully",
+                          "event_id": "$inputRoot.Entries[0].EventId"
+                        }
+                  "400":
+                    statusCode: "400"
+                    responseTemplates:
+                      application/json: |
+                        #set($inputRoot = $input.path('$'))
+                        {
+                          "error": "$inputRoot.Entries[0].ErrorCode",
+                          "message": "$inputRoot.Entries[0].ErrorMessage"
+                        }
+              security:
+                - api_key: []
+
+  ################################
+  ###  WAF WebACL
+  ###  本番環境用WAF
+  ################################
+  ApiGatewayWebACL:
+    Type: AWS::WAFv2::WebACL
+    Condition: IsProd
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_web_acl"
+      Scope: REGIONAL
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: !Sub "${ProjectName}_${Environment}_web_acl_metric"
+      Rules:
+        - Name: AWS-AWSManagedRulesCommonRuleSet
+          Priority: 0
+          OverrideAction:
+            None: {}
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: AWSManagedRulesCommonRuleSet
+
+  ################################
+  ###  WAF WebACL Association
+  ###  API GatewayとWAFの関連付け
+  ################################
+  ApiGatewayWebACLAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Condition: IsProd
+    DependsOn:
+      - FakeThesisGeneratorApi
+    Properties:
+      ResourceArn: !Join
+        - ''
+        - - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/"
+          - !Ref FakeThesisGeneratorApi
+          - "/stages/"
+          - !Ref FakeThesisGeneratorApi.Stage
+      WebACLArn: !GetAtt ApiGatewayWebACL.Arn
+
+  ################################
+  ###  IAM Role
+  ###  API Gateway用実行ロール
+  ################################ 
+  ApiGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_api_gateway_role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ApiGatewayExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # EventBridge権限
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource: !GetAtt WorkflowEventBus.Arn
+
+              # X-Ray権限
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                  - xray:GetSamplingStatisticSummaries
+                Resource: "*"
+  
+  ################################
+  ###  IAM Role
+  ###  EventBridge用実行ロール
+  ################################ 
+  EventBridgeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_event_bridge_role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EventBridgeExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # StepFunctions実行権限
+              - Effect: Allow
+                Action:
+                  - states:StartExecution
+                Resource: 
+                  - !GetAtt MainWorkflowStateMachine.Arn
+                  - !GetAtt SubWorkflowStateMachine.Arn
+              
+              # Lambda実行権限
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt WorkflowProgressRecorder.Arn
+
+  ################################
+  ###  EventBridge Bus
+  ###  ワークフロー実行用バス
+  ################################ 
+  WorkflowEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_workflow_event_bus"
+  
+  ################################
+  ###  EventBridge Rule
+  ###  メインワークフロー実行用ルール
+  ################################ 
+  StartMainWorkflowEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_start_main_workflow_event_rule"
+      EventBusName: !Ref WorkflowEventBus
+      EventPattern:
+        source:
+          - "start.main.workflow" # メインワークフロー実行
+        detail-type:
+          - "StartMainWorkflow"
+      Targets:
+        - Arn: !GetAtt MainWorkflowStateMachine.Arn
+          Id: "StartMainWorkflowTarget"
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          InputTransformer:
+            InputPathsMap: # Stepfunctionsへの入力パラメータ
+              workflow_id: $.detail.body.workflow_id
+              title: $.detail.body.title
+              category: $.detail.body.category
+            InputTemplate: |
+              {
+                "workflow_id": <workflow_id>,
+                "title": <title>,
+                "category": <category>
+              }
+  
+  ################################
+  ###  EventBridge Rule
+  ###  サブワークフロー実行用ルール
+  ################################
+  StartSubWorkflowEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_start_sub_workflow_event_rule"
+      EventBusName: !Ref WorkflowEventBus
+      EventPattern:
+        source:
+          - "start.sub.workflow" # サブワークフロー実行
+        detail-type:
+          - "StartSubWorkflow"
+      Targets:
+        - Arn: !GetAtt SubWorkflowStateMachine.Arn
+          Id: "StartSubWorkflowTarget"
+          RoleArn: !GetAtt EventBridgeRole.Arn
+          InputTransformer:  # コメントアウトされているが必要
+            InputPathsMap:
+              task_token: $.detail.body.task_token
+              payload: $.detail.body.payload
+            InputTemplate: |
+              {
+                "task_token": <task_token>,
+                "payload": <payload>
+              }
+            
+  
+  ################################
+  ###  EventBridge Rule
+  ###  進捗更新用ルール
+  ################################ 
+  WorkflowProgressRecordEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_workflow_progress_record_event_rule"
+      State: ENABLED
+      EventBusName: !Ref WorkflowEventBus
+      EventPattern:
+        source:
+          - "start.main.workflow" # メインワークフロー開始時の進捗更新
+          - "start.sub.workflow" # サブワークフローの開始時の進捗更新
+          - "workflow.progress" # 進捗更新
+        detail-type:
+          - "StartMainWorkflow"
+          - "StartSubWorkflow"
+          - "WorkflowProgress"
+      Targets:
+        # 進捗更新関数へのターゲット
+        - Arn: !GetAtt WorkflowProgressRecorder.Arn
+          Id: "WorkflowProgressRecordTarget"
+          InputTransformer:
+            InputPathsMap: # 進捗更新関数への入力パラメータ
+              workflow_id: $.detail.body.workflow_id
+              request_id: $.detail.request_id
+              order: $.detail.body.order
+              status: $.detail.body.status
+              state_name: $.detail.body.state_name
+            InputTemplate: |
+              {
+                "workflow_id": <workflow_id>,
+                "request_id": <request_id>,
+                "order": <order>,
+                "status": <status>,
+                "state_name": <state_name>
+              }
+
+        # CloudWatch Logsのロググループにログを送信するためのターゲット
+        - Arn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/events/${ProjectName}_${Environment}_workflow_progress_event"
+          Id: "WorkflowProgressEventLogTarget"
+
+  #################################
+  ###  Lambda パーミッション
+  ###  イベントからLambdaを呼び出す権限
+  #################################
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: WorkflowProgressRecorder
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt WorkflowProgressRecordEventRule.Arn
+  
+  #################################
+  ###  CloudWatch リソースベースポリシー
+  ###  イベントからLambdaを呼び出す権限
+  #################################
+  LogsResourcePolicyForEventsToStoreLogEvents:
+    Type: AWS::Logs::ResourcePolicy
+    Properties:
+      PolicyName: !Sub "${ProjectName}_${Environment}_logs_resource_policy_for_events_to_store_log_events"
+      PolicyDocument: !Sub "{ \"Version\": \"2012-10-17\", \"Statement\": [ { \"Sid\": \"TrustEventsToStoreLogEvent\", \"Effect\": \"Allow\", \"Principal\": { \"Service\": \"events.amazonaws.com\" }, \"Action\": [ \"logs:CreateLogStream\", \"logs:PutLogEvents\" ], \"Resource\": \"arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:*\" } ] }"
+
+  ################################
+  ###  Lambda Layer
+  ###  Lambda共通レイヤー
+  ################################ 
+  CommonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "${ProjectName}_${Environment}_fake_thesis_common_layer"
+      Description: Common utilities and validators and etc
+      ContentUri: layers/common/
+      CompatibleRuntimes:
+        - python3.12
+    Metadata:
+      BuildMethod: python3.12
+      RetentionPolicy: Delete
+
+  ################################
+  ###  Lambda
+  ###  論文フォーマット取得関数
+  ################################ 
+  GetFakeThesisTitleCategoryFormat:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_get_fake_thesis_title_category_format"
+      CodeUri: functions/features/get_fake_thesis_title_category_format/
+      Description: "論文フォーマット取得関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
+      Environment:
+        Variables:
+          DYNAMO_DB_CATEGORY_MASTER_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_CATEGORY_MASTER_TABLE}}"
+
+  ################################
+  ###  Lambda
+  ###  フォーマットからプロンプトを生成する関数
+  ################################ 
+  GeneratePromptParameters:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_prompt_parameters"
+      CodeUri: functions/features/generate_prompt_parameters/
+      Description: "プロンプトパラメータ生成関数" #関数の説明
+      MemorySize: 512 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+
+  ################################
+  ###  Lambda
+  ###  論文データ・文章生成関数
+  ################################ 
+  RequestGenerativeAiModelApi:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_request_generative_ai_model_api"
+      CodeUri: functions/features/request_generative_ai_model_api/
+      Description: "論文データ・文章生成関数" #関数の説明
+      MemorySize: 512 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          ANTHROPIC_API_URL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_URL}}"
+          ANTHROPIC_API_KEY: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_KEY}}"
+          ANTHROPIC_API_MODEL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_MODEL}}"
+          
+  ################################
+  ###  Lambda
+  ###  論文データのスキーマバリデーション関数
+  ################################
+  FakeThesisDataValidation:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_fake_thesis_data_validation"
+      CodeUri: functions/features/fake_thesis_data_validation/
+      Description: "論文データのスキーマバリデーション関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+
+  ################################
+  ###  Lambda
+  ###  論文データ修正関数
+  ################################ 
+  FixFakeThesisData:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_fix_fake_thesis_data"
+      CodeUri: functions/features/fix_fake_thesis_data/
+      Description: "論文データ修正関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          ANTHROPIC_API_URL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_URL}}"
+          ANTHROPIC_API_KEY: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_KEY}}"
+          ANTHROPIC_API_MODEL: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/ANTHROPIC_API_MODEL}}"
+
+  ################################
+  ###  Lambda
+  ###  グラフデータの作成
+  ################################ 
+  GenerateFakeGraph:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_graph"
+      CodeUri: functions/features/generate_fake_graph/
+      Description: "グラフデータの作成関数" 
+      MemorySize: 1024 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-numpy:8 #Klayers numpy
+      Environment:
+        Variables:
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
+  
+  
+  ################################
+  ###  Lambda
+  ###  表データの作成
+  ################################ 
+  GenerateFakeTable:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_table"
+      CodeUri: functions/features/generate_fake_table/
+      Description: "表データ生成関数" #関数の説明
+      MemorySize: 1024 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
+
+  
+  ################################
+  ###  Lambda
+  ###  数式データの作成
+  ################################ 
+  GenerateFakeFormula:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_generate_fake_formula"
+      CodeUri: functions/features/generate_fake_formula/
+      Description: "数式データ生成関数" #関数の説明
+      MemorySize: 512 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
+  
+  
+  ################################
+  ###  Lambda
+  ###  PDF変換関数
+  ################################ 
+  ConvertToPdf:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_convert_to_pdf"
+      CodeUri: functions/features/convert_to_pdf/
+      Description: "PDF変換関数" #関数の説明
+      MemorySize: 512 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          S3_BUCKET: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/S3_BUCKET}}"
+
+  ################################
+  ###  Lambda
+  ###  ワークフローコールバック関数
+  ################################ 
+  SendWorkflowCallback:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_send_workflow_callback"
+      CodeUri: functions/stepfunctions/send_workflow_callback/
+      Description: "サブワークフローの結果をコールバックする関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+  
+  ################################
+  ###  Lambda
+  ###  進捗更新関数
+  ################################ 
+  WorkflowProgressRecorder:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_workflow_progress_recorder"
+      CodeUri: functions/stepfunctions/workflow_progress_recorder/
+      Description: "各ステートの進捗を更新する関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Environment:
+        Variables:
+          DYNAMO_DB_WORKFLOW_PROGRESS_TABLE: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/DYNAMO_DB_WORKFLOW_PROGRESS_TABLE}}"
+  
+  ################################
+  ###  Lambda
+  ###  進捗通知関数
+  ################################ 
+  WorkflowProgressNotifier:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${ProjectName}_${Environment}_workflow_progress_notifier"
+      CodeUri: functions/stepfunctions/workflow_progress_notifier/
+      Description: "各ステートの進捗を通知する関数" #関数の説明
+      MemorySize: 256 # メモリサイズ (MB)
+      Timeout: 900 # タイムアウト(秒)
+      Role: !GetAtt LambdaExecutionRole.Arn # IAMロールの指定
+      Layers:
+        - arn:aws:lambda:ap-northeast-1:770693421928:layer:Klayers-p312-requests:8 #Klayers のrequests
+      Environment:
+        Variables:
+          NEXTJS_API_ENDPOINT: !Sub "{{resolve:ssm:/${ProjectName}/${Environment}/NEXTJS_API_ENDPOINT}}"
+      Events:
+        DynamoDBStreamEvent:
+          Type: DynamoDB
+          Properties:
+            BatchSize: 1
+            FilterCriteria:
+              Filters:
+                - Pattern: '{"eventName": ["INSERT"]}'  # INSERT イベントのみをトリガー
+            Stream: !GetAtt WorkflowProgressManagementTable.StreamArn
+            StartingPosition: LATEST #最新レコードのみ処理
+
+  ################################
+  ### IAM Role 
+  ### Lambda実行ロール
+  ################################ 
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_lambda_role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # CloudWatch Logs権限
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+
+              # S3権限
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:ListBucket
+                  - s3:PutObject
+                  - s3:DeleteObject
+                Resource:
+                  - !Sub arn:aws:s3:::${FakeThesisBucket}  
+                  - !Sub arn:aws:s3:::${FakeThesisBucket}/*  
+
+              # DynamoDB権限  
+              - Effect: Allow
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchGetItem
+                  - dynamodb:BatchWriteItem
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !GetAtt MasterFakeThesisCategoryFormatsTable.Arn
+                  - !GetAtt WorkflowProgressManagementTable.Arn
+                  - !GetAtt WorkflowHistoriesTable.Arn
+
+              # DynamoDB Stream権限
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeStream
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:ListStreams
+                Resource: 
+                  - !GetAtt WorkflowProgressManagementTable.StreamArn
+
+              # SQS権限
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributess
+                Resource: 
+                  - !GetAtt WorkflowCallbackTriggerQueue.Arn
+              
+              # StepFunctions権限
+              - Effect: Allow
+                Action:
+                  - states:SendTaskSuccess
+                  - states:SendTaskFailure
+                Resource: "*"
+              
+              # EventBridge権限
+              - Effect: Allow
+                Action:
+                  - events:PutEvents
+                Resource: !GetAtt WorkflowEventBus.Arn
+
+              # X-Ray権限
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+
+  ################################
+  ###  DynamoDB
+  ###  論文フォーマットマスターテーブル
+  ################################ 
+  MasterFakeThesisCategoryFormatsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${ProjectName}_${Environment}_master_fake_thesis_category_formats_table"
+      AttributeDefinitions:
+        - AttributeName: category_type_en
+          AttributeType: S
+        - AttributeName: category_type_jp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: category_type_en
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: "category_title_jp_index_gsi"
+          KeySchema:
+            - AttributeName: "category_type_jp"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      BillingMode: PROVISIONED
+      # BillingMode: PAY_PER_REQUEST
+      # OnDemandThroughput:
+      #    MaxReadRequestUnits: 1000
+      #    MaxWriteRequestUnits: 1000
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      DeletionProtectionEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+    DeletionPolicy: Retain
+  
+  ################################
+  ###  DynamoDB
+  ###  ワークフロー履歴テーブル
+  ################################ 
+  WorkflowHistoriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${ProjectName}_${Environment}_workflow_histories_table"
+      AttributeDefinitions:
+        - AttributeName: workflow_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: workflow_id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      DeletionProtectionEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+    DeletionPolicy: Retain
+  
+
+  ################################
+  ###  DynamoDB
+  ###  ワークフロー進捗管理テーブル
+  ################################ 
+  WorkflowProgressManagementTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${ProjectName}_${Environment}_workflow_progress_management_table"
+      StreamSpecification:
+        StreamViewType: "NEW_AND_OLD_IMAGES"
+      AttributeDefinitions:
+        - AttributeName: workflow_id
+          AttributeType: S
+        - AttributeName: timestamp#order
+          AttributeType: S
+        - AttributeName: state_name
+          AttributeType: S
+      KeySchema:
+        - AttributeName: workflow_id
+          KeyType: HASH
+        - AttributeName: timestamp#order
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: "state_name_index_gsi"
+          KeySchema:
+            - AttributeName: "state_name"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1
+            WriteCapacityUnits: 1
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      DeletionProtectionEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+    DeletionPolicy: Retain
+
+  ################################
+  ###  S3
+  ###  論文データ保管用バケット
+  ################################ 
+  FakeThesisBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-${Environment}-fake-thesis-bucket"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: "Suspended" # バージョニングなし設定
+    DeletionPolicy: Retain # バケットを削除せず保持
+    UpdateReplacePolicy: Retain
+
+  ################################
+  ###  SQS
+  ###  ワークフロー間バッファ標準キュー
+  ################################ 
+  WorkflowCallbackTriggerQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: !Sub "${ProjectName}_${Environment}_workflow_callback_trigger_queue"
+
+
+  ################################
+  ###  EventBridge Pipes
+  ###  サブワークフローPipes
+  ################################ 
+  SqsToStepFunctionsPipe:
+    Type: AWS::Pipes::Pipe
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_sqs_to_stepfunctions_pipe"
+      RoleArn: !GetAtt EventBridgePipesRole.Arn
+      Source: !GetAtt WorkflowCallbackTriggerQueue.Arn
+      SourceParameters:
+        SqsQueueParameters:
+          BatchSize: 1
+        FilterCriteria:
+          Filters:
+            - Pattern: |
+               {
+                  "body": {
+                    "task_token": [{
+                      "exists": true
+                    }],
+                    "payload": {
+                      "sections_format": {
+                        "category_type_jp": [{
+                          "exists": true
+                        }],
+                        "category_type_en": [{
+                          "exists": true
+                        }]
+                      },
+                      "system_prompt": [{
+                        "exists": true
+                      }],
+                      "title": [{
+                        "exists": true
+                      }],
+                      "workflow_id": [{
+                        "exists": true
+                      }]
+                    }
+                  }
+                }
+
+
+      # Target: !Ref SubWorkflowStateMachine
+      # TargetParameters:
+      #   StepFunctionStateMachineParameters:
+      #     InvocationType: FIRE_AND_FORGET
+      #   InputTemplate: '{"task_token": <$.body.task_token>, "payload": <$.body.payload>}'
+      Target: !GetAtt WorkflowEventBus.Arn
+      TargetParameters:
+        EventBridgeEventBusParameters:
+          DetailType: "StartSubWorkflow"
+          Source: "start.sub.workflow"
+        InputTemplate: |
+          {
+            "request_id": null,
+            "body": {
+              "workflow_id": "<$.body.payload.workflow_id>",
+              "order": 4,
+              "status": "success",
+              "state_name": "callback-queue",
+              "task_token": <$.body.task_token>,
+              "payload": <$.body.payload>
+            }
+          }
+
+  
+  ################################
+  ### IAM Role 
+  ### EventBridgePipesRole
+  ################################ 
+  EventBridgePipesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_eventbridge_pipes_role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: pipes.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub "${ProjectName}_${Environment}_eventbridge_pipes_policy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt WorkflowCallbackTriggerQueue.Arn
+              
+              - Effect: Allow
+                Action:
+                  - events:PutEvents  # EventBusへのPutEvents権限が必要
+                Resource: !GetAtt WorkflowEventBus.Arn
+
+  ################################
+  ### Stepfunctions 
+  ### メインワークフロー
+  ################################ 
+  MainWorkflowStateMachine:
+    Type: AWS::Serverless::StateMachine
+    DependsOn: StepFunctionsExecutionRole 
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_main_workflow_state_machine"
+      Role: !GetAtt StepFunctionsExecutionRole.Arn 
+      Tracing:
+        Enabled: True  # X-Ray トレーシングを有効化
+      Definition: 
+        StartAt: GetFakeThesisTitleCategoryFormatTask
+        States:
+          GetFakeThesisTitleCategoryFormatTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref GetFakeThesisTitleCategoryFormat
+              Payload:
+                "workflow_id.$": "$.workflow_id"
+                "category.$": "$.category"
+            ResultSelector:
+              sections_format.$: "$.Payload.body.sections_format"
+            ResultPath: "$.raw_format"
+            Next: GeneratePromptParametersTask
+
+          GeneratePromptParametersTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref GeneratePromptParameters
+              Payload:
+                "workflow_id.$": "$.workflow_id"
+                "title.$": "$.title"
+                "sections_format.$": "$.raw_format.sections_format"
+            ResultSelector:
+              system_prompt.$: "$.Payload.body.system_prompt"
+            ResultPath: "$.prompt"
+            Next: StartSubWorkflowAndWaitForCallback
+
+          StartSubWorkflowAndWaitForCallback:
+            Type: Task
+            Resource: "arn:aws:states:::sqs:sendMessage.waitForTaskToken"
+            Parameters:
+              QueueUrl: !Ref WorkflowCallbackTriggerQueue
+              MessageBody:
+                task_token.$: "$$.Task.Token"
+                payload:
+                  workflow_id.$: "$.workflow_id"
+                  title.$: "$.title"
+                  system_prompt.$: "$.prompt.system_prompt"
+                  sections_format.$: "$.raw_format.sections_format"
+            ResultPath: "$.sub_workflow_result"
+            OutputPath: "$.sub_workflow_result"
+            TimeoutSeconds: 300 #タイムアウト5分
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.sub_workflow_error"
+                Next: FailState
+            Next: ParallelProcessingState
+
+          ParallelProcessingState:
+            Type: Parallel
+            ResultPath: "$.data_result"
+            Branches:
+              - StartAt: GenerateFakeGraphTask
+                States:
+                  GenerateFakeGraphTask:
+                    Type: Task
+                    Resource: "arn:aws:states:::lambda:invoke"
+                    Parameters:
+                      FunctionName: !Ref GenerateFakeGraph
+                      Payload:
+                        "workflow_id.$": "$.workflow_id"
+                        "graphs.$": "$.data.graphs"
+                    OutputPath: "$.Payload.body"
+                    End: true
+
+              - StartAt: GenerateFakeTableTask
+                States:
+                  GenerateFakeTableTask:
+                    Type: Task
+                    Resource: "arn:aws:states:::lambda:invoke"
+                    Parameters:
+                      FunctionName: !Ref GenerateFakeTable
+                      Payload:
+                        "workflow_id.$": "$.workflow_id"
+                        "tables.$": "$.data.tables"
+                    OutputPath: "$.Payload.body"
+                    End: true
+
+              - StartAt: GenerateFakeFormulaTask
+                States:
+                  GenerateFakeFormulaTask:
+                    Type: Task
+                    Resource: "arn:aws:states:::lambda:invoke"
+                    Parameters:
+                      FunctionName: !Ref GenerateFakeFormula
+                      Payload:
+                        "workflow_id.$": "$.workflow_id"
+                        "formulas.$": "$.data.formulas"
+                    OutputPath: "$.Payload.body"
+                    End: true
+            Next: ConvertToPdfTask
+
+          ConvertToPdfTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            
+            Parameters:
+              FunctionName: !Ref ConvertToPdf
+              Payload:
+                "workflow_id.$": "$.workflow_id"
+                "title.$": "$.title"
+                "abstract.$": "$.abstract"
+                "sections_format.$": "$.sections_format"
+            ResultPath: null
+            End: true
+
+          FailState:
+            Type: Fail
+            CausePath: "$.sub_workflow_error.Cause"
+            ErrorPath: "$.sub_workflow_error.Error"
+
+
+
+  ################################
+  ### Stepfunctions 
+  ### サブワークフロー
+  ################################ 
+  SubWorkflowStateMachine:
+    Type: AWS::Serverless::StateMachine
+    DependsOn: StepFunctionsExecutionRole 
+    Properties:
+      Name: !Sub "${ProjectName}_${Environment}_sub_workflow_state_machine"
+      Role: !GetAtt StepFunctionsExecutionRole.Arn 
+      Tracing:
+        Enabled: True  # X-Ray トレーシングを有効化
+      Definition:
+        StartAt: InitializeExtractFirstItemPass
+        States:
+          # SQSメッセージ配列の１つ目のみ入手
+          InitializeExtractFirstItemPass:
+            Type: Pass
+            Parameters:
+              "task_token.$": "$.task_token"
+              "payload.$": "$.payload"
+            ResultPath: "$"
+            Next: RetryCountPass
+
+          # バリデーションリトライカウント変数用意
+          RetryCountPass:
+            Type: Pass
+            Assign:
+              "retry_count" : 0
+            Next: RequestGenerativeAiModelApiTask
+
+          # 生成AI APIリクエスト関数実行
+          RequestGenerativeAiModelApiTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref RequestGenerativeAiModelApi
+              Payload:
+                "workflow_id.$": "$.payload.workflow_id"
+                "title.$": "$.payload.title"
+                "system_prompt.$": "$.payload.system_prompt"
+                "sections_format.$": "$.payload.sections_format"
+            ResultSelector: 
+              "workflow_id.$" : "$.Payload.body.workflow_id"
+              "title.$" : "$.Payload.body.title"
+              "abstract.$" : "$.Payload.body.abstract"
+              "sections_format.$" : "$.Payload.body.sections_format"
+            ResultPath: "$.payload"
+            Next: FakeThesisDataValidationTask
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.payload.error"
+                Next: SendFailureCallbackTask
+
+          # 生成データのバリデーション関数実行
+          FakeThesisDataValidationTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref FakeThesisDataValidation
+              Payload:
+                "workflow_id.$": "$.payload.workflow_id"
+                "sections_format.$": "$.payload.sections_format"
+            ResultSelector: 
+              "graphs.$" : "$.Payload.body.graphs"
+              "tables.$" : "$.Payload.body.tables"
+              "formulas.$" : "$.Payload.body.formulas"
+            ResultPath: "$.payload.data"
+            Next: SendSuccessCallbackTask
+            Catch:
+              - ErrorEquals:
+                  - "SchemaValidationError"
+                ResultPath: "$.payload.error"
+                Next: IncrementRetryCountPass
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.payload.error"
+                Next: SendFailureCallbackTask
+
+          # リトライカウントをインクリメント
+          IncrementRetryCountPass:
+            Type: Pass
+            Assign:
+              "retry_count.$": "States.MathAdd($retry_count, 1)"
+            Next: CheckRetryCountChoice
+
+          # リトライカウントが3回を上回っているかチェック
+          CheckRetryCountChoice:
+            Type: Choice
+            Choices:
+              - Variable: "$retry_count"
+                NumericGreaterThanEquals: 3
+                Next: MaxValidationRetryAttemptsExceededPass
+            Default: FixFakeThesisDataTask
+
+          # バリデーションエラーを修正するリクエスト関数実行
+          FixFakeThesisDataTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref FixFakeThesisData
+              Payload:
+                "retry_count.$": "$retry_count"
+                "workflow_id.$": "$.payload.workflow_id"
+                "title.$": "$.payload.title"
+                "abstract.$": "$.payload.abstract"
+                "sections_format.$": "$.payload.sections_format"
+                "validation_error.$": "$.payload.error"
+            ResultSelector: 
+              "workflow_id.$" : "$.Payload.body.workflow_id"
+              "title.$" : "$.Payload.body.title"
+              "abstract.$" : "$.Payload.body.abstract"
+              "sections_format.$" : "$.Payload.body.sections_format"
+            ResultPath: "$.payload"
+            Next: FakeThesisDataValidationTask
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.payload.error"
+                Next: SendFailureCallbackTask
+          
+          # バリデーション最大試行回数超過
+          MaxValidationRetryAttemptsExceededPass:
+            Type: Pass
+            Parameters:
+              "Error": "MaxValidationRetryAttemptsExceededError" #エラー内容の上書き
+              "Cause.$": "$.payload.error.Cause"
+            ResultPath: "$.payload.error"
+            Next: SendFailureCallbackTask
+
+          # メインワークフローにTaskTokenと成功をコールバックする
+          SendSuccessCallbackTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref SendWorkflowCallback
+              Payload:
+                "workflow_id.$": "$.payload.workflow_id"
+                "task_token.$": "$.task_token"
+                "status": "SUCCEEDED"
+                "payload.$": "$.payload"
+            End: true
+            Catch:
+              - ErrorEquals:
+                  - "States.ALL"
+                ResultPath: "$.payload.error"
+                Next: SendFailureCallbackTask
+
+          # メインワークフローにTaskTokenと失敗をコールバックする
+          SendFailureCallbackTask:
+            Type: Task
+            Resource: "arn:aws:states:::lambda:invoke"
+            Parameters:
+              FunctionName: !Ref SendWorkflowCallback
+              Payload:
+                "workflow_id.$": "$.payload.workflow_id"
+                "task_token.$": "$.task_token"
+                "status": "FAILED"
+                "error.$": "$.payload.error"
+            End: true
+
+  ################################
+  ### IAM Role 
+  ### StepfunctionsExecutionRole
+  ################################ 
+  StepFunctionsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}_${Environment}_stepfunctions_execution_role"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub "${ProjectName}_${Environment}_stepfunctions_execution_policy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource:  
+                  - !GetAtt WorkflowCallbackTriggerQueue.Arn
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                Resource: "*"
+  

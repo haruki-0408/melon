@@ -1,0 +1,5 @@
+anthropic==0.40.0
+sympy==1.13.3
+matplotlib==3.9.2
+reportlab==4.2.5
+svglib==1.5.1

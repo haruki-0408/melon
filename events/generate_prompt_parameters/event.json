@@ -1,0 +1,54 @@
+{
+    "workflow_id": "sample_historical_analysis",
+    "title": "ローマ帝国はWi-Fiを発明していた:失われた通信ネットワークの再評価",
+    "sections_format": {
+        "category_type_jp": "歴史的解析",
+        "category_type_en": "historical_analysis",
+        "sections": [
+            {
+                "sub_sections": [
+                    {
+                        "title_name": "歴史的背景の紹介"
+                    },
+                    {
+                        "title_name": "現代とのつながりや影響"
+                    }
+                ],
+                "title_name": "はじめに"
+            },
+            {
+                "sub_sections": [
+                    {
+                        "title_name": "具体的な出来事や現象の説明"
+                    },
+                    {
+                        "title_name": "その影響と結果"
+                    }
+                ],
+                "title_name": "歴史的解析"
+            },
+            {
+                "sub_sections": [
+                    {
+                        "title_name": "歴史的出来事が現代にどのように影響しているか"
+                    },
+                    {
+                        "title_name": "現代の問題とその関連性の分析"
+                    }
+                ],
+                "title_name": "現代への影響"
+            },
+            {
+                "sub_sections": [
+                    {
+                        "title_name": "歴史から学んだ教訓"
+                    },
+                    {
+                        "title_name": "現代社会への応用"
+                    }
+                ],
+                "title_name": "結論"
+            }
+        ]
+    }
+}

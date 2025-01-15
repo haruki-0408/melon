@@ -1,0 +1,14 @@
+# テスト実行に必要なパッケージ
+pytest==8.3.4
+pytest-mock==3.12.0
+moto==5.0.3
+boto3==1.34.69
+aws-lambda-powertools==2.32.0
+aws-xray-sdk==2.14.0
+fastjsonschema==2.19.1
+requests
+anthropic==0.40.0
+sympy==1.13.3
+matplotlib==3.9.2
+reportlab==4.2.5
+svglib==1.5.1

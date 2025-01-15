@@ -1,0 +1,368 @@
+[
+  {
+    "title_name": "はじめに",
+    "sub_sections": [
+      {
+        "title_name": "技術の背景と目的",
+        "text": "近年、エネルギー資源の枯渇と環境問題が深刻化しており、持続可能なエネルギーソリューションの開発が急務となっています。我々の研究は、**野菜をエネルギー源とする永久機関**の実現を目指しています。この技術は、植物の光合成能力を活用し、無尽蔵のクリーンエネルギーを供給することを可能にします。\n\n[INSERT_FORMULA_1_HERE]\n\n本研究の目的は、野菜を利用したエネルギー生成の効率化と、その持続可能性を評価することです。",
+        "graphs": [],
+        "tables": [],
+        "formulas": [
+          {
+            "id": "FORMULA_1",
+            "latex_code": "E = mc^2",
+            "description": "エネルギーと質量の関係を示す有名な式であり、野菜の質量から得られるエネルギーを計算するために使用します。",
+            "parameters": [
+              {
+                "symbol": "E",
+                "description": "生成されるエネルギー (ジュール)"
+              },
+              {
+                "symbol": "m",
+                "description": "野菜の質量 (キログラム)"
+              },
+              {
+                "symbol": "c",
+                "description": "光の速度 (約3.00×10^8 m/s)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title_name": "既存技術との関係や差別化ポイント",
+        "text": "これまでの再生可能エネルギー技術として、太陽光発電や風力発電が広く研究されています。しかし、これらは天候や場所に依存するという課題があります。我々の提案する野菜エネルギー永久機関は、室内栽培による安定したエネルギー供給が可能であり、従来技術と比較して**エネルギー効率が50%向上**します。\n\n[INSERT_TABLE_1_HERE]\n\nさらに、我々の技術は低コストでの大量生産が可能であり、グローバルなエネルギー需要に応えることが期待できます。",
+        "graphs": [],
+        "formulas": [],
+        "tables": [
+          {
+            "id": "TABLE_1",
+            "table_type": "comparison",
+            "title": "既存技術とのエネルギー効率比較",
+            "comparison_data": {
+              "太陽光発電": {
+                "mean": 20,
+                "std": 2,
+                "min": 18,
+                "max": 22
+              },
+              "風力発電": {
+                "mean": 30,
+                "std": 3,
+                "min": 27,
+                "max": 33
+              },
+              "野菜エネルギー機関": {
+                "mean": 45,
+                "std": 2.5,
+                "min": 42,
+                "max": 47
+              }
+            },
+            "style": {
+              "font_size": 10,
+              "header_bg_color": "#D3D3D3",
+              "header_font_color": "#000000",
+              "cell_bg_color": "#FFFFFF",
+              "cell_font_color": "#000000",
+              "border_color": "#000000",
+              "border_width": 1,
+              "col_widths": [100, 50, 50, 50, 50]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title_name": "提案理論・手法",
+    "sub_sections": [
+      {
+        "title_name": "新技術と発明の詳細説明",
+        "text": "我々の技術は、特殊な野菜であるエナジーキャベツを用いてエネルギーを生成します。エナジーキャベツは遺伝子改良により光合成効率が高められており、そのエネルギー変換効率は従来の植物を大きく上回ります。\n\n[INSERT_GRAPH_1_HERE]\n\nエネルギー生成プロセスは以下の式で表されます。\n\n[INSERT_FORMULA_2_HERE]",
+        "graphs": [
+          {
+            "id": "GRAPH_1",
+            "figure_width": 6,
+            "figure_height": 4,
+            "title": "エナジーキャベツの光合成効率",
+            "xlabel": "光強度 (μmol/m²/s)",
+            "ylabel": "エネルギー生成量 (W)",
+            "grid": true,
+            "legend": true,
+            "charts": [
+              {
+                "chart_type": "line",
+                "lines": [
+                  {
+                    "x": [100, 200, 300, 400, 500],
+                    "y": [10, 25, 45, 70, 100],
+                    "label": "エナジーキャベツ",
+                    "color": "green",
+                    "linestyle": "-",
+                    "marker": "o"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "formulas": [
+          {
+            "id": "FORMULA_2",
+            "latex_code": "P = \\eta \\times A \\times I",
+            "description": "エナジーキャベツのエネルギー生成量を計算する式です。",
+            "parameters": [
+              {
+                "symbol": "P",
+                "description": "生成されるエネルギー (ワット)"
+              },
+              {
+                "symbol": "\\eta",
+                "description": "変換効率"
+              },
+              {
+                "symbol": "A",
+                "description": "葉の表面積 (平方メートル)"
+              },
+              {
+                "symbol": "I",
+                "description": "入射光強度 (ワット/平方メートル)"
+              }
+            ]
+          }
+        ],
+        "tables": []
+      },
+      {
+        "title_name": "設計図・プロトタイプ・アルゴリズム",
+        "text": "エナジーキャベツを用いたエネルギー生成システムの設計図を以下に示します。\n\n[INSERT_GRAPH_2_HERE]\n\nエネルギー生成アルゴリズムは次の通りです。\n\n1. エナジーキャベツの栽培\n2. 光合成によるエネルギー生成\n3. エネルギーの収集と蓄積\n\n[INSERT_FORMULA_3_HERE]",
+        "graphs": [
+          {
+            "id": "GRAPH_2",
+            "figure_width": 6,
+            "figure_height": 4,
+            "title": "エネルギー生成システムの設計図",
+            "xlabel": "",
+            "ylabel": "",
+            "grid": false,
+            "legend": false,
+            "charts": [
+              {
+                "chart_type": "scatter",
+                "x": [1, 2, 3],
+                "y": [4, 5, 6],
+                "colors": [0.1, 0.5, 0.9],
+                "sizes": [100, 200, 300],
+                "alpha": 0.7,
+                "cmap": "viridis"
+              }
+            ]
+          }
+        ],
+        "formulas": [
+          {
+            "id": "FORMULA_3",
+            "latex_code": "E_{total} = \\int_{t_0}^{t_1} P dt",
+            "description": "時間にわたるエネルギー生成の総量を計算する積分式です。",
+            "parameters": [
+              {
+                "symbol": "E_{total}",
+                "description": "総エネルギー生成量 (ジュール)"
+              },
+              {
+                "symbol": "P",
+                "description": "瞬時のエネルギー生成量 (ワット)"
+              },
+              {
+                "symbol": "t",
+                "description": "時間 (秒)"
+              }
+            ]
+          }
+        ],
+        "tables": []
+      },
+      {
+        "title_name": "可能性の示唆",
+        "text": "この技術により、都市部でも持続可能なエネルギー供給が可能となり、エネルギー問題の解決に大きく寄与することが期待されます。\n\n[INSERT_GRAPH_3_HERE]\n\nさらに、他の植物への応用も検討することで、さらなるエネルギー効率の向上が見込まれます。",
+        "graphs": [
+          {
+            "id": "GRAPH_3",
+            "figure_width": 6,
+            "figure_height": 4,
+            "title": "エナジーキャベツの応用可能性",
+            "xlabel": "植物種",
+            "ylabel": "エネルギー生成効率 (%)",
+            "grid": true,
+            "legend": false,
+            "charts": [
+              {
+                "chart_type": "bar",
+                "categories": ["キャベツ", "レタス", "ほうれん草"],
+                "values": [85, 70, 65],
+                "colors": ["green", "lightgreen", "darkgreen"]
+              }
+            ]
+          }
+        ],
+        "formulas": [],
+        "tables": []
+      }
+    ]
+  },
+  {
+    "title_name": "結果と考察",
+    "sub_sections": [
+      {
+        "title_name": "新技術の実験結果",
+        "text": "エナジーキャベツを用いた実験により、従来のエネルギー生成方法と比較して大幅な効率向上が確認されました。\n\n[INSERT_TABLE_2_HERE]\n\nまた、長期間の安定したエネルギー供給が可能であることが示されました。",
+        "graphs": [],
+        "formulas": [],
+        "tables": [
+          {
+            "id": "TABLE_2",
+            "table_type": "basic",
+            "title": "エネルギー生成実験結果",
+            "columns": ["日付", "生成エネルギー (kWh)", "稼働時間 (h)"],
+            "rows": [
+              ["2023-01-01", 100, 24],
+              ["2023-01-02", 98, 24],
+              ["2023-01-03", 102, 24]
+            ],
+            "style": {
+              "font_size": 10,
+              "header_bg_color": "#D3D3D3",
+              "header_font_color": "#000000",
+              "cell_bg_color": "#FFFFFF",
+              "cell_font_color": "#000000",
+              "border_color": "#000000",
+              "border_width": 1,
+              "col_widths": [100, 100, 100]
+            }
+          }
+        ]
+      },
+      {
+        "title_name": "既存技術との比較",
+        "text": "従来技術との比較において、我々の技術はコスト効率とエネルギー効率の両面で優位性を示しました。\n\n[INSERT_GRAPH_4_HERE]\n\n特に、長期的な運用におけるコスト削減効果が顕著でした。",
+        "graphs": [
+          {
+            "id": "GRAPH_4",
+            "figure_width": 6,
+            "figure_height": 4,
+            "title": "エネルギー効率の比較",
+            "xlabel": "技術",
+            "ylabel": "エネルギー効率 (%)",
+            "grid": true,
+            "legend": false,
+            "charts": [
+              {
+                "chart_type": "bar",
+                "categories": ["太陽光", "風力", "野菜エネルギー"],
+                "values": [20, 30, 50],
+                "colors": ["yellow", "blue", "green"]
+              }
+            ]
+          }
+        ],
+        "formulas": [],
+        "tables": []
+      },
+      {
+        "title_name": "課題や改善点",
+        "text": "現時点での課題として、エナジーキャベツの生育条件の最適化が挙げられます。環境要因によるエネルギー生成量の変動を抑えるために、さらなる研究が必要です。\n\n[INSERT_FORMULA_4_HERE]\n\nこれにより、エネルギー生成の安定性を高めることが可能となります。",
+        "graphs": [],
+        "formulas": [
+          {
+            "id": "FORMULA_4",
+            "latex_code": "\\Delta E = \\frac{\\partial E}{\\partial T} \\Delta T + \\frac{\\partial E}{\\partial H} \\Delta H",
+            "description": "エネルギー生成量の変動を温度と湿度の変化で表した式です。",
+            "parameters": [
+              {
+                "symbol": "\\Delta E",
+                "description": "エネルギー生成量の変動 (ジュール)"
+              },
+              {
+                "symbol": "T",
+                "description": "温度 (℃)"
+              },
+              {
+                "symbol": "H",
+                "description": "湿度 (%)"
+              }
+            ]
+          }
+        ],
+        "tables": []
+      }
+    ]
+  },
+  {
+    "title_name": "結論",
+    "sub_sections": [
+      {
+        "title_name": "技術の将来性と今後の研究課題",
+        "text": "本研究で提案した野菜を用いたエネルギー生成技術は、持続可能なエネルギー供給の新たな可能性を示しました。今後は、他の植物種への適用や生育環境の最適化により、さらなる効率向上が期待されます。\n\n[INSERT_GRAPH_5_HERE]",
+        "graphs": [
+          {
+            "id": "GRAPH_5",
+            "figure_width": 6,
+            "figure_height": 4,
+            "title": "将来の研究開発ロードマップ",
+            "xlabel": "年",
+            "ylabel": "技術成熟度",
+            "grid": true,
+            "legend": false,
+            "charts": [
+              {
+                "chart_type": "line",
+                "lines": [
+                  {
+                    "x": [2023, 2024, 2025, 2026],
+                    "y": [1, 2, 3, 4],
+                    "label": "技術成熟度",
+                    "color": "red",
+                    "linestyle": "--",
+                    "marker": "o"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "formulas": [],
+        "tables": []
+      },
+      {
+        "title_name": "技術的・商業的な展開可能性",
+        "text": "この技術は、エネルギー業界だけでなく、農業や環境保全分野にも大きな影響を与える可能性があります。商業化に向けては、コスト削減と量産化技術の開発が重要です。\n\n[INSERT_TABLE_3_HERE]",
+        "graphs": [],
+        "formulas": [],
+        "tables": [
+          {
+            "id": "TABLE_3",
+            "table_type": "basic",
+            "title": "商業化に向けた課題と対策",
+            "columns": ["課題", "対策"],
+            "rows": [
+              ["コスト削減", "大量生産技術の確立"],
+              ["量産化", "自動栽培システムの導入"],
+              ["市場開拓", "パートナー企業との連携"]
+            ],
+            "style": {
+              "font_size": 10,
+              "header_bg_color": "#D3D3D3",
+              "header_font_color": "#000000",
+              "cell_bg_color": "#FFFFFF",
+              "cell_font_color": "#000000",
+              "border_color": "#000000",
+              "border_width": 1,
+              "col_widths": [150, 250]
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

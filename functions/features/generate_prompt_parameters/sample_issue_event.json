@@ -1,0 +1,46 @@
+{
+  "title": "生成AIによるプライバシー侵害の懸念とその解決策",
+  "format": {
+    "category_type_jp": "問題提起",
+    "category_type_en": "issue",
+    "sections": [
+      {
+        "sub_sections": [
+          { "title_name": "問題の概要と背景" },
+          { "title_name": "問題が引き起こす影響の説明" }
+        ],
+        "title_name": "はじめに"
+      },
+      {
+        "sub_sections": [
+          { "title_name": "現在直面している課題や状況の深堀り" },
+          { "title_name": "具体的な事例やデータ" }
+        ],
+        "title_name": "問題の詳細"
+      },
+      {
+        "sub_sections": [
+          { "title_name": "提案する解決策の詳細" },
+          { "title_name": "予想される効果・影響" },
+          { "title_name": "課題や改善点" }
+        ],
+        "title_name": "解決案の提案"
+      },
+      {
+        "sub_sections": [
+          { "title_name": "調査・データ収集方法" },
+          { "title_name": "調査結果" },
+          { "title_name": "解決策への有効性" }
+        ],
+        "title_name": "データ・調査結果"
+      },
+      {
+        "sub_sections": [
+          { "title_name": "解決策がもたらす未来の展望" },
+          { "title_name": "実行への次のステップ" }
+        ],
+        "title_name": "結論"
+      }
+    ]
+  }
+}

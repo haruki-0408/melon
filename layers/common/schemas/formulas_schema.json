@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Formulas Input Schema",
+    "type": "object",
+    "properties": {
+      "formulas": {
+        "type": "array",
+        "description": "処理する数式の配列",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "FORMULAR_{重複を許さない大文字英数字}の形式で{text}内の挿入識別子と合わせる"
+            },
+            "latex_code": {
+              "type": "string",
+              "pattern": "^[^ぁ-んァ-ヶ一-龯]*$",
+              "description": "LaTeX形式の数式コード、数式が複数ある場合は適切なLaTeX改行コードを使用すること。日本語入力は禁止です。各パラメータは下記のparametersと必ず合致するようにし、わかりやすいアルファベット(添字付き(省略アルファベット))で短く表現して"
+            },
+            "description": {
+              "type": "string",
+              "description": "数式の概要説明(説明にはLaTeX形式の記述は行わないこと)"
+            },
+            "parameters": {
+              "type": "array",
+              "description": "数式に含まれるパラメータの一覧",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "symbol": {
+                    "type": "string",
+                    "description": "数式内で使用されるシンボル　日本語は絶対に含めず、短いアルファベットで表現"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "パラメータの詳細な説明(日本語)"
+                  }
+                },
+                "required": ["symbol", "description"]
+              }
+            }
+          },
+          "required": ["id", "latex_code", "description"]
+        }
+      }
+    },
+    "required": ["formulas"]
+  }
+  
