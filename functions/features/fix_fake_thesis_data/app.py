@@ -70,7 +70,7 @@ def lambda_handler(event, context):
         messages = generate_messages(target_data)
 
         print('====== fix system_prompt ========')
-        print(system_prompt)
+        logger.info(system_prompt)
         
         # 生成AIに修正リクエスト
         assistant_response = client.call_message_request(system_prompt=system_prompt, messages=messages)
